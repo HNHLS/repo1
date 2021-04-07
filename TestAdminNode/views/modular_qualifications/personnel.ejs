@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-sm" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>新增</button>
+			  <button class="layui-btn layui-btn-sm" data-type="delRole"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
+			  <button class="layui-btn layui-btn-xs" data-type="Import"><i class="iconfont icon-daoru1"></i>导入</button>
+			  <button class="layui-btn layui-btn-xs" data-type="export"><i class="iconfont icon-daochu1"></i>导出</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<form id="addForm" class="layui-form" action="">
+						<div class="console">
+							<div class="layui-inline">
+								<input type="hidden" name="batch" id="batch" value="" />
+								<select name="role"  id="demoReload">
+									<option value="">选择角色名称</option>
+								</select>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="layui-inline">
+					<div class="layui-inline">
+					    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+					</div>
+					<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+				</div>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+				<a class="layui-btn layui-btn-xs" lay-event="ability">能力范围</a>
+			</script>
+		</shiro:hasRole>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","资质设置","人员管理列表","")
+		layui.use(['form', 'table','jquery'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var $=layui.jquery
+			var ids=[]
+			table.on('checkbox(tb)', function(obj) {
+				ids=[]
+				var checkStatus = table.checkStatus('tabReload')
+			    ,data = checkStatus.data;
+			    console.log(data)
+			    for(var i=0;i<data.length;i++){
+			      	ids[i]=data[i].id
+			    }
+				console.log(ids)
+			});
+			// 监听工具条
+			table.on('tool(tb)', function(obj) {
+				var data = obj.data;
+				console.log(data)
+				    //console.log(obj)
+				if(obj.event === 'edit'){
+					window.location.href='/modular_qualifications/personneledit?id='+data.id
+				}else if(obj.event === 'ability'){
+					window.location.href="/modular_qualifications/ability?id="+data.id
+				}
+			});
+			
+			table.render({
+				elem: '#tab',
+				url: '/modular_qualifications/personnellist',
+				cellMinWidth: 10,
+				even:true,
+				cols: [
+					[{checkbox: true},
+					{
+						field: 'name',
+						title: '姓名',
+						align: 'center',
+						width: '8%'
+					}, {
+						field: 'number',
+						align: 'center',
+						title: '工号',
+						width: '8%'
+					}, {
+						field: 'sex',
+						align: 'center',
+						title: '性别',
+						width: '5%'
+					},{
+						field: 'group',
+						align: 'center',
+						title: '群组',
+						width: 120,
+					}, {
+						field: 'role',
+						align: 'center',
+						title: '角色',
+					}, {
+						field: 'educationBg',
+						align: 'center',
+						title: '学历',
+						width: '6%'
+					}, {
+						field: 'major',
+						align: 'center',
+						title: '专业',
+					},  {
+						field: 'postCertificateNum',
+						align: 'center',
+						title: '岗位证书编号',
+						width: 140,
+					}, {
+						field: 'contractValidDate',
+						align: 'center',
+						title: '合同到期时间',
+						width: 130,
+						sort: true,
+					},{
+						field: 'workStatus',
+						align: 'center',
+						title: '是否在职',
+						width: '8%'
+					},{
+						align: 'center',
+						title: '操作',
+						width: 140,
+						toolbar: '#doit'
+					}]
+				],
+				id: 'tabReload',
+				page: true,
+				response: {
+			      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+			    },
+			    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+			      return {
+			        "code": res.status, //解析接口状态
+			        "msg": res.message, //解析提示文本
+			        "count": res.message.total, //解析数据长度
+			        "data": res.message.data //解析数据列表
+			      };
+			    },
+	            text: {
+	                none: '暂无相关数据！'//默认无数据
+	            },
+			});
+			$.ajax({
+				type: "get",
+				url: "/modular_users/queryAllRoleList",
+				async: true,
+				success: function(res) {
+					console.log(res)
+					var data=res.message.data
+					for (var i=0;i<data.length;i++) {
+						$("#demoReload").append('<option value="'+data[i].name+'">'+data[i].name+'</option>')
+					}
+					form.render("select");
+				}
+			});
+			var keyword
+			var role
+			var $ = layui.$, active = {
+				reload: function(){
+			      keyword = $('#search').val();
+			      //执行重载
+			      table.reload('tabReload', {
+			        page: {
+			          curr: 1 //重新从第 1 页开始
+			        }
+			        ,where: {
+			        	role: role,
+			          	keyword:keyword,
+			        }
+			      });
+			    },    
+			    addRole: function(){ //获取选中数据
+			      	window.location.href='/modular_qualifications/personneledit?id=0'}, 
+				   	Import: function() {
+						layer.open({
+							type: 2,
+							title:"导入",
+							area: ['800px', '500px'],
+							content: '/modular_qualifications/Import'
+						});
+					}
+				   	,delRole: function() {//获取选中状态            
+			            if(ids.length == 0){
+			                layer.msg('批量删除至少选中一项数据',function(){});
+			                return false;
+			            }
+						console.log(ids)
+			            layer.confirm('确定要删除选中的项吗？',function(index){
+			                $.ajax({
+			                    type:'post',
+								dataType:"json",
+			                    url:"/modular_qualifications/personneldel?ids="+JSON.stringify(ids),
+			                    success:function(data){
+									console.log(data)
+			                        if(data.status=="ok"){
+										ids=[]
+			                           table.reload('tabReload', {
+											page: {
+												curr: 1
+											},
+											where: {
+		//										page: 1
+											}
+										});
+			                         }
+			                       layer.msg(data.message);
+			                    },error:function(code){   
+			                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+			                    }
+			                });
+			            })
+				   }
+				   	,export: function() {//获取选中状态            
+						$.ajax({
+		                    type:'post',
+							dataType:"json",
+		                    url:"/modular_qualifications/exportStaff?ids="+JSON.stringify(ids),
+		                    success:function(data){
+								console.log(data)
+		                        if(data.status=="ok"){
+									ids=[]
+		                         }
+								window.location.href=data.message
+		//                        layer.msg(data.message);
+		                    },error:function(code){   
+		                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+		                    }
+		                });
+				   }
+			 };
+			form.on('select', function(data){
+				 console.log(data.value); //得到被选中的值]
+				 var role=data.value
+				 table.reload('tabReload', {
+			        page: {
+			          curr: 1 //重新从第 1 页开始
+			        }
+			        ,where: {
+			        	role: role,
+			          	keyword:keyword,
+			        }
+			      });
+			});
+			$('.layui-btn').on('click', function(){
+			   	var type = $(this).data('type');
+			   	active[type] ? active[type].call(this) : '';
+			});
+	});
+</script>
+</html>

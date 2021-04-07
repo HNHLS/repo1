@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.layui-form-checked span, .layui-form-checked:hover span{
+			background-color:#37a3dd;
+		}
+		.layui-form-checked i, .layui-form-checked:hover i{
+			color: #37a3dd;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+					    <label class="layui-form-label">选择印章</label>
+					    <div class="layui-input-block">
+					      <input type="checkbox" name="cnas" title="cnas">
+					      <input type="checkbox" name="cma" title="cma" >
+					      <input type="checkbox" name="testSpec" title="测试专用章">
+					    </div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">绑定模板类型</label>
+						<div class="layui-input-block">
+					      	<div class="layui-btn layui-btn-sm" data-type="TemplateType" id="bind"><i class="layui-icon layui-icon-add-1"></i>绑定</div>
+					    </div>
+						
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var delegateNum="<%=delegateNum%>"
+		var seal="<%=seal%>".split(",")
+		layui.use(['form','jquery'], function(){
+			var form = layui.form
+			var $=layui.jquery
+			var reportTypeId="<%=reportTypeId%>"
+			var reportTypeName="<%=reportTypeName%>"
+			$("input[type=checkbox]").each(function(i,v){
+				console.log($(v).attr("name"),seal)
+				for(var i=0;i<seal.length-1;i++){
+					if($(v).attr("name")==seal[i]){
+						$(v).attr("checked",true)
+						form.render()
+					}
+				}
+			})
+			$("#bind").text("已绑定"+reportTypeName)
+			//监听提交
+			form.on('submit(formDemo)', function(data){
+				var reviewStaff=data.field.reviewStaff
+				var cnas=data.field.cnas=="on"?true:false
+				var cma=data.field.cma=="on"?true:false
+				var testSpec=data.field.testSpec=="on"?true:false
+				console.log(data.field,cnas,cma,testSpec)
+				$.ajax({
+					type:"post",
+					url:"/modular_task/rewriteReport?cnas="+cnas+"&cma="+cma+"&testSpec="+testSpec+"&delegateNum="+delegateNum+"&reportTypeId="+reportTypeId+"&reportTypeName="+reportTypeName,
+					success:function(res){
+						console.log(res)
+						if(res.status=="ok"){
+							alert(res.message)
+							parent.window.location.href="/modular_task/reportwritingedit?delegateNum="+delegateNum
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            				parent.layer.close(index);
+						}else{
+							layer.msg(res.message,{icon: 5})
+						}
+					}
+				});
+			    return false;
+			});
+			window.getTemplateTypenum=function(templateId,name) {
+		    	alert(templateId,name)
+		    	reportTypeId=templateId
+		    	reportTypeName=name
+		        layer.close(TemplateTypeindex);
+		    }
+			window.addEventListener('message', function (event) {
+		        console.log(event)
+		        //来源报告生成模块
+		        $("#bind").text("已绑定"+event.data.name)
+		        getTemplateTypenum(event.data.id, event.data.name);
+		    })
+			var TemplateTypeindex
+			var $ = layui.$,
+				active = {
+					TemplateType:function(){
+				     //获取选中状态            
+			            TemplateTypeindex=layer.open({
+				            type: 2,
+				            title: "选择模版类型",
+				            content: "<%=global.Template%>/TemOrItem/GetTem?type=0",
+				            area: ['100%', '100%']
+				       });
+				   	},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+</html>

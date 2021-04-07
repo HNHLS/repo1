@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<button class="layui-btn layui-btn-sm" data-type="handle"><i class="iconfont icon-xiafa"></i>批量处理</button>
+			</div>
+			<div class="toolbar"  style="margin-top: 5px;">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="handle">处理</a>
+			</script>
+		</shiro:hasRole>
+		
+	</body>
+	<div id="content" style="margin-top: 20px;">
+		<div class="layui-form-item">
+			<div class="layui-col-xs10 layui-col-sm10 layui-col-md8">
+				<label class="layui-form-label">备注:</label>
+				<div class="layui-input-block">
+					<textarea class="layui-textarea" style="resize: none;min-height: 70px;"></textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% include ../layout/footer.ejs %>
+	<script>
+		var delegateNum="<%=delegateNum%>"
+		layui.use(['form', 'table','laydate'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate
+			var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].id
+		    }
+			console.log(ids)
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var $ = layui.$, active = {
+			reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	startDate: startDate,
+					keyword:keyword,
+					endDate:endDate
+		        }
+		      });
+		    },    
+		    handle: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量处理至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+				    var index=layer.open({
+						type:1,
+						content: $("#content"),
+						area:["500px","300px"]
+						,btn: ['处理']
+						,yes: function(index, layero){
+							var remark=$(layero).find("textarea").val()
+							console.log($(layero).find("textarea").val())
+							$.ajax({
+			                    type:'post',
+								dataType:"json",
+			                    url:"/modular_task/sampleProblemDeal?ids="+JSON.stringify(ids)+"&remark="+encodeURIComponent(remark),
+			                    success:function(data){
+									console.log(data)
+			                        if(data.status=="ok"){
+										ids=[]
+										$(layero).find("textarea").val("")
+										layer.close(index)
+			                           table.reload('tabReload', {
+											page: {
+												curr: 1
+											},
+											where: {
+			//										page: 1
+											}
+										});
+			                         }
+			                       layer.msg(data.message);
+			                    },error:function(code){   
+			                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+			                    }
+			                });
+						}
+					});
+		   }
+		 };
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'handle'){
+				var arr=[]
+				arr.push(data.id)
+			    var index=layer.open({
+					type:1,
+					content: $("#content"),
+					area:["500px","300px"]
+					,btn: ['处理']
+					,yes: function(index, layero){
+						var remark=$(layero).find("textarea").val()
+						console.log($(layero).find("textarea").val())
+						$.ajax({
+		                    type:'post',
+							dataType:"json",
+		                    url:"/modular_task/sampleProblemDeal?ids="+JSON.stringify(arr)+"&remark="+remark,
+		                    success:function(data){
+								console.log(data)
+		                        if(data.status=="ok"){
+									ids=[]
+									$(layero).find("textarea").val("")
+									layer.close(index)
+		                           table.reload('tabReload', {
+										page: {
+											curr: 1
+										},
+										where: {
+		//										page: 1
+										}
+									});
+		                         }
+		                       layer.msg(data.message);
+		                    },error:function(code){   
+		                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+		                    }
+		                });
+					}
+				});
+			}
+		});
+		
+		table.render({
+			elem: '#tab',
+			url: '/modular_task/listSampleProblem?delegateNum='+delegateNum,
+			cellMinWidth: 10,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'subTaskNumber',
+					title: '分单号',
+					align: 'center',
+				},{
+					field: 'submitter',
+					title: '提交人',
+					align: 'center',
+				}, {
+					field: 'problemSampleNumber',
+					align: 'center',
+					title: '异常样品编号'
+				}, {
+					field: 'extra',
+					align: 'center',
+					title: '备注信息',
+				}, {
+					field: 'notifyTime',
+					align: 'center',
+					title: '通知时间',
+				}, {
+					field: 'subTaskAllSampleBroken',
+					align: 'center',
+                    title: '是否全部损坏',
+                    templet:function(d){
+                        return d.subTaskAllSampleBroken?"是":"否"
+                    }
+				}, {
+					field: 'dealRemark',
+					align: 'center',
+					title: '处理备注',
+				},{
+					align: 'center',
+					title: '操作',
+					toolbar: '#doit'
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		$('.layui-btn').on('click', function(){
+		   	var type = $(this).data('type');
+		   	active[type] ? active[type].call(this) : '';
+		});
+	});
+</script>
+</html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.center{
+			position: absolute;
+			top: 30%;
+			left:38%;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+				</div>
+				<div class="center">
+					<div style="text-align: center;margin-bottom: 20px;">
+						<img src="/Images/cuowuxinxi.png"/>
+					</div>
+					<div class="">
+						<%=msg%> !
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>

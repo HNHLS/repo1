@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+<style type="text/css">
+		.wu-example{
+			width: 20rem;
+			height: 2.5rem;
+			margin:1rem auto;
+		}
+		.item{
+			height: 8rem;
+			width: 8rem;
+			border: 0.05rem solid #D6D6D6;
+			text-align: center;
+			float: left;
+			margin-right: 0.5rem;
+			margin-top: 0.5rem;
+			font-size: 10px;
+		}
+		.item img.img{
+			height: 40%;
+			width: 40%;
+			margin-top: 1.5rem;
+			/*margin-left: 1.5rem;*/
+		}
+		.item p{
+			margin: 0;
+		}
+		.flie-height{
+			height: 13rem;
+			padding-top: 1rem;
+			margin-bottom: 1rem;
+		}
+		#flie{
+			width: 90%;
+		    height:100%;
+		    margin: auto;
+		}
+		#thelist{
+		    height: 100%;
+		}
+	</style>
+	<link href="/webuploader/webuploader.css" rel="stylesheet" />
+	<script src="/webuploader/webuploader.js"></script>
+	<link type="text/css" rel="stylesheet" href="/Css/select2.min.css"/>
+	<script type="text/javascript" src="/Scripts/select2.min.js"></script>
+	<body data-type="generalComponents">
+		<div class="tpl-page-header-fixed" style="margin-top: 0px;height: 100%;">
+			<div class="" style="height: 100%;">
+				<div class="tpl-portlet-components" style="height: 90%;">
+					<div class="tpl-block">
+						<div class="flie-height">
+							<div id="flie">
+								<!--用来存放文件信息-->
+								<div id="thelist" class="uploader-list"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+		var FileList=<%-FileList%>;
+		console.log(FileList+"1")
+		if(FileList[0].FileUrl=="暂无"||FileList[0].FileUrl==""){
+	        FileList=[]
+	        $("#thelist").append("<div>暂无下载内容</div>")
+		}else{
+			console.log(FileList)
+			for(var i=0;i<FileList.length;i++){
+				var FileName=FileList[i].FileName
+				var FileUrl=FileList[i].FileUrl
+				console.log(FileUrl)
+				var FileType=FileName.split(".")
+				if(FileName.length>8){
+		            var str=FileName.substring(0,7)+"..."
+		        }else{
+		            var str=FileName
+		        }
+				var fileType=FileType[FileType.length-1]
+				if(fileType=="docx"||fileType=="doc"){
+		        	$("#thelist").append('<div class="item">' +
+		        	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(FileUrl)+'\')" href="javascript:;" title="删除"></a>'+
+		            '<img class="img" src="/Images/wd_tb.png" />' +
+		            '<p class="info" title='+FileName+'>' + str + '</p>' +
+		            '<a class="state" href="/modular_basics/downLoad?url='+encodeURIComponent(FileUrl)+'&FileName='+FileName+'"download="">下载</a>'+
+		        '</div>');
+		        }else if(fileType=="xls"||fileType=="xlsx"){
+		        	$("#thelist").append('<div class="item">' +
+		        	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(FileUrl)+'\')" href="javascript:;" title="删除"></a>'+
+		            '<img class="img" src="/Images/ex_tb.png" />' +
+		            '<p class="info" title='+FileName+'>' + str + '</p>' +
+		            '<a class="state" href="/modular_basics/downLoad?url='+encodeURIComponent(FileUrl)+'&FileName='+FileName+'"download="">下载</a>'+
+		        '</div>');
+		        }else if(fileType=="png"||fileType=="jpg"){
+		        	$("#thelist").append('<div class="item">' +
+		        	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(FileUrl)+'\')" href="javascript:;" title="删除"></a>'+
+		            '<img class="img" src="/Images/tp_tb.png" />' +
+		            '<p class="info" title='+FileName+'>' + str + '</p>' +
+		            '<a class="state" href="/modular_basics/downLoad?url='+encodeURIComponent(FileUrl)+'&FileName='+FileName+'" download="">下载</a>'+
+		        '</div>');
+		        }else{
+		        	$("#thelist").append('<div class="item">' +
+		        	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(FileUrl)+'\')" href="javascript:;" title="删除"></a>'+
+		            '<img class="img" src="/Images/fj_tb.png" />' +
+		            '<p class="info" title='+FileName+'>' + str + '</p>' +
+		            '<a class="state" href="/modular_basics/downLoad?url='+encodeURIComponent(FileUrl)+'&FileName='+FileName+'"download="">下载</a>'+
+		        '</div>');
+		        }
+			}
+			var GUID = WebUploader.Base.guid(); //当前页面是生成的GUID作为标示
+	        console.log(GUID);
+			var File={}
+	        var uploader = WebUploader.create({
+	
+	            // swf文件路径
+	            swf: '../../../public/webuploader/Uploader.swf',
+	            // 文件接收服务端。
+	            server: '<%=global.uploadurl%>/webuploadertest/ProcessRequest',
+	            //分片处理大文件
+	            chunked: true,
+	            //上传并发数
+	            threads: 1,
+	
+	            formData: {guid:GUID},
+	
+	            // 选择文件的按钮。可选。
+	            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+	            pick:  {
+	                id: '#picker',
+	            },
+	            // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+	            resize: false,
+	            duplicate:true
+	        });
+	
+	        uploader.on('beforeFileQueued', function (file) {
+	
+	
+	        });
+	        //all算是一个总监听器
+	        uploader.on('all', function (type, arg1, arg2) {
+	            console.log("all监听：", type, arg1, arg2);
+	        });
+	        // 当有文件被添加进队列的时候
+	        uploader.on('fileQueued', function (file) {
+	            uploader.upload();
+	            
+	        });
+	        // 文件上传成功,合并文件。
+	        uploader.on('uploadSuccess', function (file, response) {
+	        	var File={}
+	        	var fileType=file.ext;
+	        	var fileNames = file.name.replace(/\s+/g,"");
+	            if(fileNames.length>8){
+	            	var str=fileNames.substring(0,7)+"..."
+	            }else{
+	            	var str=fileNames
+	            }
+	            var chunked=response.chunked
+	            if (chunked) {
+	                $.post("<%=global.uploadurl%>/webuploadertest/MergeFiles", { guid: GUID, fileExt: response.f_ext },
+	                function (data) {
+	                    data = $.parseJSON(data);
+	                    if (data.hasError) {
+	                        alert('文件合并失败！');
+	                    } else {
+	                    	File.FileName=file.name
+	                    	File.FileUrl=decodeURIComponent(data.savePath)
+	                    	FileList.push(File)
+	                    	console.log(File)
+	                    	console.log(FileList)
+	                    	if(fileType=="docx"||fileType=="doc"){
+				            	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+				            	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(response.savePath)+'\')" href="javascript:;" title="删除"></a>'+
+				                '<img class="img" src="/Images/wd_tb.png" />' +
+				                '<p class="info" title='+fileNames+'>' + str + '</p>' +
+				                '<div class="state">已上传</div>' +
+				            '</div>');
+				            }else if(fileType=="xls"||fileType=="xlsx"){
+				            	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+				            	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(response.savePath)+'\')" href="javascript:;" title="删除"></a>'+
+				                '<img class="img" src="/Images/ex_tb.png" />' +
+				                '<p class="info" title='+fileNames+'>' + str + '</p>' +
+				                '<div class="state">已上传</div>' +
+				            '</div>');
+				            }else if(fileType=="png"||fileType=="jpg"){
+				            	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+				            	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(response.savePath)+'\')" href="javascript:;" title="删除"></a>'+
+				                '<img class="img" src="/Images/tp_tb.png" />' +
+				                '<p class="info" title='+fileNames+'>' + str + '</p>' +
+				                '<div class="state">已上传</div>' +
+				            '</div>');
+				            }else{
+				            	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+				            	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+encodeURIComponent(response.savePath)+'\')" href="javascript:;" title="删除"></a>'+
+				                '<img class="img" src="/Images/fj_tb.png" />' +
+				                '<p class="info" title='+fileNames+'>' + str + '</p>' +
+				                '<div class="state">已上传</div>' +
+				            '</div>');
+	            			}
+	                    }
+	                });
+	            }else{
+	            	console.log(decodeURIComponent(response.savePath))
+	            	console.log(FileList)
+	            	File.FileName=file.name
+	            	File.FileUrl=decodeURIComponent(response.savePath)
+	            	FileList.push(File)
+	            	console.log(File)
+	            	console.log(FileList)
+	            	if(fileType=="docx"||fileType=="doc"){
+			         	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+			         	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+response.savePath+'\')" href="javascript:;" title="删除"></a>'+
+			             '<img class="img" src="/Images/wd_tb.png" />' +
+			             '<p class="info" title='+fileNames+'>' + str + '</p>' +
+			             '<div class="state">已上传</div>' +
+			         '</div>');
+			         }else if(fileType=="xls"||fileType=="xlsx"){
+			         	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+			         	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+response.savePath+'\')" href="javascript:;" title="删除"></a>'+
+			             '<img class="img" src="/Images/ex_tb.png" />' +
+			             '<p class="info" title='+fileNames+'>' + str + '</p>' +
+			             '<div class="state">已上传</div>' +
+			         '</div>');
+			         }else if(fileType=="png"||fileType=="jpg"){
+			         	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+			         	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+response.savePath+'\')" href="javascript:;" title="删除"></a>'+
+			             '<img class="img" src="/Images/tp_tb.png" />' +
+			             '<p class="info" title='+fileNames+'>' + str + '</p>' +
+			             '<div class="state">已上传</div>' +
+			         '</div>');
+			         }else{
+			         	$("#thelist").append('<div id="' + file.id + '" class="item">' +
+			         	'<a class="icon" tyle="text-decoration:none;" class="ml-5" onClick="article_del(this,\''+response.savePath+'\')" href="javascript:;" title="删除"></a>'+
+			             '<img class="img" src="/Images/fj_tb.png" />' +
+			             '<p class="info" title='+fileNames+'>' + str + '</p>' +
+			             '<div class="state">已上传</div>' +
+			         '</div>');
+	        		}
+	            }
+	        });
+	        uploader.on('uploadError', function (file) {
+	            console.log("文件上传出错");
+	            $('#' + file.id).find('p.state').text('上传出错');
+	        });
+	
+	        uploader.on('uploadComplete', function (file) {
+	            $('#' + file.id).find('.progress').fadeOut();
+	        });
+		}
+	function article_del(obj,url){
+		console.log(decodeURIComponent(url))
+		console.log(FileList)
+		$(obj).parent().remove()
+		for(var i=0;i<FileList.length;i++){
+			console.log(FileList[i].FileUrl)
+			if(FileList[i].FileUrl==decodeURIComponent(url)){
+				FileList.splice(i,1); 
+			}
+		}
+	}
+	function sub(){
+	  $.ajax({
+            type: "POST",
+            url: "/modular_basics/standardedit_list?FileList="+JSON.stringify(FileList),
+            data: $("#ajaxForm").serialize(),
+            success: function (msg) {
+                console.log(msg);
+                if (msg.Errcode ==0) {
+                    alert("保存成功");
+                    //执行父级刷新
+                    window.location.href="/modular_basics/standard_list";
+                } else {
+                    alert(msg.message);
+                }
+            }
+        });
+		
+	}
+  </script>

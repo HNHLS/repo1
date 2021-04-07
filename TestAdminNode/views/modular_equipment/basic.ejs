@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<script src="/Scripts/LodopFuncs.js" type="text/javascript" charset="utf-8"></script>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<%for(var i=0;i<rolelist.split(",").length;i++){%>
+					<%if(rolelist.split(",")[i]=="设备管理员"){%>
+						<button class="layui-btn layui-btn-sm" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>新增</button>
+						<button class="layui-btn layui-btn-sm" data-type="delRole"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
+						<button class="layui-btn layui-btn-xs" id="infob" data-type="Import"><i class="iconfont icon-daoru1"></i>导入</button>
+					  	<!--<button class="layui-btn layui-btn-xs" data-type="Import"><i class="iconfont icon-daoru1"></i>导入</button>-->
+					  	<button class="layui-btn layui-btn-xs" data-type="Export"><i class="iconfont icon-daochu1"></i>导出</button>
+					  	<button class="layui-btn layui-btn-xs" data-type="code"><i class="iconfont icon-tiaoxingma"></i>打印条形码</button>
+					<%}%>
+				<%}%>
+			</div> 
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","设备管理","基础管理","")
+		var LODOP; //声明为全局变量 
+		var role="<%=rolelist%>".split(",")
+		console.log(role)
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'edit'){
+				window.location.href="/modular_equipment/basicedit?id=0&eqid="+data.id
+			}else if(obj.event === 'Calibration'){
+				window.location.href="/modular_equipment/Calibrationedit?id=0&eqid="+data.id+"&type=0"
+			}else if(obj.event === 'Checks'){
+				window.location.href="/modular_equipment/Checksedit?id=0&eqid="+data.id+"&type=0"
+			}else if(obj.event === 'Maintain'){
+				window.location.href="/modular_equipment/Maintainedit?id=0&eqid="+data.id
+			}else if(obj.event === 'Repair'){
+				window.location.href="/modular_equipment/Repairadd?id=0&eqid="+data.id+"&equipment_name="+data.equipment_name+"&equipment_no="+data.equipment_no
+			}
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_equipment/equipmentlist",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'equipment_name',
+					title: '设备名称',
+					align: 'center',
+					width:140,
+				},{
+					field: 'equipment_no',
+					title: '设备编号',
+					align: 'center',
+					width:140,
+				},{
+					field: 'custodian',
+					title: '负责人',
+					align: 'center',
+				},{
+					field: 'test_number',
+					title: '测试能力',
+					align: 'center',
+				},{
+					field: 'fixed_no',
+					align: 'center',
+					title: '固定资产编号',
+				},{
+					field: 'infostate',
+					align: 'center',
+					title: '设备状态',
+					templet:function(d){
+						switch(d.infostate) {
+							case 0:
+								return "启用";
+								break;
+							case 1:
+								return "停用";
+								break;
+							case 2:
+								return "报废";
+								break;
+							case 3:
+								return "待机";
+								break;
+							case 4:
+								return "校准中";
+								break;
+							case 5:
+								return "维护中";
+								break;
+							case 6:
+								return "保养中";
+								break;
+							case 7:
+								return "核查中";
+								break;
+						}
+						
+					}
+				},{
+					field: 'specification_model',
+					align: 'center',
+					title: '规格型号',
+				},{
+					field: 'use_department',
+					align: 'center',
+					title: '使用群组',
+				},{
+					field: 'isstat',
+					align: 'center',
+					title: '统计负载率'
+				},{
+					align: 'center',
+					title: '操作',
+					width:260,
+					templet:function(d){
+						var str=""
+						var period=d.verification_period
+						console.log(period)
+						for(var i=0;i<role.length;i++){
+							if(role[i]=="设备管理员"){
+								str+='<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>'
+							}
+							if(role[i]=="计量管理员"){
+							 	if(period=="-1"){
+						        //不检定
+									
+						    	}else if(period=="0"&&d.date_verification!=null &&d.date_verification!=""){
+						        //首检 已经检定过了
+									
+						    	}else{
+						        //需要首检 + 正常检定设备
+						        	str+='<a class="layui-btn layui-btn-xs" lay-event="Calibration">检定</a>'
+								}
+							}
+							if(role[i]=="检测人员"){
+								str+='<a class="layui-btn layui-btn-xs" lay-event="Checks">核查</a><a class="layui-btn layui-btn-xs" lay-event="Maintain">保养</a><a class="layui-btn layui-btn-xs" lay-event="Repair">维修</a>'
+								console.log(str)
+							}
+						}
+						console.log(str)
+						return str
+					}
+				}]
+			],
+			page: true,
+			id: 'tabReload',
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": 0, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.totalCount, //解析数据长度
+		        "data": res.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].id
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+					name:keyword,
+					startDate:startDate,
+					endDate:endDate,
+				}
+		      });
+		    },    addRole: function(){ //获取选中数据
+		      window.location.href="/modular_equipment/basicadd"
+		    }
+		    ,Import:function(){
+		    	layer.open({
+					type: 2,
+					title:"导入",
+					area: ['800px', '500px'],
+					content: '/modular_equipment/Import?type=0'
+				});
+		    }
+		    ,Export:function(){
+		    	$.ajax({
+	               	type:'post',
+	                url:'/modular_equipment/equipment_outexcel?name='+$('#search').val(),
+	                success:function(data){
+						console.log(data)
+	                    if(data.status=="0"){
+							window.open(data.message)
+//							layer.msg(data.message);
+						}
+	                },error:function(code){   
+	                    parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                }
+	            });
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:'/modular_equipment/basicdel?ids='+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status==0){
+								ids=[]
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+										page: 1
+									}
+								});
+	                         }
+	                       layer.msg("删除成功");
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   	},
+		   	code: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量打印至少选中一项数据',function(){});
+	                return false;
+	            }
+				var idStr=""
+				ids.forEach(function(v,i){
+					console.log(v,i)
+					if(i==ids.length-1){
+						idStr+=v
+					}else{
+						idStr+=v+","
+					}
+				})
+				console.log(idStr)
+	            $.ajax({
+	                type:'post',
+					dataType:"json",
+	                url:'/modular_equipment/code?ids='+idStr,
+	                success:function(data){
+						console.log(data)
+						var msg=data.message
+	                    if(data.status=="ok"){
+								LODOP = getLodop();
+								//内容
+								LODOP.SET_PRINT_PAGESIZE(1, 610, 400, '');
+							for(var i=0;i<msg.length;i++){
+								LODOP.NewPage();
+								LODOP.SET_PRINT_STYLE("Bold", 0);
+								LODOP.SET_PRINT_STYLE("FontSize", 7);
+								LODOP.ADD_PRINT_BARCODE("5mm", "8mm", "50mm", "15mm", "EAN128A", msg[i].eqno)
+								LODOP.ADD_PRINT_TEXT("21mm", "8mm", '6cm', 20, "设备名称:" + msg[i].eqname);
+								LODOP.ADD_PRINT_TEXT("24mm", "8mm", '6cm', 20, "设备责任人:" + msg[i].man);
+								LODOP.ADD_PRINT_TEXT("27mm", "8mm", '6cm', 20, "校准日期:" +msg[i].recorddate);
+								LODOP.ADD_PRINT_TEXT("30mm", "8mm", '6cm', 20, "有效日期:" +msg[i].effectdate);
+								//LODOP.print();
+							}
+							LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "设备打标开始打印");
+							LODOP.PREVIEW();
+	                    }
+	                },error:function(code){   
+	                    parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                }
+	            });
+		   	}
+		  };
+			// <%=global.equipment%>/enquipmentinfo/equipmentinfo_poi
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+	});
+	
+</script>
+</html>

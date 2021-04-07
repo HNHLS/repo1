@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<!--<button class="layui-btn layui-btn-sm" data-type="receive"><i class="iconfont icon-jiedan"></i>批量接收</button>-->
+				<button class="layui-btn layui-btn-sm" data-type="assign"><i class="iconfont icon-xiafa"></i>批量下发</button>
+			  	<!--<button class="layui-btn layui-btn-sm" data-type="handle"><i class="iconfont icon-saoma"></i>扫码办理</button>-->
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+			<shiro:hasRole name="superadmin">
+				<script type="text/html" id="doit">
+					<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a>
+					<a class="layui-btn layui-btn-xs" lay-event="assign">下发</a>
+				</script>
+			</shiro:hasRole>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","任务管理", "报告审核","")
+		//角色下拉
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'assign'){//下发
+			    $.ajax({
+					url:'/modular_task/doReportReview?delegateNum='+data.delegateNum+'&subTaskNumber='+data.subTaskNumber+'&action=1',
+					type:'GET',
+					success:function(res){
+						if(res.status=="ok"){
+							window.location.href="/modular_task/reportaudit"
+						}
+					}
+				})
+			}else if(obj.event === 'handle'){//办理
+				window.location.href="/modular_task/reportauditedit?delegateNum="+data.delegateNum+'&subTaskNumber='+data.subTaskNumber
+			}else if(obj.event=="receive"){
+				var ids=[]
+				ids.push(data.testCourseId)
+				layer.confirm('确定要接收此项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:'/modular_task/assignTestCourseTestStaff?ids='+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+			}
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_task/reportauditlist",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'delegateNum',
+					align: 'center',
+					title: '委托单号'
+				},{
+					field: 'subTaskNumber',
+					align: 'center',
+					title: '分单号'
+				},{
+					field: 'testProj',
+					align: 'center',
+					title: '测试项目',
+				},{
+					field: 'sampleNumber',
+					align: 'center',
+					title: '样品编号'
+				},{
+					field: 'sampleAmount',
+					align: 'center',
+					title: '样品数量',
+				}, {
+					field: 'purpose',
+					align: 'center',
+					title: '检测目的',
+				}, {
+					field: 'testNature',
+					align: 'center',
+					title: '试验性质',
+				}, {
+					field: 'createTime',
+					align: 'center',
+					title: '创建时间',
+				}, {
+					field: 'handler',
+					align: 'center',
+					title: '当前处理人',
+				},{
+					align: 'center',
+					title: '操作',
+					toolbar: '#doit'
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			Ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+				  ids[i]=data[i].delegateNum
+				  Ids[i]=data[i].subTaskNumber
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	startDate: startDate,
+					keyword:keyword,
+					endDate:endDate
+		        }
+		      });
+		    }
+		    ,assign: function(){ //批量下发
+		      	$.ajax({
+					url:'/modular_task/doReportReview?delegateNum='+ids+'&subTaskNumber='+Ids+'&action=1',
+					type:'GET',
+					success:function(res){
+						if(res.status=="ok"){
+							window.location.href="/modular_task/reportaudit"
+						}
+					}
+				})
+		    }
+		    ,handle:function(){ //扫码办理
+		      //获取选中状态 
+		     	var checkStatus = table.checkStatus('tabReload')
+	            //获取选中数量
+	            var selectCount = checkStatus.data.length;    
+				var ids=''
+			    if(selectCount>0){
+			     	console.log(checkStatus,selectCount)
+					if(selectCount >1){
+		                layer.msg('只能选择一项数据',function(){});
+		                return false;
+		            }
+		            ids=checkStatus.data[0].subTaskNumber
+					console.log(ids)
+					layer.open({
+						type: 2,
+						title:"样品退库",
+						area: ['90%', '90%'],
+						content: '/modular_task/addteststart?subTaskNumber='+ids+'&uniqueNumber='
+					});
+			    }else{
+			    	layer.open({
+						type: 2,
+						title:"样品退库",
+						area: ['90%', '90%'],
+						content: '/modular_task/addteststart?subTaskNumber=&uniqueNumber='
+					});
+			    }     
+		    }
+		    ,receive: function(){//批量接收
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要接收选中的项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:'/modular_task/assignTestCourseTestStaff?ids='+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   	}
+		};
+	  	$('.layui-btn').on('click', function(){
+		   	var type = $(this).data('type');
+		   	active[type] ? active[type].call(this) : '';
+		});
+	});
+</script>
+</html>

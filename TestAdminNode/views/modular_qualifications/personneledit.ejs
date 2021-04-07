@@ -1,0 +1,498 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/index.css">
+	<style type="text/css">
+		.downpanel .layui-select-title span {
+            line-height: 38px;
+        }
+        /*继承父类颜色*/
+        .downpanel dl dd:hover {
+            background-color: inherit;
+        }
+        ul>li>ul{
+        	margin: 0;
+        }
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>姓名</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="name" value="<%= name %>" name="name">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>工号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="number" value="<%= number %>" name="number">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>档案卡号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="archiveNumber" name="archiveNumber" value="<%= archiveNumber %>">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>岗位证书编号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="postCertificateNum" name="postCertificateNum" value="<%= postCertificateNum %>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>角色</label>
+							<div class="layui-input-block">
+								<select id="roleArray" name="roleArray" xm-select="roleArray" xm-select-search="" lay-filter="roleArray" lay-verify="required"></select>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>群组</label>
+							<div class="layui-input-block">
+								<select id="departmentArray" name="departmentArray" xm-select="departmentArray" xm-select-search="" lay-filter="departmentArray" lay-verify="required"></select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>在职状态</label>
+							<div class="layui-input-block">
+								<%if(workStatus=="在职"){%>
+									<input type="radio" name="workStatus" value="离职" title="离职">
+									<input type="radio" name="workStatus" value="在职" title="在职" checked>
+								<%}else{%>
+									<input type="radio" name="workStatus" value="离职" title="离职" checked>
+									<input type="radio" name="workStatus" value="在职" title="在职">
+								<%}%>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">性别</label>
+							<div class="layui-input-block">
+								<%if(sex=="女"){%>
+									<input type="radio" name="sex" value="男" title="男">
+									<input type="radio" name="sex" value="女" title="女" checked>
+								<%}else{%>
+									<input type="radio" name="sex" value="男" title="男" checked>
+									<input type="radio" name="sex" value="女" title="女">
+								<%}%>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">年龄</label>
+							<div class="layui-input-block">
+								<input type="number" class="layui-input" id="age" value="<%= age %>" name="age">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">学历</label>
+							<div class="layui-input-block">
+								<select id="educationBg" name="educationBg">
+									<option value="">请选择学历</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">专业</label>
+							<div class="layui-input-block">
+								<select id="major" name="major">
+									<option value="">请选择专业</option>
+								</select>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">职称</label>
+							<div class="layui-input-block">
+								<select id="professionalTitle" name="professionalTitle">
+									<option value="">请选择职称</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">毕业院校</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="college" name="college" value="<%= college %>">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">出生年月</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" name="birthDate" id="birthDate" value="<%= birthDate %>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">工作年限</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="workingYears" name="workingYears" value="<%= workingYears %>">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">入职时间</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="joinDate" name="joinDate" value="<%= joinDate %>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">毕业日期</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="graduateDate" name="graduateDate" value="<%= graduateDate %>">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">合同到期时间</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="contractValidDate" name="contractValidDate" value="<%= contractValidDate %>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">电子签名</label>
+						<div class="layui-input-block">
+							<div class="clipRow2" style="" ontouchstart="">
+						    	<div class="cover-wrap" style="">	
+						    		<div class="clipBgn" style="">
+						    			<div id="clipArea" style="margin:10px;height: 370px;"></div>
+						    			<div class="clipButton" class="" style="">
+						    				<div id="clipBtn" style="" class="layui-btn layui-btn-sm">保存图片</div>
+						    			</div>
+						    		</div>
+						    	</div>
+						    	<div id="view" style="width:320px;height:135px;background-image: url(<%=eSignFile%>);"></div>
+						        <div class="clipContent" style="margin-top: 10px;">
+						        	上传签名<input type="file" id="file" style="">
+						        </div>
+						    </div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">附件上传</label>
+						<div class="layui-input-block">
+							<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+								<div id="picker" style="width: 80px;float: right;">选择文件</div>
+							</div>
+							<div class="layui-input-block">
+								<div class="flie-height">
+									<div id="flie">
+										<!--用来存放文件信息-->
+										<div id="thelist" class="uploader-list"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script src="/Scripts/iscroll-zoom.js" type="text/javascript" charset="utf-8"></script>
+<script src="/Scripts/hammer.js" type="text/javascript" charset="utf-8"></script>
+<script src="/Scripts/lrz.all.bundle.js" type="text/javascript" charset="utf-8"></script>
+<script src="/Scripts/jquery.photoClip.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+	href("/modular_qualifications/personnel","资质管理","人员管理列表","新增/编辑")
+	var roleArray=JSON.parse(decodeURIComponent("<%= encodeURIComponent(JSON.stringify(roleArray))%>"))
+	var departmentArray=JSON.parse(decodeURIComponent("<%= encodeURIComponent(JSON.stringify(departmentArray))%>"))
+	console.log(roleArray)
+	var professionalTitle="<%=professionalTitle%>"
+	
+	var major="<%=major%>"
+	var educationBg="<%=educationBg%>"
+	layui.config({
+		base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+	}).extend({
+		formSelects: 'formSelects-v4'
+	});
+	layui.use(['form','jquery','laydate','element', 'tree', 'layer','upload','formSelects'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		var laydate=layui.laydate;
+		var formSelects=layui.formSelects
+		laydate.render({
+			elem: '#birthDate'
+			,trigger: 'click'
+		});//日期范围
+		laydate.render({
+			elem: '#joinDate'
+			,trigger: 'click'
+		});//日期范围
+		laydate.render({
+			elem: '#graduateDate'
+			,trigger: 'click'
+		});//日期范围
+		laydate.render({
+			elem: '#contractValidDate'
+			,trigger: 'click'
+		});//日期范围
+		//学历 专业 职称下拉
+		dropdown("学历","#educationBg",educationBg)
+		dropdown("专业","#major",major)
+		dropdown("职称","#professionalTitle",professionalTitle)
+		//角色下拉
+//		console.log(Array)
+		window.formselect=function(Array){
+			layui.formSelects.config('roleArray', {
+				searchUrl:"/modular_users/queryAllRoleList",
+				beforeSuccess: function(id, url, searchVal, result) {
+						//我要把数据外层的code, msg, data去掉
+					console.log(result)
+					data = result.message.data;
+						//我要反转name
+					var array = []
+					$.each(data, function(index, item) {
+						var obj = {}
+						obj.name =item.name
+						obj.value =item.name
+						array[index] = obj
+					});
+					//然后返回数据
+					console.log(array)
+					return array;
+				},
+				success: function() {
+					formSelects.value('roleArray',Array);
+				}
+			})
+		}
+		formselect(roleArray)
+		$.ajax({
+	        type: "get",
+	        url: "/modular_qualifications/getFullTree",
+	        success: function (result) {
+	        	console.log(result)
+	        	var arr=[]
+	            if (result.status == "ok") {
+	                $.each(result.message.list, function (i, v) {
+	                    var obj={}
+	                    obj.name=v.name
+	                    obj.type="optgroup"
+	                    arr.push(obj)
+	                    console.log(i,v);
+	                   	$.each(v.list, function (i, v) {
+		                    var obj={}
+		                    obj.name=v.name
+		                    obj.value=v.id
+		                    arr.push(obj)
+		                    console.log(i,v);
+	                	});
+	                })
+	                formSelects.data('departmentArray', 'local', {arr: arr});
+	                var idArray=[]
+	                for(var i=0;i<departmentArray.length;i++){
+	                	idArray[i]=departmentArray[i].id
+	                }
+	                formSelects.value('departmentArray',idArray);
+	                form.render('select');
+	            }
+	        }
+	    });
+	    var eSignFile=""
+	    //签名图片
+	var clipArea = new bjj.PhotoClip("#clipArea", {
+			size: [320, 135],// 截取框的宽和高组成的数组。默认值为[260,260]
+			outputSize: [320, 135], // 输出图像的宽和高组成的数组。默认值为[0,0]，表示输出图像原始大小   
+			//outputType: "jpg", // 指定输出图片的类型，可选 "jpg" 和 "png" 两种种类型，默认为 "jpg"
+			file: "#file", // 上传图片的<input type="file">控件的选择器或者DOM对象
+			view: "#view", // 显示截取后图像的容器的选择器或者DOM对象
+			ok: "#clipBtn", // 确认截图按钮的选择器或者DOM对象
+			loadStart: function() {
+				// 开始加载的回调函数。this指向 fileReader 对象，并将正在加载的 file 对象作为参数传入
+				$('.cover-wrap').fadeIn();
+				console.log("照片读取中");
+			},
+			loadComplete: function() {
+				 // 加载完成的回调函数。this指向图片对象，并将图片地址作为参数传入
+				console.log("照片读取完成");
+			},
+			//loadError: function(event) {}, // 加载失败的回调函数。this指向 fileReader 对象，并将错误事件的 event 对象作为参数传入
+			clipFinish: function(dataURL) {
+				 // 裁剪完成的回调函数。this指向图片对象，会将裁剪出的图像数据DataURL作为参数传入
+				$('.cover-wrap').fadeOut();
+				$('#view').css('background-size','100% 100%');
+				console.log(dataURL); //输出图像base64
+				 //var dataurl = canvas.toDataURL('image/png');base64图片数据
+				 var baseURL=dataURL.split(",")[1]
+				$.ajax({
+			        type: "POST",
+					url: "/modular_qualifications/uploadBase64File",
+					data:{
+						file:baseURL
+					},
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			            	eSignFile=msg.message.url
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    })
+			}
+		})
+		var $ = layui.$, active = {
+		    addRole: function(){//技术要求删除
+			    
+			}
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+		        type: "POST",
+		        url: "/modular_qualifications/personneledit?attachmentArray="+JSON.stringify(FileList)+"&eSignFile="+eSignFile,
+		        data: $("#addForm").serialize(),
+		        success: function (msg) {
+		            console.log(msg);
+		            if (msg.status =="ok") {
+		                alert("保存成功");
+		                //执行父级刷新
+		                window.location.href="/modular_qualifications/personnel"
+		            } else {
+		                alert(msg.message);
+		            }
+		        }
+		    });
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>
+
+<script>
+	var FileList =<%-attachmentArray%>
+	if(FileList!=null&&FileList!=[]){
+		
+	}else{
+		FileList=[]
+	}
+	console.log(FileList==null,FileList)
+	var GUID = WebUploader.Base.guid(); //当前页面是生成的GUID作为标示
+		console.log(GUID);
+		var uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				guid: GUID,
+				fileType: "standard"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		uploader.on('fileQueued', function(file) {uploader.upload()});
+		// 文件上传成功,合并文件。
+		uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "standard",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							File.fileName = data.message.key
+							File.fileUrl = data.message.url
+							FileList.push(File)
+							console.log(File)
+							console.log(FileList)
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(FileList)
+				File.fileName = fileNames
+				File.fileUrl = fileUrl
+				FileList.push(File)
+				console.log(File)
+				console.log(FileList)
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(FileList!= null&&FileList.length>0) {
+		console.log(FileList)
+		for(var i = 0; i < FileList.length; i++) {
+			var FileName = FileList[i].fileName
+			var FileUrl = encodeURIComponent(FileList[i].fileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		console.log(FileList)
+		$(obj).parent().remove()
+		for(var i = 0; i < FileList.length; i++) {
+			console.log(FileList[i].FileUrl)
+			if(FileList[i].fileUrl == decodeURIComponent(url)) {
+				FileList.splice(i, 1);
+			}
+		}
+	}
+</script>

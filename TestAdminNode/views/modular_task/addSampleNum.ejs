@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<style type="text/css">
+			.layui-col-xs4{
+				margin-bottom: 10px;
+			}
+			.sampleList,.selectedsample{
+				text-align: center;
+				width: 200px;
+				border: 1px solid #ddd;
+				height: 25px;
+				line-height: 25px;
+			}
+			.active{
+				background-color: #aaa;
+			}
+		</style>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<%if(sampleNumberArray.length>0){%>
+							<%for(var i=0;i<sampleNumberArray.length;i++){%>
+								<div class="layui-col-xs4 layui-col-sm4 layui-col-md3">
+									<div class="sampleList">
+										<%=sampleNumberArray[i]%>
+									</div>
+								</div>
+							<%}%>
+						<%}%>
+					</div>
+					<div class="layui-form-item selected">
+						已选：
+						
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<div class="layui-btn" data-type="confirm">确认</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var num=<%=num%>
+		$(".sampleList").click(function(){
+			if($(this).hasClass("active")){
+				$(this).removeClass("active")
+				var txt=$(this).text()
+				$(".selectedsample").each(function(i,v){
+					if($(v).text()==txt){
+						$(v).parent().remove()
+					}
+				})
+			}else{
+				$(this).addClass("active")
+				$(".selected").append('<div class="layui-inline"><div class="selectedsample">'+$(this).text()+'</div></div>')
+			}
+		})
+		layui.use('form', function(){
+			var form = layui.form
+			var $ = layui.$,
+				active = {
+					confirm: function() { //确认带回
+						var selectedsample=[]
+						$(".selectedsample").each(function(i,v){
+							selectedsample[i]=$(v).text().replace(/\s*/g,"")
+						})
+						console.log(selectedsample)
+						var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                		parent.getnode(selectedsample,num)
+                		parent.layer.close(index);
+					},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+</html>

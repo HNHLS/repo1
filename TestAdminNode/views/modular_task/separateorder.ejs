@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		/*数字框去除箭头*/
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+		 
+		input[type="number"] {
+		    -moz-appearance: textfield;
+		}
+		/*组件/层压件材料信息*/
+		.layui-tab-item .layui-form-label{
+			padding-top: 0px;
+		}
+		.synchro{
+			float: right;
+			height: 28px;
+		}
+		.sampleNum{
+			display: inline-block;
+		}
+		.selectedsample{
+			display: inline-block;
+			border: 1px solid #37a3dd;
+			padding:3px 7px;
+			border-radius: 5px;
+			margin-left: 5px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回</div>
+					<div class="layui-btn layui-btn-sm" data-type="collar"><i class="layui-icon layui-icon-slider"></i>测试排程</div>
+					<div class="layui-btn layui-btn-sm save" data-type="save"><i class="iconfont icon-baocun"></i>保存</div>
+				</div>
+				<div id="task">
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title"> 
+								样品信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>委托单号:</label>
+								<div class="layui-input-block">
+									<span><%=delegateNum%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品名称:</label>
+								<div class="layui-input-block">
+									<span><%=sampleName%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品编号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleNumber%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品型号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleModel%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品数量:</label>
+								<div class="layui-input-block">
+									<span><%=sampleCount%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品规格:</label>
+								<div class="layui-input-block">
+									<span><%=sampleSpecs%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>是否加急:</label>
+								<div class="layui-input-block">
+									<span><%=prior?'是':'否'%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>预计送样:</label>
+								<div class="layui-input-block">
+									<span><%=arriveDate%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title"> 
+								检测分单
+							</div>
+						</div>
+						<div class="table">
+							<div class="layui-btn-group">
+							  <div class="layui-btn layui-btn-sm" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>新增</div>
+							</div>
+							<table class="layui-table">
+							  <colgroup>
+							    <col width="150">
+							    <col width="150">
+							    <col width="200">
+							    <col>
+							  </colgroup>
+							  <thead>
+							    <tr>
+							      <th>序号</th>
+							      <th>分单号</th>
+							      <th width="70%">样品编号</th>
+							      <th>操作</th>
+							    </tr> 
+							  </thead>
+							  <tbody>
+							  	<%if(JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null')).length>0){%>
+							  		<%for(var i=0;i<JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null')).length;i++){%>
+							  			<tr>
+									      <td><%=JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null'))[i].sn%></td>
+									      <td><%=JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null'))[i].subTaskNum%></td>
+									      <td>
+									      	<span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span>
+									      	<div class="sampleNum">
+									      		<%for(var j=0;j<JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null'))[i].sampleNumberArray.length;j++){%>
+									      			<div class="selectedsample" name="selectedsample"><%=JSON.parse(decodeURIComponent(subTasks).replace(/("\w+":)(?=[},])/g, '$1null'))[i].sampleNumberArray[j]%><img src="/Images/gb_tb.png" onclick="delnum(this)" /></div>
+									      		<%}%>
+									      	</div>
+									      </td>
+									      <td>
+									      	<div class="layui-btn layui-btn-sm" onclick="delsep(this)">
+									      		删除
+									      	</div>
+									      </td>
+									    </tr>
+							  		<%}%>
+							  	<%}%>
+							  </tbody>
+							</table>  
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_task/taskmanagement", "任务管理", "任务列表","分单")
+		var delegateNum = "<%=delegateNum%>"
+		console.log("<%=delegateNum%>")
+		var subTasks=JSON.parse(decodeURIComponent("<%=subTasks%>").replace(/("\w+":)(?=[},])/g, '$1null'));
+		var subTasksLen=subTasks.length
+		var sampleNumber=decodeURIComponent("<%=sampleNumberArray%>")
+		var sampleNumberArray=sampleNumber.split(",")
+		var saveselected=[]
+		console.log(subTasks,subTasksLen,sampleNumberArray)
+		layui.use(['form', 'table','laydate','jquery'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			laydate.render({
+			   elem: '#completeDateLimit'
+			   ,trigger: 'click'
+			});
+			laydate.render({
+			   elem: '#arriveDate'
+			   ,trigger: 'click'
+			});
+			//删除选中的样品编号
+			window.delsep=function(obj){
+				console.log($(obj).siblings().eq(2))
+				// $(obj).parents("tr").remove()
+				$(obj).parent("td").siblings().eq(2).find(".selectedsample").each(function(i,v){
+					delnum($(v).find("img"))
+				})
+				$(obj).parents("tr").remove()
+			}
+			//获取添加样品页面
+			window.sampleNum=function(obj){
+				console.log($(obj).parents("tr").children().eq(0).text())
+				var num=$(obj).parents("tr").children().eq(0).text()
+				console.log("sampleNumberaeqwewewe",sampleNumberArray)
+				layer.open({
+					type: 2,
+					title:"添加样品",
+					area: ['800px', '400px'],
+					content: '/modular_task/addSampleNum?sampleNumberArray='+encodeURIComponent(JSON.stringify(sampleNumberArray))+'&num='+num
+				});
+			}
+			window.array_diff=function(a, b) { 
+				for(var i=0;i<b.length;i++){ 
+					for(var j=0;j<a.length;j++){ 
+						if(a[j]==b[i]){ 
+							a.splice(j,1); 
+							j=j-1; 
+						} 
+					} 
+				} 
+				return a; 
+			}
+			//去除样品数组中保存过的分单中的样品
+			for(var i=0;i<subTasks.length;i++){
+				var Array=subTasks[i].sampleNumberArray
+				for(j=0;j<Array.length;j++){
+					saveselected.push(Array[j])
+				}
+			}
+			console.log(sampleNumberArray,saveselected)
+			sampleNumberArray=array_diff(sampleNumberArray,saveselected)
+			console.log(sampleNumberArray)
+			window.delnum=function(obj){
+				$(obj).parents(".selectedsample").remove()
+				sampleNumberArray.push($(obj).parents(".selectedsample").text())
+				console.log(sampleNumberArray)
+			}
+			//带回添加样品页面选中的样品编号
+			window.getnode=function(arr,num){
+				console.log(arr)
+				$("tbody").find("tr").each(function(i,v){
+					if($(v).find("td").eq(0).text()==num){
+						for(var j=0;j<arr.length;j++){
+							$(v).find(".sampleNum").append('<div class="selectedsample" name="selectedsample">'+arr[j]+'<img src="/Images/gb_tb.png" onclick="delnum(this)" /></div>')
+						}
+					}
+				})
+				sampleNumberArray=array_diff(sampleNumberArray,arr)
+				console.log(sampleNumberArray)
+			}
+			var $ = layui.$,
+				active = {
+					addRole: function() { //新增分单
+						subTasksLen++;
+						$("tbody").append('<tr><td>'+subTasksLen+'</td><td>系统分配</td><td><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="sampleNum"></div></td><td><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div></td></tr>')
+					},
+					collar: function() { //指派他人
+						$.ajax({
+							type: "POST",
+							url: "/modular_task/confirmSeparate?delegateNum="+delegateNum,
+							success: function(msg) {
+								console.log(msg);
+								if(msg.status == "ok") {
+//									alert("保存成功");
+									//执行刷新
+									window.location.href="/modular_task/taskmanagement"
+								} else {
+									alert(msg.message);
+								}
+							}
+						});
+					},
+					save: function() { //保存
+						var obj={delegateNum:delegateNum}
+						var subTasks=[]
+						$(".sampleNum").each(function(i,o){
+							var arr=[]
+							var array={}
+							$(o).find(".selectedsample").each(function(j,v){
+								console.log($(v).text())
+								arr[j]=$(v).text()
+							})
+							console.log(arr)
+							var txt=$("tr").eq(i+1).find("td").eq(1).text()
+							array.subTaskNum=txt
+							array.sampleNumberArray=arr
+							subTasks.push(array)
+						})
+						obj.subTasks=subTasks
+						console.log(obj)
+						$.ajax({
+							type: "POST",
+							url: "/modular_task/separateSubTask?obj="+encodeURIComponent(JSON.stringify(obj)),
+							success: function(msg) {
+								console.log(msg);
+								if(msg.status == "ok") {
+									alert("保存成功");
+									//执行刷新
+									window.location.reload()
+								} else {
+									alert(msg.message);
+									window.location.reload()
+								}
+							}
+						});
+					},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+
+</html>

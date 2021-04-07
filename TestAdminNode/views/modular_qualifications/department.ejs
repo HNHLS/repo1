@@ -1,0 +1,237 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/jquery.jOrgChart.css" />
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 80%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+	</style>
+
+	<body>
+		<div class="cBody">
+			<div class="toolbtn">
+				<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+				<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo" data-type="addRole" ><i class="iconfont icon-baocun"></i>保存</button>
+			</div>
+			<div id="jOrg">
+				<div class="blueline">
+					<div class="title">
+						群组树形图
+					</div>
+				</div>
+				<div id='jOrgChart'></div>
+			</div>
+			<div id="tab">
+				<div class="mail">
+					<div class="">
+						<div class="blueline">
+							<div class="title">
+								邮箱号
+							</div>
+						</div>
+						<div class="layui-inline" style="width: 400px;">
+							<input type="hidden" name="id" value="" />
+							<input type="hidden" name="name" value="" />
+							<label class="layui-form-label"><span class="i">*</span>绑定邮箱号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" autocomplete="off" name="mail" id="mail" lay-verify="required">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="Personnellist">
+					<div class="">
+						<div class="blueline">
+							<div class="title">
+								人员列表
+							</div>
+						</div>
+						<!--<div class="layui-btn-group demoTable">
+						  <button class="layui-btn layui-btn-xs" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>新增</button>
+						  <button class="layui-btn layui-btn-xs" data-type="delRole"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
+						</div>-->
+						<table class="layui-hide" id="table" lay-filter="table"></table>
+						<shiro:hasRole name="superadmin">
+							<script type="text/html" id="doit2">
+								<a class="pre-admin-talents-removeTalentPlan layui-icon layui-icon-delete" lay-event="removeRow"></a>
+							</script>
+						</shiro:hasRole>
+					</div>
+				</div>
+			</div>
+		</div>
+		<% include ../layout/footer.ejs %>
+		<script src="/Scripts/jquery.jOrgChart.js" type="text/javascript" charset="utf-8"></script>
+	</body>
+	<script>
+		href("","资质管理","群组管理","")
+		$.ajax({
+			url: "/modular_qualifications/departmenttreelist",
+			type: 'GET',
+			dataType: 'JSON',
+			data: {
+				action: 'org_select'
+			},
+			success: function(result) {
+				console.log(result)
+				var data = []
+				data.push(result.message)
+				var showlist = $("<ul id='org' style='display:none'></ul>");
+				showall(data, showlist);
+				$("#jOrgChart").append(showlist);
+				$("#org").jOrgChart({
+					chartElement: '#jOrgChart', //指定在某个dom生成jorgchart
+					dragAndDrop: false //设置是否可拖动
+				});
+			}
+		});
+
+		function showall(menu_list, parent) {
+			console.log(menu_list)
+			$.each(menu_list, function(index, val) {
+				console.log(val)
+				if(val.list.length > 0) {
+					var li = $("<li></li>");
+					li.append("<a style='display: inline-block;width: 100%;' href='javascript:void(0)' onclick=getOrgId(this," + val.id + ",'" + val.email + "');>" + val.name + "</a>").append("<ul></ul>").appendTo(parent);
+					//递归显示
+					showall(val.list, $(li).children().eq(1));
+				} else {
+					$("<li></li>").append("<a style='display: inline-block;width: 100%;' href='javascript:void(0)' onclick=getOrgId(this," + val.id + ",'" + val.email + "');>" + val.name + "</a>").appendTo(parent);
+				}
+			});
+		}
+
+		function getOrgId(obj, id, email) {
+			console.log(id, email)
+			tableIns(id)
+			$("input[name=id]").val(id)
+			$("input[name=name]").val($(obj).text())
+			$("#mail").val(email)
+			$(".node").removeClass("select")
+			$(obj).parent(".node").addClass("select")
+		}
+		layui.use('table', function() {
+			var table = layui.table;
+			//展示已知数据
+			window.tableIns = function(id) {
+				$.ajax({
+					type: "get",
+					url: "/modular_qualifications/departmentlist?id="+id,
+					async: true,
+					success: function(res) {
+						console.log(res)
+						table.render({
+							elem: '#table',
+							data: res.message,
+							cols: [
+								[{checkbox: true},
+								{
+									field: 'number',
+									title: '工号',
+									align: 'center',
+								}, {
+									field: 'name',
+									title: '人员姓名',
+									align: 'center',
+								}, {
+									field: 'departmentName',
+									align: 'center',
+									title: '所属群组名称',
+								}]
+							],
+							text: {
+								none: '暂无相关数据！' //默认无数据
+							},
+						});
+					}
+				});
+			}
+			var $ = layui.$, active = {
+			    addRole: function(){ //获取选中数据
+			      	var id=$("input[name=id]").val()
+			      	var name=$("input[name=name]").val()
+			      	var email=$("#mail").val()
+			      	$.ajax({
+			      		type:"GET",
+			      		url:"/modular_qualifications/modify",
+			      		data:{
+			      			id:id,
+			      			name:name,
+			      			email:email
+			      		},
+			      		success:function(msg){
+			      			console.log(msg)
+			      			if(msg.status=="ok"){
+			      				alert(msg.message)
+								window.location.reload()
+							}else{
+								layer.msg(msg.message,{icon: 5,time:1000})
+							}
+			      		}
+			      	})
+			    }
+			};
+	  	$('.layui-btn').on('click', function(){
+		   var type = $(this).data('type');
+		   active[type] ? active[type].call(this) : '';
+		});
+		});
+	</script>
+
+</html>

@@ -1,0 +1,226 @@
+﻿<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<button class="layui-btn layui-btn-xs" id="infob" data-type="Import"><i class="iconfont icon-daoru1"></i>导入</button>
+			  <button class="layui-btn layui-btn-xs" data-type="Export"><i class="iconfont icon-daochu1"></i>导出</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","设备管理","期间核查","")
+		var nowuser="<%=nowuser%>"
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'approval'){
+			    window.location.href="/modular_equipment/Checksedit?id="+data.id+"&type=0"
+			}else if(obj.event ==="inform"){
+				window.location.href="/modular_equipment/Checksedit?id="+data.id+"&type=1"
+			}
+		});
+		
+		table.render({
+			elem: '#tab',
+			url: "/modular_equipment/Checkslist",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'equipment_no',
+					title: '设备编号',
+					align: 'center',
+				}, {
+					field: 'equipment_name',
+					align: 'center',
+					title: '设备名称',
+				},{
+					field: 'checkdate_peroid',
+					align: 'center',
+					title: '审核人/时间',
+					templet:function(d){
+						return d.firstname+'/'+d.firtdate
+					}
+				}, {
+					field: 'checkdate',
+					align: 'center',
+					title: '审批人/时间',
+					templet:function(d){
+						return d.sencondname+'/'+d.seconddate
+					}
+				},{
+					field: 'checkdate_peroid',
+					align: 'center',
+					title: '核查周期'
+				}, {
+					field: 'checkdatestr',
+					align: 'center',
+					title: '核查日期',
+				},  {
+					field: 'check_effective',
+					align: 'center',
+					title: '有效日期',
+				},{
+					field: 'check_inspectors',
+					align: 'center',
+					title: '核查人员',
+				},{
+					align: 'center',
+					title: '操作',
+					templet:function(d){
+						console.log(d.nowno==nowuser)
+						if(d.nowno==nowuser){
+							return '<a class="layui-btn layui-btn-xs" lay-event="approval">审批</a>'
+						}else{
+							return '<a class="layui-btn layui-btn-xs" lay-event="inform">查看</a>'
+						}
+					}
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": 0, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.totalCount, //解析数据长度
+		        "data": res.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+					name:keyword,
+					startDate:startDate,
+					endDate:endDate
+		        }
+		      });
+		    },    addRole: function(){ //获取选中数据
+		      layer.open({
+					type: 2,
+					title:"账号新增",
+					area: ['700px', '360px'],
+					content: '/modular_users/adminusersadd?id=0'
+				});
+		    }
+		    ,Import:function(){
+		    	layer.open({
+					type: 2,
+					title:"导入",
+					area: ['800px', '500px'],
+					content: '/modular_equipment/Import?type=2'
+				});
+		    }
+		    ,Export:function(){
+		    	$.ajax({
+	               	type:'post',
+	                url:'/modular_equipment/checksoutexcel?name='+$('#search').val(),
+	                success:function(data){
+						console.log(data)
+	                    if(data.status=="ok"){
+							window.open(data.message)
+//							layer.msg(data.message);
+						}
+	                },error:function(code){   
+	                    parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                }
+	            });
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            var checkStatus = table.checkStatus(obj.config.id);
+	            //获取选中数量
+	            var selectCount = checkStatus.data.length;
+				console.log(checkStatus,selectCount)
+	            if(selectCount == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                var ids=[];
+	                for(var i=0; i<selectCount; i++){
+	                    ids[i] = checkStatus.data[i].id;
+	                }
+					console.log(ids)
+	                $.ajax({
+	                    type:'post',
+	                    data:{"ids":ids},
+						dataType:"json",
+						traditional:true,
+	                    url:publicurl+'/admin/account/removeAccounts',
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   }
+		  };
+			// <%=global.equipment%>/equipmentchecks/checkpoi
+		  
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+	});
+</script>
+</html>

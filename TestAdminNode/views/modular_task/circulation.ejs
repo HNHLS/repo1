@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		/*表格*/
+		th{
+			width: 16.6%;
+		}
+		
+		@media screen and (min-width: 1920px) {
+			.print{
+				width: 1450px;
+				margin: auto;
+			}
+		}
+		@media screen and (max-width: 1920px) {
+			.print{
+				width: 1250px;
+				margin: auto;
+			}
+		}
+	</style>
+	<body>
+		<!--打印内容开始-->
+		<div class="cBody">
+			<div class="toolbtn" id="otherpho">
+				<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回</div>
+				<div class="layui-btn layui-btn-sm" data-type="collar"><i class="iconfont icon-print"></i>打印流转单</div>
+			</div>
+			<div class="print" id='printdivaa'>
+				<img src="/Images/logo2.png" style="position: relative;top: 15px;"/>
+				<div class="head" style="text-align: center;border-bottom: 2px solid #000;font-size: 10px;">
+					天合光能股份有限公司光伏产品检测中心
+				</div>
+				<h3 style="font-size: 18px;color: #000000;font-weight: 600;text-align: center;margin: 10px 0;">
+					样品检测流转单
+				</h3>
+			    <table border="2" width="100%" style="border-collapse:collapse;table-layout:fixed">
+					<thead>
+						<tr>
+							<th width="100">检测委托单号</th>
+							<th width="100"><%=delegateNum%></th>
+							<th width="100">申请人/部门</th>
+							<th width="100"><%=proposerAndDepartment%></th>
+							<th width="100">项目负责人</th>
+							<th width="100"><%=manager%></th>
+						</tr>
+					</thead>
+					<tr>
+					   	<td>样品型号</td>
+					   	<td><%=sampleModel%></td>
+					   	<td>样品名称</td>
+					   	<td><%=sampleName%></td>
+					   	<td><p>样品规格</p>长[mm]*宽[mm]*高[mm]</td>
+					   	<td><%=sampleSpecs%></td>
+					</tr>
+					<tr>
+					   	<td>最大系统电压[V]</td>
+					   	<td><%=maxVoltage%></td>
+					   	<td>标片SN</td>
+					   	<td><%=sn%></td>
+					   	<td>样品架位置</td>
+					   	<td><%=storageNum%></td>
+					</tr>
+					<tr>
+					   	<td>检测依据</td>
+					   	<td colspan="2" style="width: 300px;"><%=testStandard%></td>
+					   	<td>判定依据</td>
+					   	<td colspan="2"><%=judgeStandard%></td>
+					</tr>
+					<tr>
+					   	<td>检测样品序列号</td>
+					   	<td colspan="5"><%=sampleNumber%></td>
+					</tr>
+					<tr>
+					   	<td><p>电源柜编号</p><span>注:在右边空白处填入样品<br />编号与对应的电源柜编号</span></td>
+					   	<td colspan="5"></td>
+					</tr>
+					<tr>
+					   	<th>序号</th>
+						<th colspan="2">检测项目</th>
+						<th>测试条款</th>
+					   	<th>状态</th>
+					   	<th>备注</th>
+					</tr>
+					<%for(var i=0;i<list.length;i++){%>
+						<tr>
+							<td><%=list[i].sn%></td>
+							<td colspan="2"><%=list[i].testItemName%></td>
+							<td><%=list[i].testClause%></td>
+							<td>
+								<span style="display: inline-block;height: 11px;width: 11px;border: 2px solid #333;margin-right: 3px;"></span>待检
+								<span style="display: inline-block;height: 11px;width: 11px;border: 2px solid #333;margin-right: 3px;"></span>检毕
+							</td>
+							<td><%=list[i].extra%></td>
+						</tr>
+					<%}%>
+				</table>
+			</div>
+		</div>
+		<!--打印内容结束-->
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script src="/Scripts/LodopFuncs.js" type="text/javascript" charset="utf-8"></script>
+	<object  id="LODOP_OB" classid="clsid:2105C259-1E0C-4534-8141-A753534CB4CA" width=0 height=0>
+		<embed id="LODOP_EM" type="application/x-print-lodop" width=0 height=0></embed>
+	</object>
+	<script>
+		href("/modular_task/scheduling", "任务管理", "测试排程","打印流转单")
+		$("table td,th").css("text-align","center")
+		$("table td,th").css("padding","9px 5px")
+		$("table td,th").css("border","2px solid #000000")
+		$("table td,th").css("font-size","14px")
+		$("table td,th").css("color","#000000")
+		var subTaskNumber="<%=subTaskNumber%>"
+		layui.use(['form', 'table','laydate','jquery'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			var $ = layui.$,
+				active = {
+					collar: function() { //保存
+						var userAgent = navigator.userAgent.toLowerCase(); //取得浏览器的userAgent字符串
+						if (userAgent.indexOf("trident") > -1){
+							alert("请使用google或者360浏览器打印");
+							return false;
+						}else if(userAgent.indexOf('msie')>-1){ 
+							var onlyChoseAlert = simpleAlert({
+					           "content":"请使用Google或者360浏览器打印",
+					           "buttons":{
+					               "确定":function () {
+					                   onlyChoseAlert.close();
+					               }
+					           }
+					       })
+							alert("请使用google或者360浏览器打印");
+							return false;
+						}else{//其它浏览器使用lodop
+							//此处id换为你自己的id
+							
+							var printData = document.getElementById("printdivaa").innerHTML; //获得 div 里的所有 html 数据
+							// window.print();
+							var LODOP = getLodop(document.getElementById('LODOP_OB'), document.getElementById('LODOP_EM'));
+							LODOP.PRINT_INIT("printDelegateTask");
+							var bodyStyle = '<style>th,td{word-break:break-all}</style>';
+							LODOP.ADD_PRINT_HTM(20, "5%", "90%", '85%',bodyStyle+printData);
+							LODOP.SET_PRINT_STYLEA(0, "Vorient", 3);
+							LODOP.PREVIEW();
+							if (LODOP.CVERSION) CLODOP.On_Return = function (TaskID, Value) {
+								//打印完成回调
+							};
+							//打印结束后，放开隐藏内容
+							
+						}
+					},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+
+</html>

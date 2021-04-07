@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+	<script src="/Scripts/LodopFuncs.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css">
+		.blockleft {
+			width: 57%;
+			float: left;
+		}
+
+		.blockright {
+			width: 42%;
+			float: right;
+		}
+
+		.layui-form {
+			margin-top: 20px;
+		}
+	</style>
+
+	<body>
+		<div class="cBody">
+			<div class="blockleft">
+				<div class="layui-btn-group demoTable">
+					<button class="layui-btn layui-btn-sm" data-type="issued"><i
+							class="iconfont icon-xiafa"></i>批量下发</button>
+					<%if(chosen=="可靠性"){%>
+						<button class="layui-btn layui-btn-xs" data-type="code"><i
+								class="iconfont icon-tiaoxingma"></i>打印条形码</button>
+						<%}else{%>
+							<button class="layui-btn layui-btn-xs" data-type="chemicalcode"><i
+									class="iconfont icon-tiaoxingma"></i>打印条形码</button>
+							<%}%>
+				</div>
+				<div class="toolbar">
+					<div class="layui-inline">
+						<input type="text" class="layui-input" id="date" autocomplete="off" placeholder=" - ">
+					</div>
+					<div class="layui-inline">
+						<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索"
+							value="<%=keyword%>">
+					</div>
+					<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+				</div>
+				<table class="layui-hide" id="tab" lay-filter="tb"></table>
+			</div>
+			<div class="blockright">
+				<div class="demoTable" style="height: 23px;display: inline-block;">
+					<%if(chosen=="可靠性"){%>
+						<button class="layui-btn layui-btn-xs" data-type="subcode"><i
+								class="iconfont icon-tiaoxingma"></i>打印条形码</button>
+						<%}else{%>
+							<button class="layui-btn layui-btn-xs" data-type="subchemicalcode"><i
+									class="iconfont icon-tiaoxingma"></i>打印条形码</button>
+							<%}%>
+				</div>
+
+				<table class="layui-hide" id="tab1" lay-filter="tb1"></table>
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+		<script>
+			href("", "样品管理", "样品列表", "")
+			var LODOP; //声明为全局变量 
+			var keyword
+			var startDate = ""
+			var endDate = ""
+			//角色下拉
+			layui.use(['form', 'laydate', 'table'], function () {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				// 监听工具条
+				window.slicetestSequence = function (str) {
+					var pre = ""
+					if (str.length > 15) {
+						pre = str.slice(0, 15) + '\n'
+						testSequencestr += pre
+						console.log(str.slice(15))
+						slicetestSequence(str.slice(15))
+					} else {
+						testSequencestr += str
+						console.log(testSequencestr)
+					}
+				}
+				// 监听工具条
+				table.on('tool(tb)', function (obj) {
+					var data = obj.data;
+					console.log(data)
+					var page = $(obj.tr).parents(".layui-table-view").find(".layui-laypage-curr em:not(.layui-laypage-em)").text()
+					subpage = page
+					var keyword = $("#search").val()
+					//console.log(obj)
+					if (obj.event === 'handle') {
+						window.location.href = '/modular_sample/samplingedit?delegateNum=' + data.delegateNum + '&page=' + page + '&keyword=' + keyword + '&startDate=' + startDate + '&endDate=' + endDate
+					} else if (obj.event === 'print') {
+						window.location.href = '/modular_sample/QRcode?delegateNum=' + data.delegateNum + '&page=' + page + '&keyword=' + keyword + '&startDate=' + startDate + '&endDate=' + endDate
+					}
+					//  else if (obj.event == "issued") {
+					// 	$.ajax({
+					// 		type: "get",
+					// 		url: "/modular_sample/notificationUseSample?delegateNum=" + data.delegateNum,
+					// 		async: true,
+					// 		success: function (res) {
+					// 			console.log(res)
+					// 			if (res.status == "ok") {
+					// 				layer.msg(res.message, { icon: 1, time: 2000 })
+					// 				table.reload('tabReload', {
+					// 					page: {
+					// 						curr: 1 //重新从第 1 页开始
+					// 					}
+					// 					, where: {
+					// 					}
+					// 				});
+					// 			} else {
+					// 				layer.msg(res.message, { icon: 2, time: 2000 })
+					// 			}
+					// 		}, error: function (code) {
+					// 			parent.layer.msg('操作失败!', { icon: 5, time: 1000 });
+					// 		}
+					// 	});
+					// } 
+					else if (obj.event === "receive") {
+						layer.open({
+							type: 2,
+							title: "领样",
+							area: ["60%", "80%"],
+							content: "/modular_sample/fetchSample?delegateNum=" + data.delegateNum
+						})
+					}
+				});
+				table.on('row(tb)', function (obj) {
+					var data = obj.data;
+					var that = obj.tr;
+					$(that).siblings().css("background-color", "white");
+					$(that).css("background-color", "#ddd");
+					Progress(data.delegateNum)
+					return bindLayuiTableRowClick(obj);
+				});
+				window.tablereload = function (page, keyword, startDate, endDate) {
+					table.render({
+						elem: '#tab',
+						url: "/modular_sample/samplelist?keyword=" + keyword + "&startDate=" + startDate + "&endDate=" + endDate,
+						cellMinWidth: 10,
+						cols: [
+							[{ checkbox: true },
+							{
+								field: 'delegateNum',
+								title: '委托单号',
+								align: 'center',
+								width: '15%'
+							}, {
+								field: 'testProj',
+								align: 'center',
+								title: '检测项目',
+							}, {
+								field: 'sampleNum',
+								align: 'center',
+								title: '样品编号'
+							},
+							// {
+							// 	field: 'sampleCount',
+							// 	align: 'center',
+							// 	title: '样品数量'
+							// }, {
+							// 	field: 'storageNum',
+							// 	align: 'center',
+							// 	title: '库位编号',
+							// }, {
+							// 	field: 'delegator',
+							// 	align: 'center',
+							// 	title: '委托人',
+							// }, {
+							// 	field: 'delegatorOrg',
+							// 	align: 'center',
+							// 	title: '委托单位',
+							// }, {
+							// 	field: 'arriveWay',
+							// 	align: 'center',
+							// 	title: '来样方式',
+							// }, {
+							// 	field: 'projFrom',
+							// 	align: 'center',
+							// 	title: '项目来源',
+							// },
+							{
+								field: 'applyDate',
+								align: 'center',
+								title: '申请时间'
+							}, {
+								field: 'manager',
+								align: 'center',
+								title: '项目工程师',
+								width: '12%'
+							}, {
+								field: 'state',
+								align: 'center',
+								title: '状态',
+								width: '10%'
+							}, {
+								align: 'center',
+								title: '操作',
+								width: '22%',
+								templet: function (d) {
+									//console.log(d)
+									var str = ""
+
+									if (d.passState == "否") {
+										str += '<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a>'
+									}
+									if (d.notifyState == "是") {
+										str += '<a class="layui-btn layui-btn-xs" lay-event="receive">领样</a>'
+									}
+									if (d.printState == "是") {
+										str += '<a class="layui-btn layui-btn-xs" lay-event="print">打印</a>'
+									}
+									//console.log(str)
+									return str
+								}
+							}]
+						],
+						initSort: { //时间排序
+							field: 'applyDate',
+							type: 'desc'
+
+						},
+						done: function (res, curr, count) { //领样颜色
+							var that = this.elem.next();
+							res.data.forEach(function (item, index) {
+								if (item.state == "待领样") {
+									var tr = that.find(".layui-table-box tbody tr[data-index='" + index + "'] td[data-key='1-0-6']");
+									tr.css("color", "#FF5722");
+								} else if (item.state == "已领样") {
+									var tr = that.find(".layui-table-box tbody tr[data-index='" + index + "'] td[data-key='1-0-6']");
+									tr.css("color", "#66CC99");
+								}
+							})
+						},
+						id: 'tabReload',
+						page: {
+							curr: page
+						},
+						response: {
+							statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+						},
+						parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+							console.log(res)
+							return {
+								"code": res.status, //解析接口状态
+								"msg": res.message, //解析提示文本
+								"count": res.message.total, //解析数据长度
+								"data": res.message.data //解析数据列表
+							};
+						},
+						text: {
+							none: '暂无相关数据！'//默认无数据
+						},
+					});
+				}
+				tablereload('<%=page%>', '<%=keyword%>', '<%=startDate%>', '<%=endDate%>')
+
+				// 监听分单工具条
+				table.on('tool(tb1)', function (obj) {
+					var data = obj.data;
+					//console.log(data)
+					var page = $(".layui-laypage-em").next().html();
+					var keyword = $("#search").val()
+					//console.log(obj)
+					console.log(page)
+					if (obj.event === 'handle1') {
+						window.location.href = '/modular_sample/subsamplingedit?subTaskNumber=' + data.subTaskNumber + '&delegateNum=' + data.delegateNum + '&page=' + page + '&keyword=' + keyword + '&startDate=' + startDate + '&endDate=' + endDate
+					} else if (obj.event === 'print1') {
+						window.location.href = '/modular_sample/subQRcode?subTaskNumber=' + data.subTaskNumber + '&delegateNum=' + data.delegateNum + '&page=' + page + '&keyword=' + keyword + '&startDate=' + startDate + '&endDate=' + endDate
+					} else if (obj.event === "receive1") {
+						console.log(data.delegateNum)
+						console.log(data.subTaskNumber)
+						layer.open({
+							type: 2,
+							title: "领样",
+							area: ["60%", "80%"],
+							content: "/modular_sample/subFetchSample?delegateNum=" + data.delegateNum + "&subTaskNumber=" + data.subTaskNumber
+						})
+					}
+				});
+
+				window.Progress = function (delegateNum) {
+					$.ajax({
+						type: "get",
+						url: "/modular_sample/listSubTaskUnderTask?delegateNum=" + delegateNum,
+						async: true,
+						success: function (res) {
+							console.log(res)
+							table.render({
+								elem: '#tab1',
+								data: res.message.data,
+								page: true,
+								cols: [
+									[{ checkbox: true }, {
+										field: 'subTaskNumber',
+										align: 'center',
+										title: '分单号',
+										width: '16%',
+									}, {
+										field: 'sampleNum',
+										align: 'center',
+										title: '样品编号',
+										width: '14%',
+									}, {
+										field: 'sampleCount',
+										align: 'center',
+										title: '样品数量',
+										width: '14%',
+									}, {
+										field: 'storageNum',
+										align: 'center',
+										title: '库位编号',
+										width: '13%',
+									}, {
+										field: 'state',
+										align: 'center',
+										title: '状态',
+										width: '14%',
+									}, {
+										title: '操作',
+										width: '25%',
+										templet: function (d) {
+											//console.log(d)
+											var str = ""
+											if (d.passState == "否") {
+												str += '<a class="layui-btn layui-btn-xs" lay-event="handle1">办理</a>'
+											}
+											if (d.notifyState == "是") {
+												str += '<a class="layui-btn layui-btn-xs" lay-event="receive1">领样</a>'
+											}
+											if (d.printState == "是") {
+												str += '<a class="layui-btn layui-btn-xs" lay-event="print1">打印</a>'
+											}
+											//console.log(str)
+											return str
+										}
+									}
+									]
+								],
+								id: 'tabReload1',
+								text: {
+									none: '暂无相关数据！' //默认无数据
+								},
+							});
+						}
+					});
+				}
+
+				laydate.render({
+					elem: '#date'
+					, range: true
+					, trigger: 'click'
+					, done: function (value, date) {
+						//得到日期生成的值，如：2017-08-18
+						console.log(value.split(" - "))
+						startDate = value.split(" - ")[0]
+						endDate = value.split(" - ")[1]
+						console.log(startDate, endDate)
+					}
+				});//日期范围
+				var ids = []
+				var delegateNum = []
+				var sids = []
+				var subTaskNumber = []
+				table.on('checkbox(tb)', function (obj) {
+					ids = []
+					var checkStatus = table.checkStatus('tabReload')
+						, data = checkStatus.data;
+					console.log(data)
+					for (var i = 0; i < data.length; i++) {
+						ids[i] = data[i].id
+						delegateNum[i] = data[i].delegateNum
+					}
+					console.log(ids, delegateNum)
+				});
+				table.on('checkbox(tb1)', function (obj) {
+					ids = []
+					var checkStatus = table.checkStatus('tabReload1')
+						, data = checkStatus.data;
+					console.log(data)
+					for (var i = 0; i < data.length; i++) {
+						ids[i] = data[i].id
+						subTaskNumber[i] = data[i].subTaskNumber
+					}
+					console.log(ids, subTaskNumber)
+				});
+				var $ = layui.$, active = {
+					reload: function () {
+						keyword = $('#search').val();
+						//执行重载
+						//   table.reload('tabReload', {
+						//     page: {
+						//       curr: 1 //重新从第 1 页开始
+						//     }
+						//     ,where: {
+						//     	startDate: startDate,
+						// 		keyword:keyword,
+						// 		endDate:endDate
+						//     }
+						//   });
+						tablereload(1, keyword, startDate, endDate)
+					},
+					chemicalcode: function () {
+						//获取选中状态            
+						if (ids.length == 0) {
+							layer.msg('批量打印至少选中一项数据', function () { });
+							return false;
+						}
+						$.ajax({
+							type: "GET",
+							url: "/modular_sample/getSubTaskPrint?delegateNum=" + delegateNum,
+							success: function (msg) {
+								var data = msg.message
+								console.log(data);
+								if (msg.status == "ok") {
+
+									LODOP = getLodop();
+									//内容
+									LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+									for (var i = 0; i < data.length; i++) {
+										LODOP.NewPage();
+										if (data[i].delegateNum) {
+
+											LODOP.SET_PRINT_STYLE("FontSize", 5);
+											LODOP.SET_PRINT_STYLE("Bold", 1);
+											LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data[i].delegateNum)
+											LODOP.ADD_PRINT_TEXT("1mm", "35mm", '6cm', "20mm", "检测项目:" + data[i].testProj);
+										} else {
+											LODOP.SET_PRINT_STYLE("FontSize", 5);
+											LODOP.SET_PRINT_STYLE("Bold", 1);
+											LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data[i].subTaskNumber)
+											LODOP.ADD_PRINT_TEXT("4mm", "38mm", '6cm', "20mm", "测试项:" + data[i].printTestItemDesc.slice(0, 6) + '\n' + data[i].printTestItemDesc.slice(6));
+											//									LODOP.SET_PRINT_STYLE("Bold", 0);
+											LODOP.ADD_PRINT_TEXT("1mm", "38mm", '6cm', "20mm", "样品数量:" + data[i].sampleAmount);
+										}
+									}
+									LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+									LODOP.PREVIEW();
+								}
+							}
+						});
+
+					}
+					, code: function () {
+						//获取选中状态            
+						if (ids.length == 0) {
+							layer.msg('批量打印至少选中一项数据', function () { });
+							return false;
+						}
+						$.ajax({
+							type: "GET",
+							url: "/modular_sample/getSamplePrint?delegateNumArray=" + delegateNum,
+							success: function (msg) {
+								var data = msg.message
+								console.log(data);
+
+								LODOP = getLodop();
+								//内容
+								LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+								for (var i = 0; i < data.length; i++) {
+									testSequencestr = ""
+									slicetestSequence("测试序列:" + data[i].testSequence)
+									LODOP.NewPage();
+									LODOP.ADD_PRINT_BARCODE("1mm", "5mm", "15mm", "15mm", "EAN128A", data[i].uniqueNumber)
+									LODOP.SET_PRINT_STYLE("FontSize", 5);
+									LODOP.SET_PRINT_STYLE("Bold", 1);
+									LODOP.ADD_PRINT_TEXT("1mm", "30mm", '6cm', 20, "委托单号:" + data[i].delegateNum);
+									LODOP.SET_PRINT_STYLE("Bold", 0);
+									LODOP.ADD_PRINT_TEXT("4mm", "30mm", '6cm', 20, "样品编号:" + data[i].sampleNumber);
+									LODOP.ADD_PRINT_TEXT("7mm", "30mm", '6cm', 20, testSequencestr);
+								}
+								LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+								LODOP.PREVIEW();
+							}
+						});
+					},
+					subchemicalcode: function () {
+						//获取选中状态            
+						if (ids.length == 0) {
+							layer.msg('批量打印至少选中一项数据', function () { });
+							return false;
+						}
+						$.ajax({
+							type: "GET",
+							url: "/modular_sample/getSubTaskPrint?subTaskNumberArray=" + subTaskNumber,
+							success: function (msg) {
+								var data = msg.message
+								console.log(data);
+								if (msg.status == "ok") {
+
+									LODOP = getLodop();
+									//内容
+									LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+									for (var i = 0; i < data.length; i++) {
+										LODOP.NewPage();
+										if (data[i].delegateNum) {
+
+											LODOP.SET_PRINT_STYLE("FontSize", 5);
+											LODOP.SET_PRINT_STYLE("Bold", 1);
+											LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data[i].delegateNum)
+											LODOP.ADD_PRINT_TEXT("1mm", "35mm", '6cm', "20mm", "检测项目:" + data[i].testProj);
+										} else {
+											LODOP.SET_PRINT_STYLE("FontSize", 5);
+											LODOP.SET_PRINT_STYLE("Bold", 1);
+											LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data[i].subTaskNumber)
+											LODOP.ADD_PRINT_TEXT("4mm", "38mm", '6cm', "20mm", "测试项:" + data[i].printTestItemDesc.slice(0, 6) + '\n' + data[i].printTestItemDesc.slice(6));
+											//									LODOP.SET_PRINT_STYLE("Bold", 0);
+											LODOP.ADD_PRINT_TEXT("1mm", "38mm", '6cm', "20mm", "样品数量:" + data[i].sampleAmount);
+										}
+									}
+									LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+									LODOP.PREVIEW();
+								}
+							}
+						});
+
+					}
+					, subcode: function () {
+						//获取选中状态            
+						if (ids.length == 0) {
+							layer.msg('批量打印至少选中一项数据', function () { });
+							return false;
+						}
+						$.ajax({
+							type: "GET",
+							url: "/modular_sample/getSamplePrint?subTaskNumberArray=" + subTaskNumber,
+							success: function (msg) {
+								var data = msg.message
+								console.log(data);
+
+								LODOP = getLodop();
+								//内容
+								LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+								for (var i = 0; i < data.length; i++) {
+									testSequencestr = ""
+									slicetestSequence("测试序列:" + data[i].testSequence)
+									LODOP.NewPage();
+									LODOP.ADD_PRINT_BARCODE("1mm", "5mm", "15mm", "15mm", "EAN128A", data[i].uniqueNumber)
+									LODOP.SET_PRINT_STYLE("FontSize", 5);
+									LODOP.SET_PRINT_STYLE("Bold", 1);
+									LODOP.ADD_PRINT_TEXT("1mm", "30mm", '6cm', 20, "委托单号:" + data[i].delegateNum);
+									LODOP.SET_PRINT_STYLE("Bold", 0);
+									LODOP.ADD_PRINT_TEXT("4mm", "30mm", '6cm', 20, "样品编号:" + data[i].sampleNumber);
+									LODOP.ADD_PRINT_TEXT("7mm", "30mm", '6cm', 20, testSequencestr);
+								}
+								LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+								LODOP.PREVIEW();
+							}
+						});
+					}, issued: function () {
+						if (delegateNum.length == 0) {
+							layer.msg('批量下发至少选中一项数据', function () { });
+							return false;
+						}
+						$.ajax({
+							type: "post",
+							url: "/modular_sample/notificationUseSample?delegateNumArray=" + JSON.stringify(delegateNum),
+							async: true,
+							success: function (res) {
+								console.log(res)
+								if (res.status == "ok") {
+									layer.msg(res.message, { icon: 1, time: 2000 })
+									table.reload('tabReload', {
+										page: {
+											curr: 1 //重新从第 1 页开始
+										}
+										, where: {
+										}
+									});
+								} else {
+									layer.msg(res.message, { icon: 2, time: 2000 })
+								}
+							}, error: function (code) {
+								parent.layer.msg('操作失败!', { icon: 5, time: 1000 });
+							}
+						});
+					}
+				};
+
+				$('.layui-btn').on('click', function () {
+					var type = $(this).data('type');
+					active[type] ? active[type].call(this) : '';
+				});
+
+			});
+		</script>
+
+</html>

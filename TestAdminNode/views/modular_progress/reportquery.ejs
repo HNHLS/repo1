@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-sm" data-type="Reminder"><i class="iconfont icon-iconplsd"></i>批量催单</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索" value="<%=keyword%>">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+				<button class="layui-btn layui-btn-sm" data-type="advanced">高级搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="print">查看</a>
+			</script>
+		</shiro:hasRole>
+		<div id="searchModel" class="layui-form" style="display: none;">
+			<div class="layui-form">
+				<div class="layui-form-item" style="margin-top: 10px;">
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单号:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelDelegateNumber" placeholder="请输入委托单号">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							测试项目:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelTestItemDesc" placeholder="请输入测试项目">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							报告编号:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelReportNumber" placeholder="请输入报告编号">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托人:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProposer" placeholder="请输入申请人">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单位:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProposerDepartment" placeholder="请输入申请部门">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							盖章情况:
+						</label>
+						<div class="layui-input-inline">
+							<select id="modelSignSituation">
+								<option value="">请选择盖章类型</option>
+								<option value="cnas">cnas</option>
+								<option value="cma">cma</option>
+								<option value="testSpec">测试专用章</option>
+								<option value="none">未盖章</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							项目来源:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProjFrom" placeholder="请输入项目来源">
+						</div>
+					</div>
+					
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托日期:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelCreateTime" placeholder="请选择委托日期">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							项目工程师:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProjectManager" placeholder="请输入项目工程师">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							签发日期:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelIssueDate" placeholder="请选择签发日期">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单状态:
+						</label>
+						<div class="layui-input-inline">
+							<select id="modelState">
+								<option value="">请选择委托单状态</option>
+								<option value="BPM导入等待指派">BPM导入等待指派</option>
+								<option value="通知领样">通知领样</option>
+								<option value="编制流转单">编制流转单</option>
+								<option value="编制报告">编制报告</option>
+								<option value="排程">排程</option>
+								<option value="打印条码">打印条码</option>
+								<option value="样品收样">样品收样</option>
+								<option value="报告审核">报告审核</option>
+								<option value="报告签发">报告签发</option>
+								<option value="委托下单">委托下单</option>
+								<option value="检测开始">检测开始</option>
+								<option value="委托中止">委托中止</option>
+								<option value="任务完成">任务完成</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="box-area" style="margin: 0;">
+					<div class="box-area-body">
+						<div class="layui-form-item layui-row layui-col-space20" style="margin: 0;">
+							<div class="layui-inline layui-col-xs12">
+								<div class="layui-input-inline" style="width: 100%;text-align: center;">
+									<button class="layui-btn layui-btn-primary" id="cancelModelBtn" data-type="cancelModel">取消</button>
+									<button class="layui-btn layui-btn-custom-blue" id="advanceSearchBtn" data-type="advanceSearch">查询</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		var keyword
+		var startDate='<%=startDate%>'
+		var endDate='<%=endDate%>'
+		var page
+		href("","进度总览","报告查询","")
+		layui.extend({
+			hurryUp: '/progress/hurryUp',
+			bindKey: '/bindKey/bindKey'
+		})
+		//角色下拉
+		layui.use(['form', 'laydate','table','hurryUp','bindKey'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+			var hurryUp=layui.hurryUp;
+			var bindKey = layui.bindKey;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			page = $(obj.tr).parents(".layui-table-view").find(".layui-laypage-curr em:not(.layui-laypage-em)").text()
+			keyword = $("#search").val()
+			    //console.log(obj)
+			if (obj.event === 'print') {
+				window.location.href = "/modular_progress/report?delegateNum=" + data.delegateNum + '&page=' + page + '&keyword=' + keyword + '&startDate=' + startDate + '&endDate=' + endDate+ '&url=' + encodeURIComponent('/modular_progress/reportquery');
+			}
+		});
+		bindLayuiDefaultTableRowClick(table);
+		window.tablereload = function (page, keyword, startDate, endDate) {
+				table.render({
+					elem: '#tab',
+					url: "/modular_progress/listTaskReport?keyword=" + keyword + "&startDate=" + startDate + "&endDate=" + endDate,
+					cellMinWidth: 10,
+					even:true,
+					cols: [
+						[{checkbox: true},
+							{
+								field: 'sn',
+								align: 'center',
+								title: '序号',
+								width: '5%'
+							}, {
+							field: 'delegateNum',
+							align: 'center',
+							title: '委托单号',
+						}, {
+							field: 'testProj',
+							align: 'center',
+							title: '测试项目',
+						}, {
+							field: 'reportNumber',
+							align: 'center',
+							title: '报告编号',
+						}, {
+							field: 'proposer',
+							align: 'center',
+							title: '委托人',
+							width: '6%'
+						}, {
+							field: 'proposerDepartment',
+							align: 'center',
+							title: '委托单位',
+						}, {
+							field: 'signSituation',
+							align: 'center',
+							title: '盖章情况',
+						}, {
+							field: 'projFrom',
+							align: 'center',
+							title: '项目来源',
+						}, {
+							field: 'createTime',
+							align: 'center',
+							title: '委托日期',
+						}, {
+							field: 'projectManager',
+							align: 'center',
+							title: '项目工程师',
+						}, {
+							field: 'issueDate',
+							align: 'center',
+							title: '签发日期'
+						}, {
+							field: 'state',
+							align: 'center',
+							title: '状态',
+						}, {
+							align: 'center',
+							title: '操作',
+							width: '5%',
+							toolbar: '#doit'
+						}]
+					],
+					id: 'tabReload',
+					page: {
+						curr:page
+					},
+					response: {
+						statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+					},
+					parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+						console.log(res)
+						return {
+							"code": res.status, //解析接口状态
+							"msg": res.message, //解析提示文本
+							"count": res.message.total, //解析数据长度
+							"data": res.message.data //解析数据列表
+						};
+					},
+					text: {
+						none: '暂无相关数据！'//默认无数据
+					},
+				});
+		}
+		tablereload('<%=page%>', '<%=keyword%>', '<%=startDate%>', '<%=endDate%>')
+		var modelIndex = null;
+		var createTimeStart = '';
+		var createTimeEnd = '';
+		var IssueDateStart = '';
+		var IssueDateEnd = '';
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+			,value:'<%=startDate%> - <%=endDate%>'
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		laydate.render({
+		   elem: '#modelCreateTime'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      createTimeStart=value.split(" - ")[0]
+		      createTimeEnd=value.split(" - ")[1]
+		      console.log(createTimeStart,createTimeEnd)
+		    }
+		});//日期范围
+		laydate.render({
+			elem: '#modelIssueDate'
+			,range: true
+			,trigger: 'click'
+			,done: function(value, date) {
+				console.log(value.split(" - "));
+		    IssueDateStart=value.split(" - ")[0];
+		    IssueDateEnd=value.split(" - ")[1];
+			}
+		});
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var data = table.checkStatus('tabReload').data
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].delegateNum
+		    }
+			console.log(data)
+		});
+		var $ = layui.$, active = {
+			Reminder: function (data) {
+				return hurryUp.batchRequestHurryUp(table,ids,'/modular_progress/hurryUp');
+			},
+		    reload: function(data){
+				keyword = $('#search').val();
+		      //执行重载
+				tablereload(1, keyword, startDate, endDate);
+				},
+				advanced: function(){ // 高级搜索
+					modelIndex = layer.open({
+						type: 1,
+						title:"高级检索",
+						area: ['80%', '80%'],
+						content: $('#searchModel')
+					});
+				},
+				advanceSearch: function(){
+					console.log("advanced search.");
+					console.log("date field:" + $("#modelCreateTime").val());
+					console.log("date field:" + $("#modelIssueDate").val());
+					if ($("#modelCreateTime").val() == "") {
+						createTimeStart = "";
+						createTimeEnd = "";
+					}
+					if ($("#modelIssueDate").val() == "") {
+						IssueDateStart = "";
+						IssueDateEnd = "";
+					}
+					delegateNumber = $('#modelDelegateNumber').val(); //委托单号
+					testItemDesc = $('#modelTestItemDesc').val(); //测试项目
+					reportNumber = $('#modelReportNumber').val(); //报告编号
+					proposer = $('#modelProposer').val(); //申请人
+					proposerDepartment = $('#modelProposerDepartment').val(); //申请部门
+					projFrom = $('#modelProjFrom').val(); //项目来源
+					state = $('#modelState').val(); //委托单状态
+					signSituation = $("#modelSignSituation").val(); //盖章情况
+					projectManager = $("#modelProjectManager").val(); //项目工程师
+					var cnas = '', cma = '', testSpec = '';
+					if (signSituation == 'cnas') {
+						cnas  = '1';
+					} else if (signSituation == 'cma') {
+						cma = '1';
+					} else if (signSituation == 'testSpec') {
+						testSpec = '1';
+					} else if (signSituation == 'none') {
+						cnas = '0';
+						cma = '0';
+						testSpec = '0';
+					}
+					layer.close(modelIndex);
+					//执行重载
+					table.reload('tabReload', {
+						url: '/modular_progress/listTaskReportAdv',
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	createTimeStart: createTimeStart,
+							createTimeEnd:createTimeEnd,
+							delegateNumber:delegateNumber,
+							testItemDesc:testItemDesc,
+							reportNumber:reportNumber,
+							proposer:proposer,
+							proposerDepartment: proposerDepartment,
+							projFrom: projFrom,
+							state: state,
+							cnas: cnas,
+							cma: cma,
+							testSpec: testSpec,
+							projectManager: projectManager,
+							IssueDateStart: IssueDateStart,
+							IssueDateEnd: IssueDateEnd
+		        }
+		      });
+				},
+				cancelModel: function() {
+					layer.close(modelIndex);
+				},
+		    addRole: function(){ //获取选中数据
+		      window.location.href = "/modular_basics/Judgementedit?id=0";
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:'/modular_basics/standard_list?ids='+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   }
+		  };
+		  
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+			bindKey.autoBind(active);
+	});
+</script>
+</html>
+

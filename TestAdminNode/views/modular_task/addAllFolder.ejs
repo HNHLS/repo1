@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/index.css">
+	<style type="text/css">
+		.downpanel .layui-select-title span {
+            line-height: 38px;
+        }
+        /*继承父类颜色*/
+        .downpanel dl dd:hover {
+            background-color: inherit;
+        }
+        ul>li>ul{
+        	margin: 0;
+        }
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<label class="layui-form-label">附件上传</label>
+						<div class="layui-input-block">
+							<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+								<div id="picker" style="width: 80px;float: right;">选择文件</div>
+							</div>
+							<div class="layui-input-block">
+								<div class="flie-height">
+									<div id="flie">
+										<!--用来存放文件信息-->
+										<div id="thelist" class="uploader-list"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script type="text/javascript">
+	layui.use('form', function(){
+			var form = layui.form
+			//监听提交
+			form.on('submit(formDemo)', function(data){
+				if(FileList.length>1){
+					alert('请打包为一个压缩包上传')
+					return false;
+				}else{
+					$.ajax({
+						type:"post",
+						url:"/modular_task/addMultiFilePkg",
+						data:{
+							fileUrl:FileList[0].fileUrl,
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+	            				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+					return false;
+				}
+			});
+		});
+</script>
+<script>
+	var FileList =[]
+	var GUID = WebUploader.Base.guid(); //当前页面是生成的GUID作为标示
+		console.log(GUID);
+		var uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				guid: GUID,
+				fileType: "delegateTask"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			accept: {
+		        title: 'Zip',
+                extensions: 'zip',
+                mimeTypes: 'application/zip,application/x-zip,application/x-zip-compressed',
+		   },
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		uploader.on('fileQueued', function(file) {uploader.upload()});
+		// 文件上传成功,合并文件。
+		uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "delegateTask",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							File.fileName = data.message.key
+							File.fileUrl = data.message.url
+							FileList.push(File)
+							console.log(File)
+							console.log(FileList)
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(FileList)
+				File.fileName = fileNames
+				File.fileUrl =decodeURIComponent(fileUrl) 
+				FileList.push(File)
+				console.log(File)
+				console.log(FileList)
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		console.log(FileList)
+		$(obj).parent().remove()
+		for(var i = 0; i < FileList.length; i++) {
+			console.log(FileList[i].FileUrl)
+			if(FileList[i].fileUrl == decodeURIComponent(url)) {
+				FileList.splice(i, 1);
+			}
+		}
+	}
+</script>

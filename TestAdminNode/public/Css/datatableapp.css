@@ -1,0 +1,29 @@
+#example_length{
+	display: none;
+}
+.paginate_button{
+	border: 1px solid #23abf0;
+	color: #23abf0;
+    border-radius: 3px;
+    padding: 6px 12px;
+    margin-left: 10px;
+    font-size: 12px;
+}
+.current{
+	color: #fff;
+    border-radius: 3px;
+    border: 1px solid #23abf0;
+    padding: 6px 12px;
+    background:#23abf0;
+}
+#example_info{
+	display: inline-block;
+	width: 50%;
+}
+#example_paginate{
+	float: right;
+	display: inline-block;
+}
+.text-c a{
+	margin-right: 10px;
+}

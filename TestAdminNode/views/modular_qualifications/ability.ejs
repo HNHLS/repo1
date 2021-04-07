@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style>
+		.itemBlock{
+			width: 25%;
+			float: left;
+			height: 50%;
+			margin-top: 20px;
+		}
+		html,body,.layui-fluid,form{
+			height: 95%;
+		}
+		#block{
+			border: 1px solid #37a3dd;
+			border-radius: 5px;
+			margin: 10px;
+			height: 100%;
+		}
+		.standardName{
+			height: 40px;
+			width: 100%;
+			background-color: rgb(0,140,214);
+			color: white;
+			line-height: 40px;
+			padding-left: 10px;
+		}
+		.bottom{
+			padding: 10px;
+			height: 72%;
+			overflow-y: scroll;
+		}
+		.bottom>div{
+			padding: 5px 10px;
+			border: 1px solid #37a3dd;
+			border-radius: 5px;
+			margin: 5px;
+		}
+		#itemList{
+			margin-top: 20px;
+			height: 74%;
+			overflow-y: scroll;
+		}
+		.icon{
+			height: 1.5rem;
+			width: 1.5rem;
+			float: right;
+			position: relative;
+			margin-left: 5px;
+			background-image: url(/Images/gb_tb.png);
+		}
+		.xm-select-label{
+			display: none !important;
+		}
+		.xm-select-parent dl dd.xm-select-this div i {
+			color:white;
+			font-size:16px;
+			border:1px solid #485fd5;
+		}
+		.xm-select-parent dl dd.xm-select-this div i::after{
+			display:none;
+		}
+		.xm-cz:nth-child(2){
+			display: none !important;
+		}
+		.xm-cz:nth-child(3){
+			display: none !important;
+		}
+	</style>
+	<body>
+		<form id="addForm" class="layui-form" action="">
+			<div class="toolbtn">
+				<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+				<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+			</div>
+			<div class="layui-fluid">
+				<div class="layui-form-item">
+					<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-lg-offset2">
+						<input type="hidden" id="id" value="<%=id%>" name="id"/>
+						<label class="layui-form-label">检测依据</label>
+						<div class="layui-input-block" style="margin-bottom: 10px;">
+							<select id="testStandard" name="testStandard" lay-search="" lay-filter="testStandard">
+								<option value="">请选择检测依据</option>
+							</select>
+						</div>
+						<label class="layui-form-label">测试项</label>
+						<div class="layui-input-block">
+							<select id="testItem" name="testItem" xm-select="testItem" xm-select-search="" lay-filter="testItem">
+								<option></option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div id="itemList">
+
+				</div>
+			</div>
+		</form>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		href("/modular_qualifications/personnel","资质管理","人员管理列表","能力范围")
+		var testItemList=JSON.parse(decodeURIComponent("<%=testItemList%>"))
+		console.log(testItemList)
+		layui.config({
+			base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+		}).extend({
+			formSelects: 'formSelects-v4'
+		});
+		layui.use(['form', 'jquery', 'formSelects'], function() {
+			var form = layui.form
+			var $ = layui.jquery;
+			var formSelects = layui.formSelects;
+			//通过检测依据选择测试项
+			var testItemstr=''
+			window.reloadItemList=function(data){
+				$("#itemList div").remove()
+				for(var i=0;i<data.length;i++){
+					var testItemArray=data[i].testItemArray
+					if(testItemArray.length>0){
+						if(i==0){
+							testItemstr='<div class="itemBlock"><div id="block"><div class="standardName">'+data[i].standardName+'</div><div class="bottom">'
+						}else{
+							testItemstr='<div class="itemBlock"><div id="block"><div class="standardName">'+data[i].standardName+'</div><div class="bottom">'
+						}
+						
+						for(var j=0;j<testItemArray.length;j++){
+							testItemstr+='<div class="layui-inline" name="'+testItemArray[j].id+'">'+testItemArray[j].name+'<a class="icon" tyle="text-decoration:none;" onClick="article_del(\'' + i+'\',\'' + testItemArray[j].name +'\',\'' + testItemArray[j].id + '\')" href="javascript:;" title="删除"></a></div>'
+						}
+						testItemstr+='</div></div>'
+						$("#itemList").append(testItemstr)
+					}
+				}
+			}
+			reloadItemList(testItemList)
+			$.ajax({
+				type: "get",
+				url: "/modular_basics/standard-list-info?type=检测标准&page=-1&limit=0&keyword=",
+				success: function(msg) {
+					console.log(msg.message);
+					var data = msg.message.data
+					if(msg.status == "ok") {
+						for(var i = 0; i < data.length; i++) {
+							$("#testStandard").append('<option value="'+data[i].id+','+data[i].name+'">' + data[i].name + '</option>')
+						}
+						form.render("select")
+					} else {
+						alert(msg.message);
+					}
+				}
+			});
+			//检测依据
+			form.on('select(testStandard)', function(data) {
+				//console.log(data.elem);得到select原始DOM对象
+				console.log(data.value); //得到被选中的值]
+				formselect(data.value)
+				//console.log(data.othis); 得到美化后的DOM对象
+			});
+			//检测项
+			formSelects.on('testItem', function(id, vals, val, isAdd, isDisabled){
+				//id:           点击select的id
+				//vals:         当前select已选中的值
+				//val:          当前select点击的值
+				//isAdd:        当前操作选中or取消
+				//isDisabled:   当前选项是否是disabled
+				console.log(val)
+				var outobj={}
+				var obj={}
+				var testItemArray=[]
+				obj.id=val.value
+				obj.name=val.name
+				console.log(obj)
+				var add=true
+				var addItem=true
+				if(isAdd){
+					for(var i=0;i<testItemList.length;i++){
+						if(testItemList[i].standardId==val.standardId){
+							add=false
+							var testItem=testItemList[i]
+							testItemList.splice(i, 1)
+							testItemList.unshift(testItem)
+							console.log(testItemList[i].testItemArray,obj)
+							var addtestItem=testItemList[i].testItemArray
+							for(var j=0;j<addtestItem.length;j++){
+								if(addtestItem[j].id==val.value){
+									addItem=false
+								}
+							}
+							console.log(addItem)
+							if(addItem){
+								testItemList[0].testItemArray.push(obj)
+								console.log(testItemList,i)
+								
+							}else{
+								// alert("已选择")
+							}
+						}
+					}
+					if(add){
+						testItemArray.push(obj)
+						outobj.standardId=val.standardId
+						outobj.standardName=val.standardName
+						outobj.testItemArray=testItemArray
+						testItemList.unshift(outobj)
+					}
+					
+					reloadItemList(testItemList)	
+					console.log(add)
+				}
+				//如果return false, 那么将取消本次操作
+			});
+			form.on('select(testItem)', function(data) {
+				//console.log(data.elem);得到select原始DOM对象
+				console.log(data.value); //得到被选中的值]
+				var item=data.value
+				var itemArray=item.split(",")
+				console.log(itemArray)
+				var outobj={}
+				var obj={}
+				var testItemArray=[]
+				obj.id=itemArray[0]
+				obj.name=itemArray[1]
+				console.log(obj)
+				var add=true
+				for(var i=0;i<testItemList.length;i++){
+					if(testItemList[i].standardId==itemArray[3]){
+						add=false
+						var testItem=testItemList[i]
+						testItemList.splice(i, 1)
+						testItemList.unshift(testItem)
+						console.log(testItemList[i].testItemArray,obj)
+						if(testItemList[i].testItemArray.indexOf(obj)==-1){
+							testItemList[i].testItemArray.push(obj)
+						}else{
+							alert("已选择")
+						}
+					}
+				}
+				console.log(add)
+				if(add){
+					testItemArray.push(obj)
+					outobj.standardId=itemArray[3]
+					outobj.standardName=itemArray[2]
+					outobj.testItemArray=testItemArray
+					testItemList.unshift(outobj)
+				}
+				console.log(testItemList)
+				reloadItemList(testItemList)
+				//console.log(data.othis); 得到美化后的DOM对象
+			});
+			window.article_del=function(index,name,id){
+				console.log(name,id)
+				var obj={}
+				obj.name=name
+				obj.id=id
+				console.log(index)
+				var delData=testItemList[parseInt(index)].testItemArray
+				for(var j=0;j<delData.length;j++){
+					if(delData[j].id==id){
+						testItemList[index].testItemArray.splice(j, 1)
+					}
+				}
+				reloadItemList(testItemList)
+			}
+			window.formselect = function(standard) {
+				var standardName=standard.split(",")[1]
+				var standardId=standard.split(",")[0]
+				console.log(standard)
+				layui.formSelects.config('testItem', {
+					searchUrl: "/modular_basics/testItemlist?page=-1&limit=0&standard=" + encodeURIComponent(standardName),
+					beforeSuccess: function(id, url, searchVal, result) {
+						//我要把数据外层的code, msg, data去掉
+						console.log(result)
+						$("#testItem").empty()
+						$(".xm-select-label span").remove()
+						form.render()
+						data = result.message.data;
+						//我要反转name
+						var array = []
+						$.each(data, function(index, item) {
+							var obj = {}
+							obj.name = item.name
+							obj.value = item.id
+							obj.standardName=standardName
+							obj.standardId=standardId
+							array[index] = obj
+						});
+						//然后返回数据
+						console.log(array)
+						return array;
+					},
+					success: function() {
+						formSelects.value('testItem', []);
+					}
+				})
+				// $.ajax({
+				// 	type: "get",
+				// 	url: "/modular_basics/testItemlist?page=-1&limit=0&standard=" + standardName,
+				// 	success: function(msg) {
+				// 		console.log(msg.message);
+				// 		var data = msg.message.data
+				// 		if(msg.status == "ok") {
+				// 			$("#testItem option").remove()
+				// 			$("#testItem").append('<option></option>')
+				// 			for(var i = 0; i < data.length; i++) {
+				// 				$("#testItem").append('<option value="'+data[i].id+','+data[i].name+','+standardName+','+standardId+'">' + data[i].name + '</option>')
+				// 			}
+				// 			form.render("select")
+				// 		} else {
+				// 			alert(msg.message);
+				// 		}
+				// 	}
+				// });
+			}
+			var $ = layui.$, active = {
+			    addRole:function(){
+			    	
+			    }
+			}
+			form.on('submit(formDemo)', function(data){
+				console.log(data.field)
+				var ids=[]
+				var dad=$(".layui-inline").each(function(i,v){
+					ids[i]=$(v).attr("name")
+				})
+				console.log(ids)
+				$.ajax({
+		            type: "POST",
+		            url: "/modular_qualifications/setability?ids="+JSON.stringify(ids)+"&id="+$("#id").val(),
+		            success: function (msg) {
+		                console.log(msg);
+		                if (msg.status =="ok") {
+		                    alert("保存成功");
+		                    //执行父级刷新
+		                    window.location.href="/modular_qualifications/personnel"
+		                } else {
+		                    alert(msg.message);
+		                }
+		            }
+		        });
+			    return false;
+			});
+			$('.layui-btn').on('click', function(){
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		})
+	</script>
+</html>

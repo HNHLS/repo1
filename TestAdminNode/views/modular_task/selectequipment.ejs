@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.block>div{
+			display: inline-block;
+			padding: 5px;
+			border: 1px solid #37a3dd;
+			border-radius: 5px;
+			margin: 5px 5px 0 0;
+		}
+		.block div img{
+			height: 20px;
+			width: 20px;
+			float: right;
+		}
+		.equipmentlist{
+			float: left;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<div class="block">
+				<%for(var i=0;i<equipmentlist.length;i++){%>
+					<div>
+						<div class="equipmentlist">
+							<%=equipmentlist[i]%>
+						</div>
+						<img src="/Images/gb_tb.png" onclick="delequipment(this)" />
+					</div>
+				<%}%>
+			</div>
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-xs" data-type="Bringback">选中带回</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<div class="demoTable">
+						<div class="layui-inline">
+						    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+						</div>
+						<button class="layui-btn" data-type="reload">搜索</button>
+					</div>
+				</div>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="select">选择</a>
+			</script>
+		</shiro:hasRole>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		var equipment_nolist="<%=equipmentlist%>".split(",")
+		var equipmentId = ""
+		$("body",parent.document).find('.am-breadcrumb').html('<li><a href="/home/home"><img src="/Images/home.png" />首页</a></li><li><a href="javascript:void(0)">基础管理</a></li><li class="am-active" id="title">测试项列表</li>');
+		function delequipment(obj){
+			console.log($(obj).parent())
+			var equipment=$(obj).siblings(".equipmentlist").text().replace(/\s+/g,"")
+			console.log(equipment)
+			console.log(equipment_nolist)
+			var index=equipment_nolist.indexOf(equipment)
+			console.log(index)
+			equipment_nolist.splice(index,1)
+			console.log(equipment_nolist)
+			$(obj).parent().remove()
+			equipmentId = ""
+		}
+		layui.use(['form','table','jquery'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var $=layui.jquery;
+		table.on('checkbox(tb)', function(obj) {
+			//console.info(obj)
+		});
+		// 监听工具条
+		
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			//console.log(data)
+			var selected=true
+			if(obj.event === 'select'){
+				for(var i=0;i<equipment_nolist.length;i++){
+					console.log(equipment_nolist[i])
+					if(equipment_nolist[i].split("/")[1]==data.equipment_no){
+						layer.msg("该设备已绑定",{icon:2})
+						selected=false
+						break;
+					}else if(equipment_nolist.length=1){
+						layer.msg("仅能选择一个设备",{icon:4})
+						break;
+					}
+				}
+				for(var i=$(".equipmentlist").length;i<1;i++){
+					if(selected){
+						$(".block").append('<div><div class="equipmentlist">'+data.equipment_name+"/"+data.equipment_no+'</div><img src="/Images/gb_tb.png" onclick="delequipment(this)"/></div>')
+						equipment_nolist.push(data.equipment_name+"/"+data.equipment_no)
+						equipmentId = data.id
+						//console.log(equipmentId)
+						return equipmentId
+						break;
+					}
+				}
+			}
+		});
+		
+		table.render({
+			elem: '#tab',
+			url: "/modular_basics/equipmentlist",
+			cellMinWidth: 10,
+			cols: [
+				[
+				{
+					field: 'id',
+					title: '设备ID',
+					align: 'center',
+				},
+				{
+					field: 'equipment_name',
+					title: '设备名称',
+					align: 'center',
+				},{
+					field: 'equipment_no',
+					title: '设备编号',
+					align: 'center',
+				},{
+					field: 'custodian',
+					title: '设备负责人',
+					align: 'center',
+				},{
+					field: 'date_production',
+					title: '启用日期',
+					align: 'center',
+				},{
+					field: 'factory_number',
+					title: '出厂编号',
+					align: 'center',
+				}, {
+					field: 'fixed_no',
+					align: 'center',
+					title: '固定资产编号',
+				},{
+					field: 'manufacturer',
+					align: 'center',
+					title: '生产厂商',
+				},{
+					field: 'nowshen',
+					align: 'center',
+					title: '设备状态',
+				},{
+					field: 'purchase_date',
+					align: 'center',
+					title: '购置日期',
+				},{
+					field: 'specification_model',
+					align: 'center',
+					title: '规格型号',
+				},{
+					field: 'use_department',
+					align: 'center',
+					title: '使用群组',
+				},{
+					align: 'center',
+					title: '操作',
+					toolbar: '#doit'
+				}]
+			],
+			// data : [
+			// 		{
+			// 			'use_department':'zz',
+			// 			'specification_model':'zz',
+			// 			'equipment_name':'zz',
+			// 			'equipment_no':'aa',
+						
+			// 		},	{
+			// 			'equipment_name':'dd',
+			// 			'use_department':'cc',
+			// 			'specification_model':'ff',
+			// 			'equipment_no':'zz',
+			// 		},	{
+			// 			'equipment_name':'aa',
+			// 			'use_department':'dd',
+			// 			'specification_model':'ee',
+			// 			'equipment_no':'ss',
+			// 		},	{
+			// 			'equipment_name':'vv',
+			// 			'use_department':'ss',
+			// 			'specification_model':'ss',
+			// 			'equipment_no':'dd',
+			// 		},	{
+			// 			'equipment_name':'ee',
+			// 			'use_department':'ee',
+			// 			'specification_model':'dd',
+			// 			'equipment_no':'ff',
+			// 		},
+			// ],
+			id: 'tabReload',
+			page: true,
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": 0, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.totalCount, //解析数据长度
+		        "data": res.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var name
+		var $ = layui.$, active = {
+		    reload: function(data){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		          	name:keyword,
+		        }
+		      });
+		    },  
+		    Bringback:function(){
+				var arr=[]
+				$(".block .equipmentlist").each(function(i,v){
+		    		console.log($(v).text().replace(/\s+/g,""))
+		    		arr[i]=$(v).text().replace(/\s+/g,"")
+				})
+				var Eid = equipmentId
+				console.log(equipmentId)
+                parent.getnode(arr,Eid)
+			}
+		  };
+		  
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	});
+</script>
+</html>

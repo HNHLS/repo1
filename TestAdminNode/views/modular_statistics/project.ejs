@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<% include ../layout/header.ejs %>
+<script type="text/javascript" src="/Scripts/echarts.min.js"></script>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    html,
+    body {
+        padding: 0 0 0 12px;
+    }
+
+    .layui-fluid {
+        padding: 0 0 0 10px;
+        overflow-y: scroll;
+    }
+
+    html,
+    body,
+    .layui-fluid {
+        height: 100%;
+        width: 99%;
+    }
+
+    #main-pie,
+    #main-task {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    #main-line {
+        width: 100%;
+        height: 100%;
+    }
+
+    #main-late {
+        width: 100%;
+        height: 70%;
+        position: relative;
+        top: 20%;
+    }
+
+    #main-job {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .layui-row>div {
+        height: 100%;
+    }
+
+    .top {
+        border: 1px solid #37a3dd;
+        border-radius: 10px;
+        margin: 10px 10px;
+        box-shadow: 5px 10px 15px #ddd;
+        padding: 15px;
+    }
+
+    #two>div {
+        height: 100%;
+    }
+
+    .layui-col-xs4 {
+        width: 34%;
+    }
+
+    .top .left img {
+        height: 20px;
+        width: 20px;
+        margin-right: 5px;
+    }
+
+    .top .left span {
+        vertical-align: middle;
+        color: #37a3dd;
+        font-weight: 700;
+    }
+
+    /* 通知 */
+
+    .content {
+        height: 77%;
+        overflow-y: scroll;
+    }
+
+    .notice {
+        height: 100%;
+    }
+
+    .notice td,
+    th {
+        padding: 10px;
+    }
+
+    .notice tr td:first-child {
+        color: #333;
+    }
+
+    .notice tr td:last-child {
+        color: #aaa;
+    }
+
+    .notice tbody tr:nth-child(odd) {
+        background-color: #f5f9ff;
+    }
+
+    .notice tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+
+    .thead,
+    .thead thead,
+    .thead tr {
+        width: 100%;
+    }
+
+    .thead tr th:first-child {
+        width: 75%;
+    }
+
+    #tr-up {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #62c254;
+        width: 0;
+        height: 0;
+    }
+
+    #tr-down {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #fd1b05;
+        width: 0;
+        height: 0;
+    }
+
+    .flex {
+        display: flex;
+        align-items: center;
+    }
+
+    .count1 {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .count2 {
+        font-size: 20px;
+        font-weight: 600;
+
+    }
+
+    .flex1 {
+        display: flex;
+        align-items: center;
+        padding-left: 20%;
+    }
+
+    .last div {
+        margin-right: 0.5rem;
+    }
+
+    .fontColor {
+        color: #e5e5e5;
+    }
+
+    .red {
+        color: #fa3610;
+    }
+
+    .green {
+        color: #62c254;
+    }
+
+    .allRight {
+        margin: -3px 1% 0 3%;
+        font-size: 0.8rem;
+    }
+
+    #Time {
+        position: absolute;
+        right: 3%;
+        height: 40%;
+        top: 42%;
+    }
+
+    #Time1 {
+        position: absolute;
+        left: 50%;
+        height: 20%;
+        top: 7%;
+    }
+</style>
+
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row" style="height: 60%;">
+            <div class="layui-col-xs12 layui-col-sm8 layui-col-md8 layui-col-lg8">
+                <div class="top" style="height: 35%;">
+                    <div class="left">
+                        <img src="/Images/weituo.png" alt="">
+                        <span>委托数量</span>
+                    </div>
+                    <div class="flex" style="padding: 0% 0;">
+                        <div class="flex" style="border-right: 2px solid #dedede;padding-right: 2%;">
+                            <div style="padding: 20px;">
+                                <img src="/Images/zongliang.png" alt="">
+                            </div>
+                            <div>
+                                <div>总委托数量 (单)</div>
+                                <div class='count1'><%=total%></div>
+                            </div>
+                        </div>
+                        <div class="allRight">
+                            <div>委托环节数量 (单)</div>
+                            <div class='count1'><%=delegate%></div>
+                        </div>
+                        <div class="allRight">
+                            <div>核样环节数量 (单)</div>
+                            <div class='count1'><%=sampleCheck%></div>
+                        </div>
+                        <div class="allRight">
+                            <div>检测环节数量 (单)</div>
+                            <div class='count1'><%=test%></div>
+                        </div>
+                        <div class="allRight">
+                            <div>报告编制环节数量 (单)</div>
+                            <div class='count1'><%=report%></div>
+                        </div>
+                        <div class="allRight">
+                            <div>已完成数量 (单)</div>
+                            <div class='count1'><%=complete%></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="top" style="height:60% ;">
+                    <div class="left">
+                        <img src="/Images/weituo.png" alt="">
+                        <span>工作量统计(测试样品数)</span>
+                    </div>
+                    <div class="layui-inline" id="Time">
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="date1" placeholder="请选择日期">
+                        </div>
+                    </div>
+                    <div id="main-job"></div>
+                </div>
+            </div>
+            <div class="layui-col-xs12 layui-col-sm4 layui-col-md4 layui-col-lg4">
+                <div class="top" style="height: 20%;">
+                    <div class="left">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>表格导出</span>
+                    </div>
+                    <div style="position: absolute; right: 40%;top: 7%;">
+                        <button class="layui-btn layui-btn-radius" data-type="download">表单下载</button>
+                    </div>
+                </div>
+
+                <div class="top" style="height: 75%;">
+                    <div class="left">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>任务统计</span>
+                    </div>
+                    <div id="main-task">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-row" style="height: 34%;">
+            <div class="layui-col-xs12 layui-col-sm12 layui-col-md4 layui-col-lg12">
+                <div class="top">
+                    <div class="left">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>项目汇总</span>
+                    </div>
+                    <div class="layui-inline" id="Time1">
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="date2" placeholder="请选择日期">
+                        </div>
+                    </div>
+                    <table class="layui-hide" id="tab" lay-filter="tb"></table>
+                </div>
+            </div>
+            <!-- <div class="layui-col-xs12 layui-col-sm3 layui-col-md3 layui-col-lg3">
+                <div class="top" style="height: 100%;">
+                    <div class="left">
+                        <img src="/Images/shebei.png" alt="">
+                        <span>当前迟单率</span>
+                    </div>
+                    <div id="main-late" style="width: 100%;"></div>
+                    <div class="flex1">
+                        <div class="flex" style="border-right: 2px solid #dedede;padding-right: 5%;padding-left: 5%;">
+                            <div class="late-down">
+                                <div class='count2'id='year'></div>
+                                <div class="flex last" >
+                                    <span class="fontColor">一年前</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex" style="border-right: 2px solid #dedede;padding-right: 5%;padding-left: 5%;">
+                            <div class="late-down">
+                                <div class='count2'id='halfyear'></div>
+                                <div class="flex last" >
+                                    <span class="fontColor">半年前</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="late-down"style="padding-left:5%">
+                            <div class='count2'id='month'></div>
+                            <div class="flex last" >
+                                <span class="fontColor">一个月前</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="layui-col-xs12 layui-col-sm5 layui-col-md5 layui-col-lg5">
+                <div class="top" style="height: 100%;">
+                    <div class="left">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>迟单率趋势</span>
+                    </div>
+                    <div class="layui-inline" id="Time1">
+                        <div class="layui-input-inline">
+                          <input type="text" class="layui-input" id="date2" placeholder="请选择日期">
+                        </div>
+                    </div>
+                    <div id="main-line"></div>
+                </div>
+
+            </div>
+            <div class="layui-col-xs12 layui-col-sm4 layui-col-md4 layui-col-lg4">
+                <div class="top" style="height: 100%;">
+                    <div class="left">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>委托统计漏斗图</span>
+                    </div>
+                    <div id="main-pie"></div>
+                </div>
+            </div>
+        </div> -->
+        </div>
+    </div>
+</body>
+<% include ../layout/footer.ejs %>
+<script type="text/javascript">
+    href("", "报表统计", "项目统计", "")
+    var test = "<%=test%>"
+    var report = "<%=report%>"
+    var reportReview = "<%=reportReview%>"
+    var testComplete = "<%=testComplete%>"
+    var complete = "<%=complete%>"
+    var startDate = ""
+    var endDate = ""
+    layui.use(['form', 'laydate', 'jquery', 'table'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var keyword = ''
+        var startDate = ''
+        var endDate = ''
+        var groupId = ''
+        laydate.render({
+            elem: '#date2'
+            , range: true
+            , trigger: 'click'
+            , done: function (value, date) {
+                //得到日期生成的值，如：2017-08-18
+                // console.log(value.split(" - "))
+                startDate = value.split(" - ")[0]
+                endDate = value.split(" - ")[1]
+                // console.log(startDate,endDate)
+                taskSummary(startDate, endDate);
+            }
+        });//日期范围
+        laydate.render({
+            elem: '#date1'
+            , range: true
+            , trigger: 'click'
+            , done: function (value, date) {
+                //得到日期生成的值，如：2017-08-18
+                // console.log(value.split(" - "))
+                startDate = value.split(" - ")[0]
+                endDate = value.split(" - ")[1]
+                // console.log(startDate,endDate)
+                work(startDate, endDate)
+            }
+        });//日期范围
+
+        var $ = layui.$, active = {
+            download: function () {
+                $.ajax({
+                    type: "get",
+                    url: "/modular_statistics/exportTaskStat",
+                    success: function (msg) {
+                        if (msg.status == "ok") {
+                            layer.confirm('是否确定下载？', function () {
+                                window.open(msg.message)
+                                layer.close(layer.index)
+                            })
+                        }
+                    }
+                })
+            }
+        }
+
+        function Today() {
+            if (startDate == "" && endDate == "") {
+                startDate = getDay(-7);
+                endDate = getDay(0);
+                work(startDate, endDate);
+                //taskSummary(startDate, endDate);
+            }
+        }
+
+        Today()
+        taskSummary("","")
+        //项目汇总表格
+        function taskSummary(startDate, endDate) {
+            
+                    table.render({
+                        elem: '#tab',
+                        url: "/modular_statistics/taskSummary?startDate=" + startDate + "&endDate=" + endDate,
+                        limits: [3, 5, 10],
+						limit: 3,
+                        totalRow:true,
+                        cols: [
+                            [{ checkbox: true },
+                            {
+                                field: 'manager',
+                                title: '项目工程师',
+                                align: 'center',
+                                totalRowText:'合计'
+                            }, {
+                                field: 'total',
+                                title: '总委托任务',
+                                align: 'center',
+                                totalRow:true,
+                            }, {
+                                field: 'testing',
+                                title: '检测中任务',
+                                align: 'center',
+                                totalRow:true,
+                            }, {
+                                field: 'reporting',
+                                title: '报告编制任务',
+                                align: 'center',
+                                totalRow:true,
+                            }, {
+                                field: 'complete',
+                                title: '完成数量',
+                                align: 'center',
+                                totalRow:true,
+                            }, {
+                                field: 'lateCount',
+                                title: '迟单数',
+                                align: 'center',
+                                totalRow:true,
+                            }, {
+                                field: 'completeRate',
+                                title: '完成率%',
+                                align: 'center',
+                            }, {
+                                field: 'lateRate',
+                                title: '迟单率%',
+                                align: 'center',
+                            }]
+                        ],
+                        id: 'tabReload',
+                        page:true,
+                        response: {
+                            statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+                        },
+                        parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                            console.log(res)
+                            return {
+                                "code": res.status, //解析接口状态
+                                "count": res.message, //解析数据长度
+                                "data": res.message //解析数据列表
+                            };
+                        },
+                        text: {
+                            none: '暂无相关数据！'//默认无数据
+                        },
+                        done: function (res, curr, count) {
+                            var divArr = $(".layui-table-total div.layui-table-cell");
+                           //alert("选择器"+divArr)
+                            $.each(divArr, function (index, item) {
+                                var _div = $(item);
+                                
+                                var content = _div.html();
+                             
+                                content = content.replace(".00", "");
+                                _div.html(content);
+                            });
+                            }
+                        
+                    });
+                
+        }
+
+        function work(startDate, endDate) {
+            var myChart = echarts.init(document.getElementById("main-job"));
+            $.ajax({
+                type: "get",
+                url: "/modular_statistics/workStat?startDate=" + startDate + "&endDate=" + endDate,
+                success: function (msg) {
+                    if (msg.status == "ok") {
+                        var message = msg.message
+                        var byDepartmentList = []
+                        var desc = []
+                        var nameA = []
+                        var countA = []
+                        var nameB = []
+                        var countB = []
+                        var name = []
+                        var department = [];
+                        var byDepartmentList;
+                        for (var j = 0; j < message.length; j++) {
+                            desc.push(message[j].desc)
+                            byDepartmentList = message[j].byDepartmentList;
+                            //console.log(byDepartmentList)
+                            if (byDepartmentList.length >= 2) {
+                                nameA = byDepartmentList[0].name
+                                nameB = byDepartmentList[1].name
+                                countA.push(byDepartmentList[0].count)
+                                countB.push(byDepartmentList[1].count)
+                                name.push(nameA)
+                                name.push(nameB)
+                            } else {
+                                nameA = byDepartmentList[0].name
+                                countA.push(byDepartmentList[0].count)
+                                name.push(nameA)
+                            }
+                        }
+                        var labelOption = {
+                            show: true,
+                            position: 'top',
+                            distance: 5,
+                            align: 'center',
+                            verticalAlign: 'middle',
+                            rotate: 0,
+                            formatter: '{c}',
+                            fontSize: 14,
+                            rich: {
+                                name: {
+                                    textBorderColor: '#fff'
+                                }
+                            }
+                        };
+                        var option = {
+                            legend: {
+                                orient: 'horizontal',
+                                data: name,
+                                icon: "circle",
+                                right: "1%",
+                                top: "15%",
+                            },
+                            title: {
+                                text: '',
+                                x: 'center',
+                                y: "bottom"
+                            },
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            toolbox: {
+                                show: false,
+                            },
+                            color: ['#82a5ff', '#b9a7e5', '#ccf3f2'],
+                            calculable: true,
+                            xAxis: [{
+                                type: 'category',
+                                data: desc,
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#070011',
+                                        width: 1, //这里是坐标轴的宽度,可以去掉
+                                    }
+                                }
+                            }],
+                            yAxis: [{
+                                axisLabel: {
+                                    show: true,
+                                    textStyle: {
+                                        color: '#666'
+                                    }
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#fff',
+                                        width: 3, //这里是坐标轴的宽度,可以去掉
+                                    }
+                                }
+                            }],
+                            dataZoom: [{
+                                type: 'inside',
+                                xAxisIndex: 0,
+                                start: 20,
+                                end: 100
+                            }, {
+                                start: 0,
+                                end: 10,
+                                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                                handleSize: '80%',
+                                handleStyle: {
+                                    color: '#fff',
+                                    shadowBlur: 3,
+                                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                                    shadowOffsetX: 2,
+                                    shadowOffsetY: 2
+                                }
+                            }],
+                            series: [{
+                                name: nameA,
+                                type: 'bar',
+                                data: countA,
+                                barWidth: 15,
+                                label:labelOption,
+                                itemStyle: {
+                                    barBorderRadius: 15,
+                                    color: new echarts.graphic.LinearGradient(
+                                        0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: '#82a5ff'
+                                        }, {
+                                            offset: 0.5,
+                                            color: '#c5d7ff'
+                                        }, {
+                                            offset: 1,
+                                            color: '#d9e5ff'
+                                        },]
+                                    )
+                                }
+
+                            }, {
+                                name: nameB,
+                                type: 'bar',
+                                data: countB,
+                                barWidth: 15,
+                                label:labelOption,
+                                itemStyle: {
+                                    barBorderRadius: 15,
+                                    color: new echarts.graphic.LinearGradient(
+                                        0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: '#c2b4e7'
+                                        }, {
+                                            offset: 0.5,
+                                            color: '#c2b4e7'
+                                        }, {
+                                            offset: 1,
+                                            color: '#c2b4e7'
+                                        },]
+                                    )
+                                }
+
+                            }
+                            ]
+                        };
+                        myChart.setOption(option);
+                        window.onresize = myChart.resize;
+                    }
+                }
+            });
+        }
+
+        var myChart3 = echarts.init(document.getElementById("main-task"));
+        $.ajax({
+            type: "get",
+            url: "/modular_statistics/taskbygroup",
+            success: function (msg) {
+                if (msg.status == "ok") {
+                    var groupStat = msg.message
+                    groupStat.sort(compare);
+                    var group = []
+                    for (var j = 0; j < groupStat.length; j++) {
+                        var obj = {}
+                        obj.value = groupStat[j].taskCount
+                        obj.name = groupStat[j].groupName
+                        group[j] = obj
+                    }
+                    var option3 = {
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}: {c}',
+                            backgroundColor: 'rgba(18,79,130,.5)',
+                            borderColor: '#3788c4',
+                            borderWidth: 2,
+                            textStyle: {
+                                fontSize: 20,
+                                color: "#ffffff"
+                            }
+                        },
+                        color: ['#37a2da', '#32c5e9', '#9fe6b8', '#ffdb5c', '#ff9f7f', '#fb7293', '#e7bcf3', '#8378ea', '#0bC3F5', '#0376E9', '#85E9B5', '#FBF88D',],
+                        series: [{
+                            name: '委托统计',
+                            type: 'pie',
+                            clockWise: false,
+                            radius: ['30%', '60%'],
+                            center: ['40%', '40%'],
+                            roseType: 'radius',
+                            label: {
+                                show: true,
+                                normal: {
+                                    position: 'outside',
+                                    fontSize: 16
+                                }
+                            },
+                            labelLine: {
+                                length: 1,
+                                length2: 20,
+                                smooth: true
+                            },
+                            data: group,
+                        }]
+                    };
+                    myChart3.setOption(option3, true);
+                }
+            }
+        });
+
+        //仪表盘
+        // var myChartlate = echarts.init(document.getElementById('main-late'));
+        // $.ajax({
+        // 		type: "get",
+        // 		url: "/modular_statistics/currentdelegateolatency",
+        // 		success: function (msg) {
+        //             var data = msg.message
+        // 			if (msg.status == "ok") {
+        //                 document.getElementById("year").innerHTML=(data.beforeLastYear*100).toFixed(0)+'%'
+        //                 document.getElementById("halfyear").innerHTML=(data.beforeHalfYear*100).toFixed(0)+'%'
+        //                 document.getElementById("month").innerHTML=(data.beforeLastMonth*100).toFixed(0)+'%'
+        //                 let num = data.current*100;
+        //                 let current = num.toFixed(0);// 当前用量
+        //                 let all = 100;// 总量
+        //                 var option4 = {
+        //                     title: {
+        //                     text: current+'%',
+        //                     x: 'center',
+        //                     y: 'center',
+        //                     subtext: '迟单率',
+        //                         left: 'center',
+        //                         top:'20%',
+        //                         subtextStyle: {
+        //                             color: '#000',
+        //                             fontSize: 15,
+        //                             fontFamily: 'PingFangSC-Regular',
+        //                             top: '30%', //top待调整
+        //                         },
+        //                     textStyle: {
+        //                         fontSize: 20
+        //                     }
+        //                     },
+        //                     series: [
+        //                         {
+        //                             type: 'pie',
+        //                             label: {
+        //                                 show: false
+        //                             },
+        //                             center: ['50%', '40%'],
+        //                             radius: ['50%', '80%'],
+        //                             startAngle: 180,
+        //                             data: [
+        //                                 {
+        //                                     name: '迟单率',
+        //                                     value: current,
+        //                                     itemStyle: {
+        //                                         color: '#2eb6f4'
+        //                                     }
+        //                                 },
+        //                                 {
+        //                                     value: all - current,
+        //                                     itemStyle: {
+        //                                         color: '#f4f4f4'
+        //                                     }
+        //                                 },
+        //                                 {
+        //                                     name: 'bottom',
+        //                                     value: all,
+        //                                     itemStyle: {
+        //                                         color: 'transparent'
+        //                                     }
+        //                                 },
+        //                             ]
+        //                         }
+        //                     ]
+        //                 };
+        //                 myChartlate.setOption(option4);
+        // 			}
+        // 		}
+        // 	});
+
+        //折线图 迟单率
+        // var myChartline = echarts.init(document.getElementById('main-line'));
+        // function latetime(startDate,endDate){
+        //     $.ajax({
+        //         type: 'get',
+        //         url: '/modular_statistics/delegateLatencyTrend?startDate='+startDate+'&endDate='+endDate,
+        //         success: function(msg) {
+        //             var message = msg.message
+        //             var rate = []
+        //             var desc = []
+        //             for(var j=0;j<message.length;j++){
+        //                         var number = message[j].rate*100
+        //                         rate.push(number)
+        //                         desc.push(message[j].desc)
+        //                     }
+        //             var optionline = {
+        //                 // legend: {
+        //                 //     data: ['可靠性', '理化'],
+        //                 //     orient: 'horizontal',
+        //                 //     icon: "rect",
+        //                 //     show: true,
+        //                 //     left: 20,
+        //                 //     top: 25,
+        //                 //     icon: "circle",
+        //                 // },
+        //                 color: ['#baceff'],
+        //                 tooltip: {
+        //                     formatter: '{b} : {c}%'
+        //                 },
+        //                 xAxis: {
+        //                     type: 'category',
+        //                     boundaryGap: false,
+        //                     data: desc,
+        //                     　splitLine:{
+        //                 　　　　show:false
+        //                 　　}
+        //                 },
+        //                 yAxis: {
+        //                     type: 'value',
+        //                     splitLine:{
+        //             　　　　    show:false
+        //             　      }
+        //                 },
+        //                 dataZoom: [{
+        //                                 type: 'inside',
+        //                                 xAxisIndex:0,
+        //                                 start: 30,
+        //                                 end: 100
+        //                             }, {
+        //                                 start: 0,
+        //                                 end: 10,
+        //                                 handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        //                                 handleSize: '80%',
+        //                                 handleStyle: {
+        //                                     color: '#fff',
+        //                                     shadowBlur: 3,
+        //                                     shadowColor: 'rgba(0, 0, 0, 0.6)',
+        //                                     shadowOffsetX: 2,
+        //                                     shadowOffsetY: 2
+        //                                 }
+        //                             }],
+        //                 series: [{
+        //                     type: 'line',
+        //                     smooth: true,
+        //                     data: rate,
+        //                     areaStyle: {}
+        //                 }]
+        //             };
+        //             myChartline.setOption(optionline);
+        //         }
+        //     });
+        // }
+
+
+        //漏斗图
+        // var myChartpie = echarts.init(document.getElementById('main-pie'));
+        // var option5 = {
+        //     tooltip: {
+        //         trigger: 'item',
+        //         formatter: "{a} <br/>{b} : {c}"
+        //     },
+
+        //     legend: {
+        //         data: ['检测阶段', '报告编制阶段', '报告审核阶段', '检测完成阶段', '已完成'],
+
+        //     },
+
+        //     color: ['#6990d3','#54becc','#67d3b3','#a3e697','#eaf6ac' ],
+        //     series: [{
+        //         name: '漏斗图',
+        //         type: 'funnel',
+        //         left: '10%',
+        //         top: 60,
+        //         //x2: 80,
+        //         bottom: 10,
+        //         width: '80%',
+        //         // height: {totalHeight} - y - y2,
+
+        //         sort: 'descending',
+        //         gap: 2,
+        //         label: {
+        //             show: true,
+        //             position: 'inside'
+        //         },
+        //         labelLine: {
+        //             length: 10,
+        //             lineStyle: {
+        //                 width: 1,
+        //                 type: 'solid'
+        //             }
+        //         },
+        //         itemStyle: {
+        //             borderColor: '#fff',
+        //             borderWidth: 1
+        //         },
+        //         emphasis: {
+        //             label: {
+        //                 fontSize: 20
+        //             }
+        //         },
+        //         data: [{
+        //             value: test,
+        //             name: '检测阶段',
+        //         }, {
+        //             value: report,
+        //             name: '报告编制阶段'
+        //         }, {
+        //             value: reportReview,
+        //             name: '报告审核阶段'
+        //         }, {
+        //             value: testComplete,
+        //             name: '检测完成阶段'
+        //         }, {
+        //             value: complete,
+        //             name: '已完成'
+        //         }]
+        //     }]
+        // };
+        // myChartpie.setOption(option5, true);
+
+        window.addEventListener("resize", function () {
+            myChart3.resize();
+            // myChartlate.resize();
+            // myChartline.resize();
+            // myChartpie.resize();
+        });
+        $('.layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        var compare = function (obj1, obj2) {
+            var val1 = parseFloat(obj1.taskCount);
+            var val2 = parseFloat(obj2.taskCount);
+            if (val1 < val2) {
+                return 1;
+            } else if (val1 > val2) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+
+        function getDay(day) {
+            var today = new Date();
+            var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+            today.setTime(targetday_milliseconds); //注意，这行是关键代码
+            var tYear = today.getFullYear();
+            var tMonth = today.getMonth();
+            var tDate = today.getDate();
+            tMonth = doHandleMonth(tMonth + 1);
+            tDate = doHandleMonth(tDate);
+            return tYear + "-" + tMonth + "-" + tDate;
+        }
+        function doHandleMonth(month) {
+            var m = month;
+            if (month.toString().length == 1) {
+                m = "0" + month;
+            }
+            return m;
+        }
+    })
+</script>
+
+</html>

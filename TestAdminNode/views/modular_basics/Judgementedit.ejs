@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>判定依据名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="name" placeholder="判定依据名称" value="<%= name %>" name="name">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">实施日期</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" name="validDate" id="validDate" value="<%= validDate %>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">启用状态</label>
+							<div class="layui-input-block">
+								<%if(status){%>
+									<input type="radio" name="status" value="true" title="启用" checked>
+									<input type="radio" name="status" value="false" title="停用">
+								<%}else{%>
+									<input type="radio" name="status" value="true" title="启用" >
+									<input type="radio" name="status" value="false" title="停用" checked>
+								<%}%>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+							<div id="picker" style="width: 80px;float: right;">选择文件</div>
+						</div>
+						<div class="layui-input-block">
+							<div class="flie-height">
+								<div id="flie">
+									<!--用来存放文件信息-->
+									<div id="thelist" class="uploader-list"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_basics/standard_list", "基础管理", "判定依据", "新增/编辑")
+	var id = <%=id%>
+	console.log(id)
+	layui.config({
+		base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+	}).extend({
+		formSelects: 'formSelects-v4'
+	});
+	layui.use(['form', 'laydate', 'element', 'table', 'jquery', 'formSelects'], function() {
+		var form = layui.form
+		var laydate = layui.laydate;
+		var element = layui.element
+		var table = layui.table
+		var $ = layui.jquery;
+		var formSelects = layui.formSelects;
+		laydate.render({
+			elem: '#validDate',
+			trigger: 'click'
+		});
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+				type: "POST",
+				url: "/modular_basics/Judgementedit?FileList=" + JSON.stringify(FileList),
+				data: $("#addForm").serialize(),
+				success: function(msg) {
+					console.log(msg);
+					if(msg.status == "ok") {
+						alert("保存成功");
+						//执行父级刷新
+						window.location.href = "/modular_basics/Judgement";
+					} else {
+						alert(msg.message);
+					}
+				}
+			});
+		    return false;
+		});
+//		$('.layui-btn').on('click', function(){
+//			var type = $(this).data('type');
+//			active[type] ? active[type].call(this) : '';
+//		});
+	})
+</script>
+<script>
+	var FileList =<%-FileList%>
+	console.log(FileList!=null,FileList)
+	if(FileList!=null&&FileList!=[]){
+//		FileList=JSON.parse(<%-JSON.parse(FileList)%>)
+	}else{
+		FileList=[]
+	}
+	console.log(FileList==null,FileList)
+	var GUID = WebUploader.Base.guid(); //当前页面是生成的GUID作为标示
+		console.log(GUID);
+		var uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				guid: GUID,
+				fileType: "standard"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		uploader.on('fileQueued', function(file) {uploader.upload()});
+		// 文件上传成功,合并文件。
+		uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "standard",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							File.fileName = data.message.key
+							File.fileUrl = data.message.url
+							FileList.push(File)
+							console.log(File)
+							console.log(FileList)
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(FileList)
+				File.fileName = fileNames
+				File.fileUrl = fileUrl
+				FileList.push(File)
+				console.log(File)
+				console.log(FileList)
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(FileList!= null&&FileList.length>0) {
+		console.log(FileList)
+		for(var i = 0; i < FileList.length; i++) {
+			var FileName = FileList[i].fileName
+			var FileUrl = encodeURIComponent(FileList[i].fileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		console.log(FileList)
+		$(obj).parent().remove()
+		for(var i = 0; i < FileList.length; i++) {
+			console.log(FileList[i].fileUrl)
+			if(FileList[i].fileUrl == decodeURIComponent(url)) {
+				FileList.splice(i, 1);
+			}
+		}
+	}
+</script>

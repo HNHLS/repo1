@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/jquery.jOrgChart.css" />
+    <style type="text/css">
+        .cBody{
+            margin-top: 20px;
+        }
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		.layui-input-block{
+			line-height:36px;
+		}
+        .sampling {
+			cursor: pointer;
+			border-radius: 6px;
+			padding: 8px;
+			border: 1px solid #37a3dd;
+		}
+		
+		.inStorage {
+			background-color: #37a3dd;
+			color: white;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div id="tab">
+					<div class="mail">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									样品信息
+								</div>
+                            </div>
+							<span>扫样品原SN码</span>
+							<div class="layui-inline" style="width: 30%;">
+								<input class="layui-input"  type="text" name="search" id="search" autocomplete="off" placeholder="扫码/输入样品原SN码" autofocus="autofocus" onkeydown="entersearch(this)">
+							</div>
+                            <div class="layui-form-item" style="margin-top: 10px;">
+								<%if(action==0){%><span style="color: red">损坏的样品编号，可不选:</span><%}else{%><span>本次到库的样品编号:</span><%}%>
+                                <%for(var i=0;i<sampleArray.length;i++){%>
+                                    <div class="layui-inline sampling" name="<%=sampleArray[i].uniqueSampleNumber%>" data-sample-number="<%=sampleArray[i].sampleNumber%>">
+                                        <%=sampleArray[i].sampleNumber%>
+                                    </div>
+                                <%}%>
+                            </div>
+						</div>
+					</div>
+					<div class="Personnellist">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									补充信息
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">库位编号</label>
+									<div class="layui-input-block">
+										<input type="text" class="layui-input" id="storageNum" name="storageNum">
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label"><span class="i">*</span>样品状态</label>
+									<div class="layui-input-block">
+										<select name="sampleState" lay-verify="required" lay-filter="sampleState" id="sampleState">
+											
+										</select>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label"><span class="i">*</span>来样方式</label>
+									<div class="layui-input-block">
+										<select name="sampleArriveWay" lay-verify="required" lay-filter="sampleArriveWay" id="sampleArriveWay">
+										</select>
+									</div>
+                                </div>
+                                <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label"><%if(action==0){%><span class="i">*</span><%}%>备注</label>
+									<div class="layui-input-block">
+										<input type="text" class="layui-input" id="extra" name="extra">
+									</div>
+								</div>
+							</div>
+						</div>
+                    </div>
+                    <div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<%if(action==0){-%>
+							<div class="layui-btn layui-btn-danger" data-type="collar">驳回</div>
+							<%}else{-%>
+							<div class="layui-btn" data-type="collar">保存</div>
+							<%}-%>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+		<script src="/Scripts/jquery.jOrgChart.js" type="text/javascript" charset="utf-8"></script>
+	</body>
+	<script>
+		href("/modular_sample/sampling", "样品管理", "样品列表", "核样")
+		var delegateNum="<%=delegateNum%>"
+		var subTaskNumber="<%=subTaskNumber%>"
+        var action="<%=action%>"
+		dropdown("样品状态","#sampleState")
+		dropdown("样品来源","#sampleArriveWay")
+		function entersearch(obj) {
+			var event = window.event || arguments.callee.caller.arguments[0];
+			if (event.keyCode == 13) {
+				setTimeout(function () {
+					$(obj).val("")
+				}, 200)
+				var searchVal = $(obj).val()
+				$("div[data-sample-number=" + searchVal + "]").addClass("inStorage");
+
+			}
+		}
+		layui.use(['form','jquery'], function(){
+            var form = layui.form
+            var $=layui.jquery
+            $(".sampling").click(function(){
+				if($(this).hasClass("inStorage")){
+					$(this).removeClass("inStorage")
+				}else{
+					$(this).addClass("inStorage")
+				}
+			})
+			var $ = layui.$, active = {
+                collar: function(){//核样通过
+                    var sampleArray=[]
+                    $(".inStorage").each(function(i,v){
+                        sampleArray[i]=$(v).attr("name")
+                    })
+                    console.log(sampleArray)
+				    $.ajax({
+				        type: "POST",
+				        url: "/modular_sample/checkSample?action="+action+"&delegateNum="+delegateNum+"&sampleArray="+sampleArray,
+				        data: $("#addForm").serialize(),
+				        success: function (msg) {
+				            console.log(msg);
+				            if (msg.status =="ok") {
+				                alert(msg.message);
+				                //执行父级刷新
+				                parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+				            } else {
+				                alert(msg.message);
+				            }
+				        }
+				    });
+				},
+			}
+			$('.layui-btn').on('click', function(){
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+		
+	</script>
+</html>

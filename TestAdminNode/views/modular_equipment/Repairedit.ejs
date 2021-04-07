@@ -1,0 +1,307 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<%if(type=="approval"){%>
+						<div class="layui-btn layui-btn-sm  layui-btn-danger" data-type="reject"><i class="iconfont icon-jinggao"></i>驳回</div>
+						<div class="layui-btn layui-btn-sm" data-type="approval"><i class="iconfont icon-gaizhang"></i>审核通过</div>
+					<%}else if(type=="confirm"){%>
+						<div class="layui-btn layui-btn-sm" data-type="confirm"><i class="iconfont icon-gaizhang"></i>维修确认</div>
+					<%}else if(type=="complete"){%>
+						<div class="layui-btn layui-btn-sm" data-type="complete"><i class="iconfont icon-gaizhang"></i>维修完成</div>
+					<%}else{%>
+						<div class="layui-btn layui-btn-sm layui-btn-danger" data-type="personfail"><i class="iconfont icon-jinggao"></i>维修失败</div>
+						<div class="layui-btn layui-btn-sm" data-type="personconfirm"><i class="iconfont icon-gaizhang"></i>维修完成</div>
+					<%}%>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label">设备编号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="equipment_no" value="<%= equipment_no %>" name="equipment_no">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">设备名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="equipment_name" value="<%= equipment_name %>" name="equipment_name">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">测试主管</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="testadminname" value="<%= testadminname %>" name="testadminname">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">设备负责人</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="adminname" value="<%= adminname %>" name="adminname">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">故障描述</label>
+							<div class="layui-input-block">
+								<textarea class="layui-textarea" readonly="readonly" name="records" id="records"><%=records%></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">上传附件</label>
+							<div class="layui-input-block">
+								<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;display: none;">
+									<div id="picker" style="width: 80px;float: right;">选择文件</div>
+								</div>
+								<div class="layui-input-block">
+									<div class="flie-height">
+										<div id="flie">
+											<!--用来存放文件信息-->
+											<div id="thelist" class="uploader-list"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_equipment/Repair","设备管理","设备维修","新增")
+	layui.use(['form','jquery'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		var $ = layui.$, active = {
+		    approval: function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/approval?type=1",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			reject:function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/approval?type=2",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			confirm: function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/confirm?type=1",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			complete: function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/complete",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert("确认维修完成");
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			personconfirm:function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/personconfirm?type=0",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			personfail:function(){
+			    $.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/personconfirm?type=1",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                //执行父级刷新
+			                window.location.href="/modular_equipment/Repair"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+		}
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>
+<script type="text/javascript">
+	//校准需求
+	var fileaddress =<%-fileaddress%>
+	if(fileaddress!=null&&fileaddress!=[]){
+		
+	}else{
+		fileaddress=[]
+	}
+		var upLoader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		upLoader.on('fileQueued', function(file) {upLoader.upload()});
+		// 文件上传成功,合并文件。
+		upLoader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							fileaddress=[]
+							File.FileName = data.message.key
+							File.FileUrl = data.message.url
+							fileaddress.push(File)
+							console.log(File)
+							console.log(fileaddress)
+							$("#thelist div").remove()
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(fileaddress)
+				fileaddress=[]
+				File.FileName = fileNames
+				File.FileUrl = fileUrl
+				fileaddress.push(File)
+				console.log(File)
+				console.log(fileaddress)
+				$("#thelist div").remove()
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		upLoader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(fileaddress!= null&&fileaddress.length>0) {
+		console.log(fileaddress)
+		for(var i = 0; i < fileaddress.length; i++) {
+			var FileName = fileaddress[i].FileName
+			var FileUrl = encodeURIComponent(fileaddress[i].FileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		$(obj).parent().remove()
+		if(fileaddress[0].fileUrl == decodeURIComponent(url)) {
+			fileaddress.splice(0, 1);
+		}
+	}
+</script>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.blockleft{
+			width: 65%;
+			float: left;
+		}
+		.blockright{
+			width: 34%;
+			float: right;
+		}
+		.layui-form {
+			margin-top: 20px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<div class="blockleft">
+				<div class="layui-btn-group demoTable">
+				</div>
+				<div class="toolbar">
+					<div class="layui-inline">
+						<input type="text" class="layui-input" id="date" placeholder=" - ">
+					</div>
+					<div class="layui-inline">
+						<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+					</div>
+					<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+				</div>
+				<table class="layui-hide" id="tab" lay-filter="tb"></table>
+			</div>
+			<div class="blockright">
+				<div class="demoTable" style="height: 23px;display: inline-block;"></div>
+
+				<table class="layui-hide" id="tab1" lay-filter="tb1"></table>
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","样品管理","退样管理","")
+		//角色下拉
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'handle'){
+				window.location.href= '/modular_sample/widthdrawaledit?delegateNum='+data.delegateNum
+			}else if(obj.event === 'reset'){
+				layer.confirm('是否重置"'+data.userName+'"的密码？',function(){
+					$.ajax({
+						type:"get",
+						url:"/modular_users/resetPassword?id="+data.id,
+						async:true,
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								layer.confirm(res.message, {btn: ['确定']})
+							}else{
+								layer.msg(res.message,{icon: 5,time:1000})
+							}
+						},error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+					});
+				})
+			}else if(obj.event === 'print'){
+				window.location.href= '/modular_sample/QRcode?delegateNum='+data.delegateNum
+			}
+		});
+		// 监听分单工具条
+		table.on('tool(tb1)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'handle1'){
+				window.location.href= '/modular_sample/subwidthdrawaledit?subTaskNumber='+data.subTaskNumber
+			}
+		});
+		table.on('row(tb)',function(obj){
+			var data = obj.data;
+			var that = obj.tr;
+			$(that).siblings().css("background-color", "white");
+			$(that).css("background-color", "#ddd");
+			Progress(data.delegateNum)
+			return bindLayuiTableRowClick(obj);
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_sample/listReturnDelegateSample",
+			cellMinWidth: 10,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'delegateNum',
+					title: '委托单号',
+					align: 'center',
+				}, {
+					field: 'testProj',
+					align: 'center',
+					title: '检测项目',
+				},{
+					field: 'sampleNum',
+					align: 'center',
+					title: '编号',
+				},{
+					field: 'sampleCount',
+					align: 'center',
+					title: '数量',
+				}, {
+					field: 'storageNum',
+					align: 'center',
+					title: '库位编号',
+				}, {
+					field: 'delegator',
+					align: 'center',
+					title: '委托人',
+				},{
+					field: 'delegatorOrg',
+					align: 'center',
+					title: '委托单位',
+				},{
+					field: 'returnDate',
+					align: 'center',
+					title: '退样时间',
+					templet: function (d) {//时间格式设置
+								console.log(d.returnDate)
+
+								var newDate=/\d{4}-\d{1,2}-\d{1,2}/g.exec(d.returnDate)
+								if (newDate==null) {
+									return ''
+								}else{
+                                   return newDate}
+							}
+
+				}, {
+					field: 'state',
+					align: 'center',
+					title: '状态',
+				},{
+					align: 'center',
+					title: '操作',
+					templet:function(d){
+						console.log(d)
+						if(d.state=="已退样"){
+							return '<a class="layui-btn layui-btn-xs" lay-event="handle">查看</a>'
+						}else{
+							return '<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a>'
+						}
+					}
+				}]
+			],
+			initSort: { //时间排序
+							field: 'returnDate',
+							type: 'desc'
+
+						},
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		window.Progress=function(delegateNum){
+				table.render({
+					elem: '#tab1',
+					url:"/modular_sample/listReturnSubTaskSample?delegateNum="+delegateNum,
+					page:true,
+					cols: [
+						[{
+							field: 'subTaskNumber',
+							align: 'center',
+							title: '分单号',
+							width:'25%',
+						},{
+							field: 'sampleNum',
+							align: 'center',
+							title: '样品编号',
+							width:'15%',
+						},{
+							field: 'sampleCount',
+							align: 'center',
+							title: '样品数量',
+							width:'15%',
+						}, {
+							field: 'storageNum',
+							align: 'center',
+							title: '库位编号',
+							width:'15%',
+						}, {
+							field: 'state',
+							align: 'center',
+							title: '状态',
+							width:'15%',
+						}, {
+							align: 'center',
+							title: '操作',
+							width:'15%',
+							templet:function(d){
+								console.log(d)
+								if(d.canReturn==false){
+									return '<a class="layui-btn layui-btn-xs" lay-event="handle1">查看</a>'
+								}else{
+									return '<a class="layui-btn layui-btn-xs" lay-event="handle1">办理</a>'
+								}
+							}
+						}
+						]
+					],
+					response: {
+						statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+					},
+					parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+						console.log("分单",res)
+						return {
+							"code": res.status, //解析接口状态
+							"msg": res.message, //解析提示文本
+							"count": res.message.total, //解析数据长度
+							"data": res.message.data //解析数据列表
+						};
+					},
+					text: {
+						none: '暂无相关数据！'//默认无数据
+					},
+
+
+			});
+		}
+
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	startDate: startDate,
+					keyword:keyword,
+					endDate:endDate
+		        }
+		      });
+		    },    
+		    addRole: function(){ //获取选中数据
+		      layer.open({
+					type: 2,
+					title:"账号新增",
+					area: ['700px', '360px'],
+					content: '/modular_users/adminusersadd?id=0'
+				});
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            var checkStatus = table.checkStatus(obj.config.id);
+	            //获取选中数量
+	            var selectCount = checkStatus.data.length;
+				console.log(checkStatus,selectCount)
+	            if(selectCount == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                var ids=[];
+	                for(var i=0; i<selectCount; i++){
+	                    ids[i] = checkStatus.data[i].id;
+	                }
+					console.log(ids)
+	                $.ajax({
+	                    type:'post',
+	                    data:{"ids":ids},
+						dataType:"json",
+						traditional:true,
+	                    url:publicurl+'/admin/account/removeAccounts',
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   }
+		  };
+		  
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+		  	
+	});
+</script>
+</html>

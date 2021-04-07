@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<button class="layui-btn layui-btn-sm" data-type="delRole"><i class="iconfont icon-saoma"></i>退库扫码</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","样品管理","样品退库","")
+		//角色下拉
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'handle'){
+				window.location.href= '/modular_sample/samplingedit?delegateNum='+data.delegateNum
+			}else if(obj.event === 'reset'){
+				layer.confirm('是否重置"'+data.userName+'"的密码？',function(){
+					$.ajax({
+						type:"get",
+						url:"/modular_users/resetPassword?id="+data.id,
+						async:true,
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								layer.confirm(res.message, {btn: ['确定']})
+							}else{
+								layer.msg(res.message,{icon: 5,time:1000})
+							}
+						},error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+					});
+				})
+			}else if(obj.event === 'print'){
+				window.location.href= '/modular_sample/QRcode?delegateNum='+data.delegateNum
+			}
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_sample/listBackToStorageSubTask",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'subTaskNumber',
+					title: '分单编号',
+					align: 'center',
+				}, {
+					field: 'delegateNum',
+					align: 'center',
+					title: '委托单号',
+				},{
+					field: 'testProj',
+					align: 'center',
+					title: '测试项目'
+				},{
+					field: 'sampleName',
+					align: 'center',
+					title: '样品名称'
+				}, {
+					field: 'sampleModel',
+					align: 'center',
+					title: '样品型号',
+				}, {
+					field: 'sampleCount',
+					align: 'center',
+					title: '样品数量',
+				}, {
+					field: 'inStorage',
+					align: 'center',
+					title: '库内样品编号',
+				}, {
+					field: 'outStorage',
+					align: 'center',
+					title: '未入库样品编号',
+				}, {
+					field: 'backToStorageTime',
+					align: 'center',
+					title: '退库时间',
+					templet: function (d) { //设置时间格式
+								console.log(d.backToStorageTime)
+								var newDate=/\d{4}-\d{1,2}-\d{1,2}/g.exec(d.backToStorageTime)
+								if (newDate==null) {
+									return ''
+								}else{
+                                   return newDate}
+							}
+				}, {
+					field: 'state',
+					align: 'center',
+					title: '状态',
+				}]
+			],
+			initSort: {  //按时间排序 
+					field: 'backToStorageTime',
+					type: 'desc'
+					},
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	startDate: startDate,
+					keyword:keyword,
+					endDate:endDate
+		        }
+		      });
+		    },    
+		    addRole: function(){ //获取选中数据
+		      layer.open({
+					type: 2,
+					title:"账号新增",
+					area: ['700px', '360px'],
+					content: '/modular_users/adminusersadd?id=0'
+				});
+		    }
+		    ,delRole: function(){//扫码退库
+		     //获取选中状态 
+		     	var checkStatus = table.checkStatus('tabReload')
+	            //获取选中数量
+	            var selectCount = checkStatus.data.length;    
+				var ids=''
+			    if(selectCount>0){
+			     	console.log(checkStatus,selectCount)
+					if(selectCount >1){
+		                layer.msg('只能选择一项数据',function(){});
+		                return false;
+		            }
+		            ids=checkStatus.data[0].subTaskId
+					console.log(ids)
+					layer.open({
+						type: 2,
+						title:"样品退库",
+						area: ['90%', '90%'],
+						content: '/modular_sample/addwithdrawal?ids='+ids+'&subTaskNumber='+checkStatus.data[0].subTaskNumber+'&uniqueNumber='
+					});
+			    }else{
+			    	layer.open({
+						type: 2,
+						title:"样品退库",
+						area: ['90%', '90%'],
+						content: '/modular_sample/addwithdrawal?ids=0&uniqueNumber='
+					});
+			    }     
+		   	}
+		};
+		$('.layui-btn').on('click', function(){
+		   	var type = $(this).data('type');
+		   	active[type] ? active[type].call(this) : '';
+		});
+	});
+</script>
+</html>

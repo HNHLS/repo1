@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-sm" data-type="Reminder"><i class="iconfont icon-iconplsd"></i>批量催单</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+				<button class="layui-btn layui-btn-sm" data-type="advanced">高级搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		
+		<div id="searchModel" class="layui-form" style="display: none;">
+			<div class="layui-form">
+				<div class="layui-form-item" style="margin-top: 10px;">
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单号:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelDelegateNumber" placeholder="请输入委托单号">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							测试项目:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelTestProj" placeholder="请输入测试项目">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							样品编号:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelSampleNumber" placeholder="请输入样品编号">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托人:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProposer" placeholder="请输入申请人">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单位:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProposerDepartment" placeholder="请输入申请部门">
+						</div>
+					</div>
+
+					
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托人联系方式:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelPhoneNumber" placeholder="请输入委托人联系方式">
+						</div>
+					</div>
+					
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							要求完成日期:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelCompleteDateLimit" placeholder="请选择要求完成日期">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							项目工程师:
+						</label>
+						<div class="layui-input-inline">
+							<input type="text" class="layui-input" id="modelProjectManager" placeholder="请输入项目工程师">
+						</div>
+					</div>
+
+					<div class="layui-inline">
+						<label class="layui-form-label label-width-customer">
+							委托单状态:
+						</label>
+						<div class="layui-input-inline">
+							<select id="modelState">
+								<option value="">请选择委托单状态</option>
+								<option value="BPM导入等待指派">BPM导入等待指派</option>
+								<option value="通知领样">通知领样</option>
+								<option value="编制流转单">编制流转单</option>
+								<option value="编制报告">编制报告</option>
+								<option value="排程">排程</option>
+								<option value="打印条码">打印条码</option>
+								<option value="样品收样">样品收样</option>
+								<option value="报告审核">报告审核</option>
+								<option value="报告签发">报告签发</option>
+								<option value="委托下单">委托下单</option>
+								<option value="检测开始">检测开始</option>
+								<option value="委托中止">委托中止</option>
+								<option value="任务完成">任务完成</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="box-area" style="margin: 0;">
+					<div class="box-area-body">
+						<div class="layui-form-item layui-row layui-col-space20" style="margin: 0;">
+							<div class="layui-inline layui-col-xs12">
+								<div class="layui-input-inline" style="width: 100%;text-align: center;">
+									<button class="layui-btn layui-btn-primary" id="cancelModelBtn" data-type="cancelModel">取消</button>
+									<button class="layui-btn layui-btn-custom-blue" id="advanceSearchBtn" data-type="advanceSearch">查询</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","进度总览","报告逾期","")
+		//角色下拉
+		layui.extend({
+			hurryUp: "/progress/hurryUp",
+			bindKey:'/bindKey/bindKey'
+		})
+		layui.use(['form', 'laydate','table','hurryUp','bindKey'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+			var hurryUp = layui.hurryUp;
+			var bindKey = layui.bindKey;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'edit'){
+			    window.location.href = "/modular_basics/Judgementedit?id="+data.id
+			}
+		});
+		bindLayuiDefaultTableRowClick(table);
+		table.render({
+			elem: '#tab',
+			url: "/modular_progress/listOverdueTaskReport",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'sn',
+					align: 'center',
+					title: '序号',
+					width:'5%'
+				},{
+					field: 'delegateNum',
+					align: 'center',
+					title: '委托单号',
+				}, {
+					field: 'testProj',
+					align: 'center',
+					title: '测试项目',
+				},{
+					field: 'sampleNumber',
+					align: 'center',
+					title: '样品编号',
+				},{
+					field: 'proposer',
+					align: 'center',
+					title: '委托人',
+				}, {
+					field: 'proposerDepartment',
+					align: 'center',
+					title: '委托单位',
+				},{
+					field: 'phoneNumber',
+					align: 'center',
+					title: '委托人联系方式',
+				},{
+					field: 'completeDateLimit',
+					align: 'center',
+					title: '要求完成日期',
+				},{
+					field: 'projectManager',
+					align: 'center',
+					title: '项目工程师',
+				}, {
+					field: 'state',
+					align: 'center',
+					title: '委托单状态',
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		var modelIndex = null;
+		var completeDateLimit = '';
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		laydate.render({
+		   elem: '#modelCompleteDateLimit'
+		   //,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log('modelCompleteDateLimit:' + value)
+		      completeDateLimit=value;
+		    }
+		});//日期范围
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].delegateNum
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+			Reminder: function (data) {
+				return hurryUp.batchRequestHurryUp(table, ids,'/modular_progress/hurryUp');
+			},
+		    reload: function(data){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+					keyword:keyword,
+					startDate:startDate,
+					endDate:endDate
+		        }
+		      });
+				},
+			advanced: function(){ // 高级搜索
+				modelIndex = layer.open({
+					type: 1,
+					title:"高级检索",
+					area: ['80%', '80%'],
+					content: $('#searchModel')
+				});
+			},
+			advanceSearch: function(){
+				console.log("advanced search.");
+				delegateNumber = $('#modelDelegateNumber').val(); //委托单号
+				testProj = $('#modelTestProj').val(); //测试项目
+				sampleNumber = $('#modelSampleNumber').val(); //样品编号
+				proposer = $('#modelProposer').val(); //委托人
+				proposerDepartment = $('#modelProposerDepartment').val(); //委托单位
+				phoneNumber = $('#modelPhoneNumber').val(); //委托人联系方式
+				//completeDateLimit = completeDateLimit; //要求完成日期
+				projectManager = $("#modelProjectManager").val(); //项目工程师
+				state = $('#modelState').val(); //当前状态
+				layer.close(modelIndex);
+				//执行重载
+				table.reload('tabReload', {
+					url: '/modular_progress/listOverdueTaskReportAdv',
+					page: {
+						curr: 1 //重新从第 1 页开始
+					}
+					,where: {
+						delegateNumber:delegateNumber,
+						testProj:testProj,
+						sampleNumber:sampleNumber,
+						proposer: proposer,
+						proposerDepartment: proposerDepartment,
+						phoneNumber: phoneNumber,
+						completeDateLimit: completeDateLimit,
+						projectManager: projectManager,
+						state:state
+					}
+				});
+			},
+			cancelModel: function() {
+				layer.close(modelIndex);
+			},
+		    addRole: function(){ //获取选中数据
+		      window.location.href = "/modular_basics/Judgementedit?id=0";
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:'/modular_basics/standard_list?ids='+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   }
+		  };
+		  
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+			bindKey.autoBind(active);
+	});
+</script>
+</html>
+

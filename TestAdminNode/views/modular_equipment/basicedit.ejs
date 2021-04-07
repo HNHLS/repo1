@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+<body>
+	<div class="cBody">
+		<form id="addForm" class="layui-form" action="">
+			<div class="toolbtn">
+				<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表
+				</div>
+				<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i
+						class="iconfont icon-baocun"></i>保存</button>
+			</div>
+			<div class="layui-fluid">
+				<div class="layui-form-item">
+					<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+						<input type="hidden" name="id" id="id" value="<%= id %>" />
+						<label class="layui-form-label"><span class="i">*</span>设备编号</label>
+						<div class="layui-input-block">
+							<input type="text" class="layui-input" id="equipment_no" lay-verify="required"
+								value="<%= equipment_no %>" name="equipment_no">
+							<input type="hidden" id="eqno_hide" value="<%=equipment_no%>">
+						</div>
+					</div>
+					<%if(equipment_no==""){%>
+					<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+						<label class="layui-form-label"><span class="i">*</span>设备编号规则</label>
+						<div class="layui-input-block">
+							<%if(chosen=="可靠性"){%>
+							<select name="rule" lay-verify="required" lay-filter="rule" id="rule">
+								<option value="R">天合可靠性/计量</option>
+							</select>
+							<%}else{%>
+								<select name="rule" lay-verify="required" lay-filter="rule"  id="rule">
+									<option value="P">天合物理</option>
+									<option value="C">天合化学</option>
+								</select>
+							<%}%>
+						</div>
+					</div>
+					<%}%>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>设备名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="equipment_name" value="<%= equipment_name %>"
+					name="equipment_name">
+				</div>
+			</div>
+			<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+				<label class="layui-form-label"><span class="i">*</span>设备负责人</label>
+				<div class="layui-input-block">
+					<select id="custodian" name="custodian" lay-filter="custodian" lay-verify="required"></select>
+				</div>
+			</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label"><span class="i">*</span>使用群组</label>
+			<div class="layui-input-block">
+				<select id="use_department" name="use_department" lay-verify="required" xm-select="use_department"
+					xm-select-search="" lay-filter="use_department"></select>
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label"><span class="i">*</span>检定日期</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="verification_date"
+					id="verification_date" value="<%= verification_date %>">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label"><span class="i">*</span>检定周期</label>
+			<div class="layui-input-block">
+				<input type="number" class="layui-input" name="verification_period"
+					id="verification_period" value="<%= verification_period %>">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label">期间核查日期</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="checks_date" id="checks_date" value="<%= checks_date %>">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label">期间核查周期</label>
+			<div class="layui-input-block">
+				<input type="number" class="layui-input" id="checks_period" name="checks_period"
+					value="<%= checks_period %>">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label"><span class="i">*</span>设备状态</label>
+			<div class="layui-input-block">
+				<select id="infostate" name="infostate" lay-verify="required">
+					<option value="0">启用</option>
+					<option value="1">停用</option>
+					<option value="2">报废</option>
+					<option value="3">待机</option>
+					<option value="4">校准中</option>
+					<option value="5">维护中</option>
+					<option value="6">保养中</option>
+					<option value="6">核查中</option>
+				</select>
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label"><span class="i">*</span>测试能力</label>
+			<div class="layui-input-block">
+				<input type="number" class="layui-input" lay-verify="required" id="test_number" name="test_number"
+					value="<%= test_number %>">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label">测量范围</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" id="rangedemo" value="<%= rangedemo %>" name="rangedemo">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label">生产厂商</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" id="manufacturer" value="<%= manufacturer %>"
+					name="manufacturer">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label">购置日期</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="purchase_date" id="purchase_date"
+					value="<%= purchase_date %>">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label">测试项</label>
+			<div class="layui-input-block" style="margin-bottom: 10px;">
+				<select id="testStandard" name="testStandard" lay-search="" lay-filter="testStandard">
+					<option value="">请选择检测依据</option>
+				</select>
+			</div>
+			<div class="layui-input-block">
+				<select id="testinfo" name="testinfo" xm-select="testinfo" xm-select-search="" lay-filter="testinfo">
+					<option></option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label">出厂编号</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" id="factory_number" name="factory_number"
+					value="<%= factory_number %>">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label">启用日期</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="date_production" id="date_production"
+					value="<%= date_production %>">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label">规格型号</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" id="specification_model" name="specification_model"
+					value="<%= specification_model %>">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label">固定资产编号</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" id="fixed_no" name="fixed_no" value="<%= fixed_no %>">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+			<label class="layui-form-label byCondition">互斥占用</label>
+			<div class="layui-input-block">
+				<input type="radio" name="byCondition" value="true" title="是" <%if(byCondition){%>checked<%}%> lay-filter="byCondition">
+				<input type="radio" name="byCondition" value="false" title="否" <%if(!byCondition){%>checked<%}%> lay-filter="byCondition">
+			</div>
+		</div>
+		<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+			<label class="layui-form-label isStat">统计负载率</label>
+			<div class="layui-input-block">
+				<input type="radio" name="isstat" value="1" title="是" <%if(isStat){%>checked<%}%> lay-filter="isStat">
+				<input type="radio" name="isstat" value="0" title="否" <%if(!isStat){%>checked<%}%> lay-filter="isStat">
+			</div>
+		</div>
+	</div>
+	</div>
+	</form>
+	</div>
+</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_equipment/basic", "设备管理", "基础管理", "新增/编辑")
+	var testinfo = "<%= testinfo%>".split(",")
+	var use_department = "<%= use_department%>".split(",")
+	var infostate = "<%= infostate%>"
+	var custodianno = "<%= custodianno%>"
+	console.log(testinfo)
+	layui.config({
+		base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+	}).extend({
+		formSelects: 'formSelects-v4'
+	});
+	layui.use(['form', 'jquery', 'laydate', 'element', 'tree', 'layer', 'upload', 'formSelects'], function () {
+		var form = layui.form
+		var $ = layui.jquery;
+		var laydate = layui.laydate;
+		var formSelects = layui.formSelects
+		laydate.render({
+			elem: '#date_production',
+			trigger: 'click'
+
+		}); //日期范围
+		laydate.render({
+			elem: '#purchase_date',
+			trigger: 'click'
+		}); //日期范围
+		laydate.render({
+			elem: '#verification_date',
+			trigger: 'click'
+		}); //日期范围
+		laydate.render({
+			elem: '#checks_date',
+			trigger: 'click',
+			type: 'month'
+		}); //日期范围
+		//设备状态
+		$("#infostate option").each(function (i, v) {
+			console.log($(v).val() == infostate)
+			if ($(v).val() == infostate) {
+				$(v).attr("selected", "selected")
+				form.render("select")
+			}
+		})
+		$(".byCondition").hover(function () {
+			tips=layer.tips("如果选择是，表示该设备只能同时检测具有相同技术要求的检测项", this, {
+				tips: [1, '#3595CC'],
+				time: 0
+			});
+		},function(){
+			layer.close(tips);
+		})
+		$(".isStat").hover(function () {
+			tips=layer.tips("如果选择是，表示该设备将在设备统计中进行统计", this, {
+				tips: [1, '#3595CC'],
+				time: 0
+			});
+		},function(){
+			layer.close(tips);
+		})
+		$(".R").hover(function () {
+			tips=layer.tips("如果选择是，表示该设备只能同时检测具有相同技术要求的检测项", this, {
+				tips: [1, '#3595CC'],
+				time: 0
+			});
+		},function(){
+			layer.close(tips);
+		})
+		$.ajax({
+			type: "get",
+			url: "/modular_basics/standard-list-info?type=检测标准&page=-1&limit=0&keyword=",
+			success: function (msg) {
+				console.log(msg.message);
+				var data = msg.message.data
+				if (msg.status == "ok") {
+					for (var i = 0; i < data.length; i++) {
+						$("#testStandard").append('<option>' + data[i].name + '</option>')
+					}
+					form.render("select")
+				} else {
+					alert(msg.message);
+				}
+			}
+		});
+		$.ajax({
+			type: "POST",
+			url: "/modular_qualifications/DepartmentAndRole?role=设备管理员,测试主管",
+			success: function (msg) {
+				console.log(msg)
+				var data = msg.message
+				if (msg.status == "ok") {
+					for (var i = 0; i < data.length; i++) {
+						if (custodianno == data[i].number) {
+							$("#custodian").append('<option selected value="' + data[i].number + "," + data[i].name + '" >' + data[i].name + '</option>')
+						} else {
+							$("#custodian").append('<option value="' + data[i].number + "," + data[i].name + '">' + data[i].name + '</option>')
+						}
+
+					}
+					form.render("select")
+				} else {
+					alert(msg.message);
+				}
+			}
+		});
+		var equipment_no = $("#eqno_hide").val()
+		if (equipment_no != "" && equipment_no != null) {
+
+		} else {
+			$.ajax({
+				type: "POST",
+				url: "/modular_equipment/createInfoNo?numtype="+$("#rule").val(),
+				success: function (msg) {
+					console.log(msg)
+					$("#equipment_no").val(msg)
+				}
+			});
+		}
+
+		var numtyp = "R"
+
+		console.log("data.value" + equipment_no); //得到被选中的值]
+		form.on('select(rule)', function (data) {
+			//console.log(data.elem);得到select原始DOM对象
+			numtyp = data.value
+			$.ajax({
+				type: "POST",
+				url: "/modular_equipment/createInfoNo?numtype=" + data.value,
+				success: function (msg) {
+					console.log(msg)
+					$("#equipment_no").val(msg)
+				}
+			});
+
+
+			//console.log(data.othis); 得到美化后的DOM对象
+		});
+		$("#equipment_no").blur(function () {
+			console.log($(this).val())
+			$.ajax({
+				type: "POST",
+				url: "/modular_equipment/haveNo?numtype=" + numtyp + "&equipment_no=" + $(this).val(),
+				success: function (msg) {
+					console.log(msg)
+					if (msg.status == "200") {
+
+					} else {
+						$("#equipment_no").focus()
+						//	                    alert(msg.message);
+						layer.msg(msg.message, {
+							icon: 2
+						})
+					}
+
+				}
+			});
+		})
+		form.on('select(testStandard)', function (data) {
+			//console.log(data.elem);得到select原始DOM对象
+			console.log(data.value); //得到被选中的值]
+			testinfoselect(data.value)
+			//console.log(data.othis); 得到美化后的DOM对象
+		});
+		window.testinfoselect = function (standard, Array) {
+			layui.formSelects.config('testinfo', {
+				searchUrl: "/modular_basics/testItemlist?page=-1&limit=0&standard=" + standard,
+				beforeSuccess: function (id, url, searchVal, result) {
+					//我要把数据外层的code, msg, data去掉
+					console.log(result)
+					data = result.message.data;
+					//我要反转name
+					var array = []
+					$.each(data, function (index, item) {
+						var obj = {}
+						obj.name = item.name
+						obj.value = item.id
+						array[index] = obj
+					});
+					//然后返回数据
+					console.log(array)
+					return array;
+				},
+				success: function () {
+					console.log(Array)
+					formSelects.value('testinfo', Array);
+				}
+			})
+		}
+		testinfoselect("", testinfo)
+		//群组下拉
+		$.ajax({
+			type: "get",
+			url: "/modular_qualifications/departmenttreelist",
+			success: function (result) {
+				console.log(result)
+				var arr = []
+				if (result.status == "ok") {
+					$.each(result.message.list, function (i, v) {
+						var obj = {}
+						obj.name = v.name
+						obj.type = "optgroup"
+						arr.push(obj)
+						console.log(i, v);
+						$.each(v.list, function (i, v) {
+							var obj = {}
+							obj.name = v.name
+							obj.value = v.name
+							arr.push(obj)
+							//		                    console.log(i,v);
+						});
+					})
+					formSelects.data('use_department', 'local', {
+						arr: arr
+					});
+					formSelects.value('use_department', use_department);
+					form.render('select');
+				}
+			}
+		});
+		var $ = layui.$,
+			active = {
+				addRole: function () { //技术要求删除
+
+				}
+			}
+		form.on('submit(formDemo)', function (data) {
+			console.log(data.field)
+			$.ajax({
+				type: "POST",
+				url: "/modular_equipment/basicedit",
+				data: $("#addForm").serialize(),
+				success: function (msg) {
+					console.log(msg);
+					if (msg.status == "ok") {
+						alert("保存成功");
+						//执行父级刷新
+						window.location.href = "/modular_equipment/basic"
+					} else {
+						alert(msg.message);
+					}
+				}
+			});
+			return false;
+		});
+		$('.layui-btn').on('click', function () {
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>

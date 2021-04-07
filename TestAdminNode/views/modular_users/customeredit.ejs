@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>公司名称</label>
+					    	<div class="layui-input-block">
+					    		<input type="hidden" id="enterpriseId" name="enterpriseId" value="0" />
+					    		<input type="text" class="layui-input" lay-verify="required" autocomplete="off" name="name" id="name">
+					    	</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>公司地址</label>
+					    	<div class="layui-input-block">
+					    		<input type="text" class="layui-input" lay-verify="required" autocomplete="off" name="address" id="address" >
+					    	</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var enterpriseId=<%=enterpriseId%>
+		var name="<%=name%>"
+		var address="<%=address%>"
+		$("#name").val(name)
+		$("#address").val(address)
+		$("#enterpriseId").val(enterpriseId)
+		layui.use('form', function(){
+			var form = layui.form
+			//监听提交
+			form.on('submit(formDemo)', function(data){
+				var name=data.field.name
+				var address=data.field.address
+				var enterpriseId=data.field.enterpriseId
+				console.log(data.field)
+				if(enterpriseId!=0){
+					$.ajax({
+						type:"post",
+						url:"/modular_users/customerupdate",
+						async:true,
+						data:{
+							name:name,
+							address:address,
+							enterpriseId:enterpriseId 
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}else{
+					$.ajax({
+						type:"post",
+						url:"/modular_users/customeradd",
+						data:{
+							name:name,
+							address:address
+						},
+						async:true,
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}
+			    return false;
+			});
+		});
+	</script>
+</html>

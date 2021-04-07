@@ -1,0 +1,986 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+
+		#jOrgChart {
+			margin-top: 40px;
+		}
+
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+
+		#tab>div {
+			width: 100%;
+		}
+
+		.mail {
+			min-height: 200px;
+		}
+
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+
+		.layui-input-block {
+			line-height: 36px;
+		}
+		/*数字框去除箭头*/
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+
+		input[type="number"] {
+		    -moz-appearance: textfield;
+		}
+		/*组件/层压件材料信息*/
+		.layui-tab-item .layui-form-label{
+			padding-top: 0px;
+		}
+		.synchro{
+			float: right;
+			height: 28px;
+		}
+		.sampleNum{
+			display: inline-block;
+		}
+		.equipment{
+			border: 1px solid #37a3dd;
+			padding:5px 7px;
+			border-radius: 5px;
+			margin-left: 5px;
+			display: inline-block;
+			margin-top: 5px;
+		}
+		.testItemManage .layui-form-select{
+			width: 90%;
+			float:right;
+		}
+		dt{
+			position: sticky;
+			position: -webkit-sticky;
+			top: 0;
+			background: lightslategray;
+			color: white !important;
+			margin: 0;
+			font-size: 16px !important;
+		}
+		.layui-select-group{
+			max-height: 300px !important;
+			max-width: 400px !important;
+			padding: 0 !important;
+		}
+		.standardStyle{
+			background: rgb(104, 171, 205);
+			border-radius: 5px;
+			padding: 4px;
+			color: white;
+			display: inline-block;
+			margin: 5px;
+			padding: 0 5px;
+			border: 0;
+			word-wrap: break-word;
+		}
+		header{
+			position: sticky;
+			top: -1px;                       /* ➜ the trick */
+			transition: .1s;
+		}
+
+		/* styles for when the header is in sticky mode */
+		header.isSticky{
+			height: 50px;
+		}
+		.isSticky{
+			font-size: 20px;
+			width: 100%;
+			height: 100%;
+			display: flex;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<div class="layui-btn layui-btn-sm" data-type="collar"><i class="iconfont icon-print"></i>打印流转单</div>
+					<div class="layui-btn layui-btn-sm save" data-type="save"><i class="iconfont icon-baocun"></i>保存</div>
+					<%if(chosen=="可靠性"&&planMain){-%>
+					<div class="layui-btn layui-btn-sm" onclick="show(this)"><i class="layui-icon layui-icon-slider"></i>主实验排程</div>
+					<%}-%>
+					<%if(confirmPlan){-%>
+					<div class="layui-btn layui-btn-sm" data-type="end"><i class="layui-icon layui-icon-pause"></i>排程结束</div>
+					<%}%>
+				</div>
+				<div id="task">
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title">
+								样品信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">分单号:</label>
+								<div class="layui-input-block">
+									<span><%=subTaskNumber%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">是否加急:</label>
+								<div class="layui-input-block">
+									<span><%=prior?'是':'否'%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品名称:</label>
+								<div class="layui-input-block">
+									<span><%=sampleName%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品数量:</label>
+								<div class="layui-input-block">
+									<span><%=sampleCount%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+								<label class="layui-form-label">样品编号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleNumber%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title">
+								委托信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测依据:</label>
+								<div class="layui-input-block">
+									<%_for(var i=0,tempTestArray=testStandard.split(',');i<tempTestArray.length;i++){-%>
+									<span class="standardStyle">
+										<%=tempTestArray[i]-%>
+									</span>
+									<%_}-%>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">判定依据:</label>
+								<div class="layui-input-block">
+									<%_for(var i=0,tempJudgeArray=judgementStandard.split(',');i<tempJudgeArray.length;i++){-%>
+									<span class="standardStyle">
+										<%=tempJudgeArray[i]-%>
+									</span>
+									<%_}-%>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测项目:</label>
+								<div class="layui-input-block">
+									<span><%=testProj%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">要求完成日期:</label>
+								<div class="layui-input-block">
+									<span><%=completeDateLimit%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">备注:</label>
+								<div class="layui-input-block">
+									<span><%=extra%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title">
+								测试排程
+							</div>
+						</div>
+						<div class="table">
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">检测序列:</label>
+									<div class="layui-input-block">
+										<select name="sequence" id="sequence" lay-filter="sequence" lay-search>
+											<option value="">新增序列</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">序列名称:</label>
+									<div class="layui-input-block">
+										<input type="text" class="layui-input" name="sequencename" id="sequencename" value="<%=testSequenceDesc%>" style="width: 85%;float: left;"/>
+										<div class="layui-btn layui-btn-sm" style="float: right;height: 36px;line-height: 36px;" title="保存序列" data-type="savesequence"><i class="iconfont icon-baocun" style="margin-right: 0;"></i></div>
+									</div>
+								</div>
+							</div>
+							<header style="z-index: 100;width: 100%"><div id="addTestCourse" class="layui-btn layui-btn-sm layui-inline" data-type="addRole"><i class="layui-icon layui-icon-add-1" style="align-self: center"></i><span style="align-self: center">新增测试项</span></div></header>
+							<div style="margin-top: 15px">
+								<div class="layui-col-xs12 layui-col-sm8 layui-col-md6" style="margin-bottom: 15px">
+									<span style="display: inline-block">测试标准组件SN</span>
+									<input style="display: inline-block;border:solid 1px #eeeeee;padding: 10px;margin-left: 15px" id="testStandardSn" value="<%=testStandardPiece%>" placeholder="选填"/>
+									<div class="layui-btn layui-btn-sm" data-type="chooseStandardPiece" style="margin-left: 10px;line-height: 36px;height: 36px;display: inline-block"><i class="layui-icon layui-icon-search" style="margin-right: 0;"><span style="font-size: 10px">选择标片</span></i></div>
+								</div>
+							</div>
+
+							<table class="layui-table" id="testCourseList">
+							  <colgroup>
+							    <col width="150">
+							    <col width="150">
+							    <col width="90">
+							  	<%if(chosen=="可靠性"){-%>
+								<col width="90">
+									  <col>
+							  	<%}else{-%>
+									  <col>
+								  <%}%>
+								  <col width="100">
+							  </colgroup>
+							  <thead>
+							    <tr>
+							      <th>检测项</th>
+							      <th>检测条款</th>
+							      <%if(chosen=="理化"){-%>
+							      <th>是否按序</th>
+							      <%}-%>
+							      <%if(chosen=="可靠性"){-%>
+							      <th>是否按序</th>
+							      <th>是否判定</th>
+							      <%}-%>
+							      <th>可用设备</th>
+							      <th>通知群组</th>
+							      <th>备注</th>
+							      <th>操作</th>
+							    </tr>
+							  </thead>
+							  <tbody>
+							  	<%_if(plans.length>0){-%>
+							  		<%_for(var i=0;i<plans.length;i++){-%>
+							  			<tr>
+									      <td width="15%" class="testItemManage">
+											  <input type="hidden" name="" id="" value="<%=plans[i].id%>" />
+									      	<%_if(plans[i].main){-%>
+								      			<div class="i" style="float: left;position: relative;top: 10px;">主</div>
+								      		<%_}-%>
+									      	<select lay-filter="testItemManage" lay-search>
+											<option value="" ></option>
+											<%_for(var tempStandard of testStandardSet){-%>
+											<optgroup label="<%=tempStandard%>">
+											<%_for(var j=0;j<testItemManage.length;j++){-%>
+											<%_if(testItemManage[j].testStandard==tempStandard){-%>
+											<%_if(plans[i].testItemId==testItemManage[j].id){-%>
+											<option value="<%=testItemManage[j].id%>、<%=testItemManage[j].testClause%>、<%=testItemManage[j].main%>、<%=testItemManage[j].equipment%>、<%=testItemManage[j].groupName%>、<%=testItemManage[j].equipmentNumber%>" selected="selected"><%=testItemManage[j].name%></option>
+											<%_}else{-%>
+											<option value="<%=testItemManage[j].id%>、<%=testItemManage[j].testClause%>、<%=testItemManage[j].main%>、<%=testItemManage[j].equipment%>、<%=testItemManage[j].groupName%>、<%=testItemManage[j].equipmentNumber%>"><%=testItemManage[j].name%></option>
+											<%_}-%>
+											<%_}-%>
+											<%_}-%>
+											</optgroup>
+											<%_}-%>
+									      	</select>
+									      </td>
+									      <td><%=plans[i].testClause%></td>
+									      <%if(chosen=="理化"){-%>
+									      <td>
+									      	<select name="inOrder">
+										      	<%if(plans[i].inOrder){-%>
+										      		<option value="true" selected="selected">是</option>
+										      		<option value="false">否</option>
+										      	<%}else{-%>
+										      		<option value="true">是</option>
+										      		<option value="false" selected="selected">否</option>
+										      	<%}-%>
+									      	</select>
+									      </td>
+									      <%}%>
+									      <%if(chosen=="可靠性"){-%>
+									      	<td>
+									      	<select name="inOrder">
+										      	<%if(plans[i].inOrder){-%>
+										      		<option value="true" selected="selected">是</option>
+										      		<option value="false">否</option>
+										      	<%}else{-%>
+										      		<option value="true" >是</option>
+										      		<option value="false" selected="selected">否</option>
+										      	<%}-%>
+									      	</select>
+									      </td>
+									      <td>
+									      	<select name="judge">
+										      	<%if(plans[i].judge){-%>
+										      		<option value="true" selected="selected">是</option>
+										      		<option value="false">否</option>
+										      	<%}else{-%>
+										      		<option value="true" >是</option>
+										      		<option value="false" selected="selected">否</option>
+										      	<%}-%>
+									      	</select>
+									      </td>
+									      <%}%>
+									      <td width="25%">
+											<input type="hidden" name="" id="" class="searchequipment" value="<%=plans[i].itemRelatedEquipList%>" />
+											<input type="hidden" name="" id="" class="grouplist" value="<%=plans[i].groupOptions%>" />
+											<%if(plans[i].main){-%>
+												<span class="layui-icon layui-icon-add-1" onclick="auxiliarysample(this)"></span>
+											<%}else{-%>
+												<span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span>
+											<%}-%>
+
+											<div class="equipmentlist">
+									      	<%if(plans[i].equipmentList){-%>
+												<%for(var j=0;j<plans[i].equipmentList.length;j++){-%>
+													<div class="equipment"><input type='hidden' class="selectequipment" value='<%=plans[i].equipmentList[j].id%>,<%=plans[i].equipmentList[j].name%>、<%=plans[i].equipmentList[j].number%>,<%=plans[i].equipmentList[j].groupName%>' /><input type="hidden" name="" id="" class="group" value="<%=plans[i].equipmentList[j].groupName%>" /><%=plans[i].equipmentList[j].name%>、<%=plans[i].equipmentList[j].number%><img src="/Images/gb_tb.png" onclick="delnum(this)" /></div>
+												<%}-%>
+									      	<%}-%>
+									      	</div>
+									      </td>
+									      <td>
+									      	<select name="department">
+									      		<%for(var j=0;j<plans[i].groupOptions.length;j++){-%>
+													<%if(plans[i].group==plans[i].groupOptions[j]){-%>
+														<option value="<%=plans[i].groupOptions[j]%>" selected="selected"><%=plans[i].groupOptions[j]%></option>
+													<%}else{-%>
+														<option value="<%=plans[i].groupOptions[j]%>"><%=plans[i].groupOptions[j]%></option>
+													<%}-%>
+									      		<%}-%>
+									      	</select>
+									      </td>
+									      <td><input type="text" class="layui-input"  name="extra"  id="" value="<%=plans[i].extra%>" /></td>
+									      <td width="200px">
+									      	<div class="layui-btn layui-btn-sm" onclick="delsep(this)">
+									      		删除
+									      	</div>
+									      	<div class="layui-btn layui-btn-sm" onclick="up(this)">
+									      		上移
+									      	</div>
+									      	<div class="layui-btn layui-btn-sm" onclick="down(this)">
+									      		下移
+									      	</div>
+									      </td>
+									    </tr>
+							  		<%}%>
+							  	<%}%>
+							  </tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_task/scheduling", "任务管理", "测试排程","排程")
+		var subTaskNumber = "<%=subTaskNumber%>"
+		var testItem=[]
+		var testStandardSet=new Set();
+		<%for(var tempStandard of testStandardSet){%>
+			testStandardSet.add('<%=tempStandard%>');
+		<%}%>
+		var chosen="<%=chosen%>"
+		var equipmentSelectArr=[]
+		console.log(subTaskNumber)
+		<%for(var i=0;i<testItemManage.length;i++){%>
+			var obj={}
+			obj.id="<%=testItemManage[i].id%>"
+			obj.name="<%=testItemManage[i].name%>"
+			obj.testClause="<%=testItemManage[i].testClause%>"
+			obj.main="<%=testItemManage[i].main%>"
+			obj.equipment="<%=testItemManage[i].equipment%>"
+			obj.equipmentNumber="<%=testItemManage[i].equipmentNumber%>"
+			obj.groupName="<%=testItemManage[i].groupName%>"
+			obj.testStandard="<%=testItemManage[i].testStandard%>"
+			testItem.push(obj)
+		<%}%>
+
+        console.log("testItem", testItem);
+		var departmentlist=[]
+		<%for(var i=0;i<departmentlist.length;i++){%>
+			var obj={}
+			obj.name="<%=departmentlist[i]%>"
+			departmentlist.push(obj)
+		<%}%>
+		console.log(testItem,departmentlist)
+		const stickyElm = document.querySelector('header')
+
+		const observer = new IntersectionObserver(
+				([e]) => {
+					console.log(e);
+					if (e.boundingClientRect.top > 100) {
+						$(e.target).removeClass('isSticky');
+						$("#addTestCourse").removeClass('isSticky');
+						return;
+					}
+					console.log("get in");
+					$(e.target).toggleClass('isSticky', e.intersectionRatio < 1);
+					$("#addTestCourse").toggleClass('isSticky', e.intersectionRatio < 1);
+				},
+				{threshold: [1]}
+		);
+
+		observer.observe(stickyElm)
+
+		function prepareTestItemSelect(testStandardSet,testItem) {
+			var str = '<select lay-filter="testItemManage" lay-search><option value="" ></option>'
+			for (var tempStandard of testStandardSet) {
+				str += '<optgroup label="' + tempStandard + '">';
+				for (var i = 0; i < testItem.length; i++) {
+					// testClause=testItem[0].testClause
+					if (testItem[i].testStandard && testItem[i].testStandard == tempStandard) {
+						str += '<option value="' + testItem[i].id + "、" + testItem[i].testClause + "、" + testItem[i].main + "、" + testItem[i].equipment + "、" + testItem[i].groupName + "、" + testItem[i].equipmentNumber + '">' + testItem[i].name + '</option>';
+					}
+					// equipmentName=testItem[0].equipment
+				}
+				str += '</optgroup>';
+			}
+			str += '</select>'
+			return str;
+		}
+
+		layui.use(['form', 'table','laydate','jquery'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			form.on('select(testItemManage)',function(data){
+				console.log(data.value)
+				var valarr=data.value.split("、")
+				let group=valarr[4].split(",")
+				var num=$(data.othis).parent().parent().parent().find("tr").index($(data.othis).parent().parent()[0])+"";
+				for(let i=0;i<equipmentSelectArr.length;i++){
+					console.log(num,equipmentSelectArr[i].num)
+					if(num==equipmentSelectArr[i].num){
+						equipmentSelectArr.splice(i,1)
+					}
+				}
+				console.log(equipmentSelectArr)
+				var $parentEl = $(data.othis).parents("tr");
+				$parentEl.find("td:eq(5)").find("select[name=department] option").remove()
+				if(group.length==1&&group[0]==""){
+					for(let i=0;i<departmentlist.length;i++){
+						$parentEl.find("td:eq(5)").find("select[name=department]").append('<option value="'+departmentlist[i].name+'">'+departmentlist[i].name+'</option>')
+					}
+				}else{
+					for(let i=0;i<group.length;i++){
+						$parentEl.find("td:eq(5)").find("select[name=department]").append('<option value="'+group[i]+'">'+group[i]+'</option>')
+					}
+				}
+				console.log($parentEl.find("td:eq(4)").find(".equipment"))
+				$parentEl.find("td:eq(4)").find(".equipment").each(function(i,v){
+					console.log(i)
+					delnum($(v).find("img"))
+				})
+				$parentEl.find("td:eq(1)").text(valarr[1])
+				$parentEl.find("td:eq(0)").find(".i").remove()
+				if (chosen == "理化") {
+					$parentEl.find("td:eq(3)").find("input").val(valarr[5]);
+					if(valarr[2]=="1"){
+						$parentEl.find("td:eq(0)").prepend('<div class="i" style="float: left;position: relative;top: 10px;">主</div>')
+						$parentEl.find("td:eq(3)").find(".layui-icon-add-1").remove()
+						$parentEl.find("td:eq(3)").prepend('<span class="layui-icon layui-icon-add-1" onclick="auxiliarysample(this)"></span>')
+					}else{
+						if($parentEl.find("td:eq(3)")[0].childElementCount==2){
+							$parentEl.find("td:eq(3)").prepend('<span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span>')
+						}else{
+
+						}
+					}
+				}else{
+					$parentEl.find("td:eq(4)").find("input").val(valarr[5]);
+					if(valarr[2]=="1"){
+						$parentEl.find("td:eq(0)").prepend('<div class="i" style="float: left;position: relative;top: 10px;">主</div>')
+						$parentEl.find("td:eq(4)").find(".layui-icon-add-1").remove()
+						$parentEl.find("td:eq(4)").prepend('<span class="layui-icon layui-icon-add-1" onclick="auxiliarysample(this)"></span>')
+					}else{
+						$parentEl.find("td:eq(4)").find(".layui-icon-add-1").remove()
+						$parentEl.find("td:eq(4)").prepend('<span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span>')
+
+					}
+				}
+				form.render("select")
+			})
+			form.on('select(sequence)',function(data){
+				console.log(data.value)
+				var id=data.value.split(",")[0]
+				var name=data.value.split(",")[1]
+				$("#sequencename").val(name)
+
+				if(data.value==""){
+					$("tbody tr").remove()
+				}else{
+					$.ajax({
+						type:"get",
+						url:"/modular_basics/testprojectedit?id="+id+"&jsontype=true",
+						success:function(res){
+							console.log(res)
+							var data=res.message.testItemArray
+							if(res.status=="ok"){
+								$("tbody tr").remove()
+								if(chosen=="理化"){
+									for(var j=0;j<data.length;j++){
+										var str='<select lay-filter="testItemManage" lay-search><option value=""></option>'
+										var testClause
+										var equipmentName
+										var hasselect=false
+										for (var tempStandard of testStandardSet) {
+											str += '<optgroup label="' + tempStandard + '">';
+											for (var i = 0; i < testItem.length; i++) {
+												// testClause=testItem[0].testClause
+												if (testItem[i].testStandard && testItem[i].testStandard == tempStandard) {
+                                                    if (data[j].id == testItem[i].id) {
+                                                        str += '<option selected value="' + testItem[i].id + "、" + testItem[i].testClause + "、" + testItem[i].main + "、" + testItem[i].equipment + "、" + testItem[i].groupName + "、" + testItem[i].equipmentNumber +'">' + testItem[i].name + '</option>'
+                                                        testClause = testItem[i].testClause
+                                                        equipmentName = testItem[i].equipmentNumber
+                                                        hasselect = true
+                                                    } else {
+                                                        str += '<option value="' + testItem[i].id + "、" + testItem[i].testClause + "、" + testItem[i].main + "、" + testItem[i].equipment + "、" + testItem[i].groupName + "、" + testItem[i].equipmentNumber +'">' + testItem[i].name + '</option>'
+                                                        if (hasselect) {
+
+                                                        } else {
+                                                            equipmentName = testItem[i].equipmentNumber
+                                                            testClause = testItem[0].testClause
+                                                        }
+                                                    }
+                                                }
+											}
+                                            str += '</optgroup>';
+										}
+                                        str+='</select>'
+	//									console.log(str)
+										var groupName=testItem[j].groupName.split(",")
+										var str1='<select name="department">'
+                                        for(var i=0;i<departmentlist.length;i++){
+                                            str1+='<option value="'+departmentlist[i].name+'">'+departmentlist[i].name+'</option>'
+                                        }
+										str1+='</select>'
+										console.log(equipmentName)
+										$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" />'+str+'</td><td>'+testClause+'</td><td><select name="inOrder"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input" name="extra"  /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+										form.render("select")
+									}
+								}else{
+									var sequenceTestStandardSet=new Set();
+									console.log(data);
+									for(var j=0;j<data.length;j++){
+										var str='<select lay-filter="testItemManage" lay-search><option value=""></option>'
+										var testClause
+										var equipmentName
+										var hasselect=false
+										var main=false
+										for (var tempStandard of testStandardSet) {
+											str += '<optgroup label="' + tempStandard + '">';
+											for (var i = 0; i < testItem.length; i++) {
+												// testClause=testItem[0].testClause
+												if (testItem[i].testStandard && testItem[i].testStandard == tempStandard) {
+													if(data[j].id==testItem[i].id){
+														str+='<option selected value="'+testItem[i].id+"、"+testItem[i].testClause+"、"+testItem[i].main+"、"+testItem[i].equipment+"、"+testItem[i].groupName+"、"+testItem[i].equipmentNumber+'">'+testItem[i].name+'</option>'
+														testClause=testItem[i].testClause
+														equipmentName=testItem[i].equipmentNumber
+														hasselect=true
+														if(testItem[i].main=="1"){
+															main=true
+														}
+													}else{
+														str+='<option value="'+testItem[i].id+"、"+testItem[i].testClause+"、"+testItem[i].main+"、"+testItem[i].equipment+"、"+testItem[i].groupName+"、"+testItem[i].equipmentNumber+'">'+testItem[i].name+'</option>'
+														if(hasselect){
+
+														}else{
+															testClause=testItem[0].testClause
+															equipmentName=testItem[i].equipmentNumber
+														}
+													}
+												}
+												// equipmentName=testItem[0].equipment
+											}
+											str += '</optgroup>';
+										}
+										str+='</select>'
+	//									console.log(str)
+										var str1='<select name="department">'
+										for(var i=0;i<departmentlist.length;i++){
+											str1+='<option value="'+departmentlist[i].name+'">'+departmentlist[i].name+'</option>'
+										}
+										str1+='</select>'
+										console.log(equipmentName)
+										if(main){
+											$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" /><div class="i" style="float: left;position: relative;top: 10px;">主</div>'+str+'</td><td>'+testClause+'</td><td><select name="inOrder"><option value="true">是</option><option value="false">否</option></select></td><td><select name="judge"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input"  name="extra" /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+										}else{
+											$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" />'+str+'</td><td>'+testClause+'</td><td><select name="inOrder"><option value="true">是</option><option value="false">否</option></select></td><td><select name="judge"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input"  name="extra" /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+										}
+										form.render("select")
+									}
+								}
+
+							}
+						}
+					});
+				}
+
+			})
+			$.ajax({
+				type:"get",
+				url:"/modular_basics/testprojectlist?page=-1&limit=0",
+				success:function(res){
+					console.log(res)
+					var data=res.message.data
+					if(res.status=="ok"){
+						for(var i=0;i<data.length;i++){
+							$("#sequence").append('<option value="'+data[i].id+","+data[i].name+'">'+data[i].name+'</option>')
+						}
+						form.render("select")
+					}
+				}
+			});
+			//删除行
+			window.delsep=function(obj){
+				$(obj).parents("tr").remove()
+			}
+			//上移
+			window.up=function(_a){
+			  var _row = _a.parentNode.parentNode;
+			  //如果不是第一行，则与上一行交换顺序
+			  var _node = _row.previousSibling;
+			  while(_node && _node.nodeType != 1){
+			    _node = _node.previousSibling;
+			  }
+			  if(_node){
+			    swapNode(_row,_node);
+			  }
+			}
+			//下移
+			window.down=function(_a){
+			  var _row = _a.parentNode.parentNode;
+			  //如果不是最后一行，则与下一行交换顺序
+			  var _node = _row.nextSibling;
+			  while(_node && _node.nodeType != 1){
+			    _node = _node.nextSibling;
+			  }
+			  if(_node){
+			    swapNode(_row,_node);
+			  }
+			}
+			window.swapNode=function (node1,node2){
+			  //获取父结点
+			  var _parent = node1.parentNode;
+			  //获取两个结点的相对位置
+			  var _t1 = node1.nextSibling;
+			  var _t2 = node2.nextSibling;
+			  //将node2插入到原来node1的位置
+			  if(_t1)_parent.insertBefore(node2,_t1);
+			  else _parent.appendChild(node2);
+			  //将node1插入到原来node2的位置
+			  if(_t2)_parent.insertBefore(node1,_t2);
+			  else _parent.appendChild(node1);
+			}
+			window.delnum=function(obj){
+				console.log(obj)
+				$(obj).parents(".equipment").remove()
+
+			}
+			window.auxiliarysample=function(obj){
+				var num=$(obj).parent().parent().parent().find("tr").index($(obj).parent().parent()[0]);
+				var main=$(obj).parent().parent().find("div").hasClass("i")
+				var equipmentName=$(obj).parent().find("input").val()
+				var equipmentSelectArr=[]
+				var group=[]
+
+				$(obj).parent().find(".equipment").each(function(i,v){
+					var obj={}
+					obj.id=$(v).find(".selectequipment").val().split(",")[0]
+					obj.add=$(v).find(".selectequipment").val().split(",")[1]
+					equipmentSelectArr.push(obj)
+					group.push($(v).find(".group").val())
+				})
+				console.log(num,equipmentSelectArr,group)
+				layer.open({
+					type: 2,
+					title:"选择设备",
+					area: ['100%', '100%'],
+					content: '/modular_task/equipmentBasic?num='+num+'&equipmentarray='+encodeURIComponent(JSON.stringify(equipmentSelectArr))+'&main='+main +'&equipmentName='+equipmentName+'&group='+group+'&type=1'
+				});
+			}
+			window.sampleNum=function(obj){
+				var num=$(obj).parent().parent().parent().find("tr").index($(obj).parent().parent()[0]);
+				var main=$(obj).parent().parent().find("div").hasClass("i")
+				var equipmentName=$(obj).parent().find("input").val()
+				var equipmentSelectArr=[]
+				var group=[]
+
+				$(obj).parent().find(".equipment").each(function(i,v){
+					var obj={}
+					obj.id=$(v).find(".selectequipment").val().split(",")[0]
+					obj.add=$(v).find(".selectequipment").val().split(",")[1]
+					equipmentSelectArr.push(obj)
+					group.push($(v).find(".group").val())
+				})
+				console.log(num,equipmentSelectArr,group)
+				layer.open({
+					type: 2,
+					title:"选择设备",
+					area: ['100%', '100%'],
+					content: '/modular_task/equipmentBasic?num='+num+'&equipmentarray='+encodeURIComponent(JSON.stringify(equipmentSelectArr))+'&main='+main +'&equipmentName='+equipmentName+'&group='+group+'&type=0'
+				});
+			}
+			window.show=function(obj){
+				layer.open({
+					type: 2,
+					title:"甘特图",
+					area: ['100%', '100%'],
+					content: '/modular_equipment/Ganttedit?subTaskNumber='+subTaskNumber,
+					end : function() {
+						console.log("111")
+						window.location.reload()
+					}
+				});
+			}
+			window.auxiliarygetnode=function(arr,num){
+				console.log(arr,num)
+				$("tbody").find("tr").each(function(i,v){
+					if(i==num){
+						$(v).find(".equipmentlist").find(".equipment").remove()
+						for(var i=0;i<arr.length;i++){
+							$(v).find(".equipmentlist").append("<div class='equipment'><input type='hidden' class='group' value='' /><input type='hidden'  class='selectequipment' value='"+arr[i].id+','+arr[i].add+"' />"+arr[i].add+"<img src='/Images/gb_tb.png' onclick='delnum(this)' /></div>")
+						}
+					}
+				})
+			}
+			window.getnode=function(arr,num,group){
+				console.log(arr,num)
+				console.log(group)
+				var setgroup=Array.from(new Set(group))
+				$("tbody").find("tr").each(function(i,v){
+					if(i==num){
+						$(v).find(".equipmentlist").find(".equipment").remove()
+						for(var i=0;i<arr.length;i++){
+							$(v).find(".equipmentlist").append("<div class='equipment'><input type='hidden' class='group' value='"+group[i]+"' /><input type='hidden'  class='selectequipment' value='"+arr[i].id+','+arr[i].add+"' />"+arr[i].add+"<img src='/Images/gb_tb.png' onclick='delnum(this)' /></div>")
+						}
+					}
+				})
+				$("select[name=department]").each(function(i,v){
+					console.log(i,num)
+					if(i==num){
+						$(v).find("option").remove()
+						for(let o=0;o<setgroup.length;o++){
+							$(v).append('<option value="'+setgroup[o]+'">'+setgroup[o]+'</option>')
+						}
+						form.render("select")
+					}
+				})
+			}
+			window.setSelectedStandardPiece=function (eq){
+				$("#testStandardSn").val(eq?eq.factory_number:"");
+			}
+			var $ = layui.$,
+				active = {
+					addRole: function() { //新增分单
+						var testClause
+						if(chosen=="理化"){
+							var equipmentName
+							var main=false
+							var str = prepareTestItemSelect(testStandardSet, testItem);
+							console.log(str)
+							var str1='<select name="department">'
+							for(var i=0;i<departmentlist.length;i++){
+								str1+='<option value="'+departmentlist[i].name+'">'+departmentlist[i].name+'</option>'
+							}
+							str1+='</select>'
+							console.log(str1)
+							$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" />'+str+'</td><td></td><td><select name="inOrder"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input" name="extra"  /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+							form.render("select")
+						}else{
+							var equipmentname
+							var str = prepareTestItemSelect(testStandardSet,testItem);
+							var str1='<select name="department">'
+							for(var i=0;i<departmentlist.length;i++){
+								str1+='<option value="'+departmentlist[i].name+'">'+departmentlist[i].name+'</option>'
+							}
+							str1+='</select>'
+							console.log(str1)
+							if(main){
+								$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" />'+str+'</td><td></td><td><select name="inOrder"><option value="true">是</option><option value="false">否</option></select></select></td><td><select name="judge"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input" name="extra"  /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+							}else{
+								$("tbody").append('<tr><td width="15%" class="testItemManage"><input type="hidden" name="" id="" value="" />'+str+'</td><td></td><td><select name="inOrder"><option value="true">是</option><option value="false">否</option></select></select></td><td><select name="judge"><option value="false">否</option><option value="true">是</option></select></td><td width="25%"><input type="hidden" class="searchequipment" name="" id="" value="'+equipmentName+'" /><input type="hidden" name="" id="" class="group" value="" /><span class="layui-icon layui-icon-add-1" onclick="sampleNum(this)"></span><div class="equipmentlist"></div></td><td>'+str1+'</td><td><input class="layui-input" name="extra"  /></td><td width="200px"><div class="layui-btn layui-btn-sm" onclick="delsep(this)">删除</div><div class="layui-btn layui-btn-sm" onclick="up(this)">上移</div><div class="layui-btn layui-btn-sm" onclick="down(this)">下移</div></td></tr>')
+							}
+							form.render("select")
+						}
+						$("tbody").scrollTop(1000);
+					},
+					chooseStandardPiece:function (obj){
+						layer.open({
+							type: 2,
+							title:"选择设备",
+							area: ['100%', '100%'],
+							content: '/modular_task/equipmentBasic?equipmentarray='+encodeURIComponent(JSON.stringify([]))+'&equipmentName='+encodeURIComponent('测试标准组件')+'&type=0&func=chooseStandardPiece&currentPiece='+$("#testStandardSn").val()
+						});
+					},
+					savesequence:function(){
+						var json={}
+						var plans=[]
+						$("tbody tr").each(function(i,v){
+							var obj={}
+							var equipmentList=[]
+							var id=$(v).find("td").eq(0).find("select").val().split("、")[0]
+							var inOrder=$(v).find("td").eq(2).find("select").val()=="true"?"1":"0"
+							obj.id=id
+							obj.inOrder=inOrder
+							plans[i]=obj
+						})
+						var name=$("#sequencename").val()
+						$.ajax({
+							type: "POST",
+							url: "/modular_task/addSequence",
+							data:{
+								obj:plans,
+								name:name
+							},
+							success: function(msg) {
+								console.log(msg);
+								if(msg.status == "ok") {
+									alert("保存成功");
+									//执行刷新
+//									window.location.href="/modular_task/scheduling"
+//									window.location.reload()
+								} else {
+									alert(msg.message);
+								}
+							}
+						});
+					},
+					collar: function() { //打印流转单
+						window.location.href="/modular_task/circulation?subTaskNumber="+subTaskNumber
+					},
+					save: function() { //保存
+						var json={}
+						var plans=[]
+						$("tbody tr").each(function(i,v){
+							var obj={}
+							var equipmentList=[]
+							var itemId=$(v).find("td").eq(0).find("select").val().split("、")[0]
+							var id=$(v).find("td").eq(0).find("input").val()
+							var inOrder=$(v).find("td").find("select[name=inOrder]").val()
+							var judge=$(v).find("td").find("select[name=judge]").val()
+							var group=$(v).find("td").find("select[name=department]").val()
+							var extra=$(v).find("td").find("input[name=extra]").val()
+							$(v).find(".equipment").each(function(j,e){
+								var obj1={}
+								var equipmentid=$(e).find(".selectequipment").val().split(",")[0]
+								var equipmentname=$(e).find(".selectequipment").val().split(",")[1].split("、")[0]
+								obj1.id=equipmentid
+								obj1.name=equipmentname
+								equipmentList[j]=obj1
+							})
+							obj.itemId=itemId
+							obj.inOrder=inOrder
+							obj.group=group
+							obj.extra=extra
+							obj.judge=judge
+							obj.equipmentList=equipmentList
+							if(id!=""){
+								obj.id=id
+							}
+							plans[i]=obj
+						})
+						json.subTaskNumber=subTaskNumber
+						json.testSequenceName=$("#sequencename").val()
+						json.testStandardPiece=$("#testStandardSn").val()
+						json.plans=plans
+						console.log(json)
+						$.ajax({
+							type: "POST",
+							url: "/modular_task/saveSubTaskTestSequence",
+							data: {
+								obj:JSON.stringify(json)
+							},
+							success: function(msg) {
+								console.log(msg);
+								if(msg.status == "ok") {
+									alert("保存成功");
+									//执行刷新
+//									window.location.href="/modular_task/scheduling"
+									window.location.reload()
+								} else {
+									alert(msg.message);
+								}
+							}
+						});
+					},
+					end:function(){
+						$.ajax({
+							url:"/modular_task/printWorkFlowSheet?subTaskNumber="+subTaskNumber,
+							type:"GET",
+							success:function(res){
+								console.log(res);
+								if(res.status=="ok"){
+									alert("排程结束")
+									window.location.href="/modular_task/scheduling"
+								}else{
+									alert(res.message);
+								}
+							}
+						})
+					}
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+
+</html>

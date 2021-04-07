@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 25%;">
+							<label class="layui-form-label">耗材名称</label>
+							<div class="layui-input-block">
+								<input type="hidden" id="id" name="id" value="<%=id%>" />
+								<input type="text" class="layui-input" readonly="readonly" name="consumname" id="consumname" value="<%=consumname%>">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 25%;">
+							<label class="layui-form-label"><span class="i">*</span>领用人</label>
+							<div class="layui-input-block">
+								<select id="douser" name="douser" lay-filter="douser" lay-verify="required"></select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 25%;">
+							<label class="layui-form-label"><span class="i">*</span>领用数量</label>
+							<div class="layui-input-block">
+								<input type="number" class="layui-input" name="num" id="num" lay-verify="required">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		layui.use(['form','jquery'], function() {
+			var form = layui.form
+			var $=layui.jquery
+			//监听提交
+			$.ajax({
+	            type: "get",
+	            url: "/modular_qualifications/personnellist?page=-1&limit=0&keyword=",
+	            success: function (msg) {
+	                console.log(msg)
+	                var data=msg.message.data
+	                if (msg.status=="ok") {
+						for(var i=0;i<data.length;i++){
+							$("#douser").append('<option value="'+data[i].id+","+data[i].name+'">'+data[i].name+'</option>')
+						}
+						form.render("select")
+	                } else {
+	                    alert(msg.message);
+	                }
+	            }
+	        });
+			form.on('submit(formDemo)', function(data) {
+				var douser = data.field.douser 
+				var consumid = data.field.id
+				var num = data.field.num
+				console.log(data.field)
+				$.ajax({
+					type: "post",
+					url: "/modular_equipment/consumusesheet",
+					data:{
+						douser:douser,
+						id:consumid,
+						num:num,
+						type:1
+					},
+					success: function(res) {
+						console.log(res)
+						if(res.status == 200) {
+							alert(res.message)
+							parent.location.reload()
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+							parent.layer.close(index);
+						} else {
+							layer.msg(res.message, {
+								icon: 5
+							})
+						}
+					}
+				});
+				return false;
+			});
+		});
+	</script>
+</html>

@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		/*数字框去除箭头*/
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+		 
+		input[type="number"] {
+		    -moz-appearance: textfield;
+		}
+		/*组件/层压件材料信息*/
+		.layui-tab-item .layui-form-label{
+			padding-top: 0px;
+		}
+		.synchro{
+			float: right;
+			height: 28px;
+		}
+		.sampleNum{
+			display: inline-block;
+		}
+		.selectedsample{
+			display: inline-block;
+			border: 1px solid #37a3dd;
+			padding:3px 7px;
+			border-radius: 5px;
+			margin-left: 5px;
+			
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<div class="layui-btn layui-btn-sm layui-btn-danger" data-type="reject"><i class="iconfont icon-jinggao"></i>驳回</div>
+					<div class="layui-btn layui-btn-sm save" data-type="assign"><i class="iconfont icon-xiafa"></i>通过并下发</div>
+				</div>
+				<div id="task">
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title"> 
+								样品信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">分单号:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.subTaskNumber%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">是否加急:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.prior?'是':'否'%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品编号:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.sampleNumber%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品名称:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.sampleName%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品数量:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.sampleCount%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="entrust">
+						<div class="blueline">
+							<div class="title"> 
+								委托信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测依据:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testStandard%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">判定依据:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.judgeStandard%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测项目:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testProj%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">要求完成日期:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.completeDateLimit%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">备注:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.remark%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="equipment">
+						<div class="blueline">
+							<div class="title"> 
+								设备信息
+							</div>
+						</div>
+						<div class="table">
+							<table class="layui-table">
+							  <colgroup>
+							    <col width="150">
+							    <col width="150">
+							    <col width="200">
+							    <col>
+							  </colgroup>
+							  <thead>
+							    <tr>
+							      <th>序号</th>
+							      <th>设备名称</th>
+							      <th>设备编号</th>
+							      <th>本次占用容量</th>
+							      <th>开始时间</th>
+							      <th>完成时间</th>
+							    </tr> 
+							  </thead>
+							  <tbody>
+							  	<%if(equipmentList.length>0){%>
+							  		<%for(var i=0;i<equipmentList.length;i++){%>
+							  			<tr>
+									      <td><%=equipmentList[i].sn%></td>
+									      <td><%=equipmentList[i].name%></td>
+									      <td><%=equipmentList[i].number%></td>
+									      <td><%=equipmentList[i].useCount%></td>
+									      <td><%=equipmentList[i].startTime%></td>
+									      <td><%=equipmentList[i].completeTime%></td>
+									    </tr>
+							  		<%}%>
+							  	<%}%>
+							  </tbody>
+							</table>  
+						</div>
+					</div>
+					<div class="record">
+						<div class="blueline">
+							<div class="title"> 
+								原始记录
+							</div>
+						</div>
+						<!--<div class="toolbtn">
+							<div class="layui-btn layui-btn-sm" data-type="uploadfile"><i class="iconfont icon-shangchuan"></i>上传文件</div>
+						</div> -->
+						<div class="layui-form-item">
+							<input type="hidden" name="json" value="<%=originalData%>">
+						<!--    <iframe id="ifr_child" src="http://192.168.1.161:9059/admin/task/iframe.html" style="width: 100%;min-height: 400px"></iframe>-->
+						    <iframe id="iframe" src="<%=templateUrl%>" style="width: 100%;min-height: 400px"></iframe>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_task/review", "任务管理", "数据复核","复核")
+		var testCourseId='<%=testCourseId%>'
+		layui.use(['form', 'table','laydate','jquery'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			var $ = layui.$,
+				active = {
+					reject: function(index,layero) { //驳回
+						layer.open({
+							type: 1,
+							title:'错误信息',
+							skin: 'layui-layer-rim', //加上边框
+							area: ['420px', '240px'], //宽高
+							content: '<textarea class="layui-textarea problem" placeholder="请输入驳回错误信息" rows="" cols=""></textarea>',
+							btn: ['确定','取消'],
+							btn1:function(){
+								$.ajax({
+									url:'/modular_task/saveDataCheckResult?testCourseId='+testCourseId+'&action=0&problem='+$(".problem").val(),
+									type:'GET',
+									success:function(res){
+										console.log(res)
+										if(res.status=="ok"){
+											layer.close(index);
+			                				window.location.href="/modular_task/review"
+										}else{
+											alert(res.message)
+										}
+									}
+								})
+							},
+							btn2:function(){
+//								alert("2")
+							},
+						});
+					},
+					assign: function() { //通过并下发
+						$.ajax({
+							url:'/modular_task/saveDataCheckResult?testCourseId='+testCourseId+'&action=1',
+							type:'GET',
+							success:function(res){
+								if(res.status=="ok"){
+									window.location.href="/modular_task/review"
+								}else{
+									alert(res.message)
+								}
+							}
+						})
+					},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+	<!--获取和保存原始记录-->
+	<script type="text/javascript">
+		//新保存方式[使用中]
+        //监听模块返回值
+        window.addEventListener('message', function(event) {
+            console.log(event);
+            if (event.data.msg === "get") {
+                //通知子集传递编辑数据
+                PushTChild();
+            }else if(event.data.msg==='sava'){
+                //来源模版采集模块
+                SaveJson(event.data.json);
+            }
+        });
+        //把编辑信息推给子级
+        function PushTChild() {
+            var json = $("input[name='json']").val();
+            var myframe = document.getElementById('iframe');//获取iframe
+            myframe.contentWindow.postMessage(
+                {
+                    msg: "edit",
+                    json: json,
+                },
+                "<%=global.Record%>"
+            );//协议+主机+端口号）
+        }
+
+        //异步保存
+        function SaveJson(json) {
+            var str = JSON.stringify(json);
+            $.ajax({
+                type: "POST",
+                url: "/modular_task/saveOriginalRecord",
+                data: {
+                    testCourseId: '<%=testCourseId%>',
+                    json: str,
+                },
+                success: function (msg) {
+                    if (msg.status === 'ok') {
+                        alert("已添加!")
+                    } else {
+                        alert(msg.message);
+                    }
+                }
+            });
+        }
+	</script>
+</html>

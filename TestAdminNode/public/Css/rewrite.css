@@ -1,0 +1,64 @@
+.body1 {
+	background-color: #424b4f !important;
+	color: white !important;
+}
+
+.body1 .am-topbar-inverse {
+	background-color: #424b4f !important;
+	color: white !important;
+}
+
+
+/*头部*/
+
+.body1 .tpl-header-list-link {
+	color: white !important;
+}
+
+.body1 .tpl-header-list-link:hover {
+	color: #424b4f !important;
+}
+
+
+/*菜单*/
+
+.body1 .tpl-left-nav {
+	background-color:#424b4f !important;
+	color: white !important;
+}
+
+.body1 .tpl-left-nav-sub-menu a span {
+	color: white !important;
+}
+
+
+/*列表*/
+
+.body1 .tpl-portlet-components {
+	background-color:#424b4f !important;
+	color: white !important;
+}
+
+.body1 .am-table-striped>tbody>tr:nth-child(odd)>td {
+	background-color:#424b4f !important;
+}
+
+.body1 .am-table-hover>tbody>tr:hover>td,
+.am-table-hover>tbody>tr:hover>th {
+	background-color: white !important;
+	color: #424b4f;
+}
+
+.body1 .am-table>thead>tr>th{
+	color: white;
+}
+.body1 .am-table>tbody>tr>td{
+	color: white;
+}
+
+/*默认按钮*/
+
+.body1 .am-btn-default {
+	background-color:#424b4f !important;
+	color: white !important;
+}

@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/jquery.jOrgChart.css" />
+    <style type="text/css">
+        .cBody{
+            margin-top: 20px;
+        }
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		.layui-input-block{
+			line-height:36px;
+		}
+        .sampling {
+			cursor: pointer;
+			border-radius: 6px;
+			padding: 8px;
+			border: 1px solid #37a3dd;
+		}
+		
+		.inStorage {
+			background-color: #37a3dd;
+			color: white;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div id="tab">
+					<div class="mail">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									样品信息
+								</div>
+                            </div>
+							<span>扫样品唯一码/原SN码</span>
+							<div class="layui-inline" style="width: 30%">
+								<input class="layui-input"  type="text" name="search" id="search" autocomplete="off" placeholder="扫码/输入样品唯一码或原SN码" autofocus="autofocus" onkeydown="entersearch(this)">
+							</div>
+                            <div class="layui-form-item"  style="margin-top: 10px">
+                                <%for(var i=0;i<sampleArray.length;i++){%>
+                                    <div class="layui-inline sampling" name="<%=sampleArray[i].uniqueSampleNumber%>" data-sample-number="<%=sampleArray[i].sampleNumber.substr(0,sampleArray[i].sampleNumber.indexOf("/库位编号")>0?sampleArray[i].sampleNumber.indexOf("/库位编号"):sampleArray[i].sampleNumber.length)%>">
+                                        <%=sampleArray[i].sampleNumber%>
+                                    </div>
+                                <%}%>
+                            </div>
+						</div>
+					</div>
+					<div class="Personnellist">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									补充信息
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">领样人</label>
+									<div class="layui-input-block">
+										<select name="staffId" lay-filter="staffId" id="staffId" lay-search>
+                                            <option value=""></option>
+										</select>
+									</div>
+                                </div>
+							</div>
+						</div>
+                    </div>
+                    <div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<div class="layui-btn" data-type="collar">保存</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+		<script src="/Scripts/jquery.jOrgChart.js" type="text/javascript" charset="utf-8"></script>
+	</body>
+	<script>
+		href("/modular_sample/sampling", "样品管理", "样品列表", "领样")
+        var delegateNum="<%=delegateNum%>"
+		function entersearch(obj) {
+			var event = window.event || arguments.callee.caller.arguments[0];
+			if (event.keyCode == 13) {
+				setTimeout(function () {
+					$(obj).val("")
+				}, 200)
+				var searchVal = $(obj).val()
+				$("div[name=" + searchVal + "]").addClass("inStorage");
+				$("div[data-sample-number=" + searchVal + "]").addClass("inStorage");
+			}
+		}
+		layui.use(['form','jquery'], function(){
+            var form = layui.form
+            var $=layui.jquery
+            $(".sampling").click(function(){
+				if($(this).hasClass("inStorage")){
+					$(this).removeClass("inStorage")
+				}else{
+					$(this).addClass("inStorage")
+				}
+            })
+            $.ajax({
+                type: "POST",
+                url: "/modular_qualifications/DepartmentAndRole?role=检测人员",
+                success: function (msg) {
+                    console.log(msg);
+                    var data=msg.message
+                    if (msg.status =="ok") {
+                        for(var i=0;i<data.length;i++){
+                            $("#staffId").append('<option value="'+data[i].id+'">'+data[i].name+'</option>')
+                        }
+                        form.render("select");
+                    } else {
+                        alert(msg.message);
+                    }
+                }
+            });
+			var $ = layui.$, active = {
+                collar: function(){//核样通过
+                    var sampleArray=[]
+                    $(".inStorage").each(function(i,v){
+                        sampleArray[i]=$(v).attr("name")
+                    })
+                    console.log(sampleArray)
+				    $.ajax({
+                        type:"get",
+                        url:"/modular_sample/fetchSampleApi?delegateNum="+delegateNum+"&sampleArray="+sampleArray,
+                        data: $("#addForm").serialize(),
+                        success:function(res){
+                            console.log(res)
+                            if(res.status=="ok"){
+                                alert(res.message)
+                                // parent.layer.msg(res.message,{icon: 1,time:2000})
+                                parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                                parent.layer.close(index);
+                                
+                            }else{
+                                layer.msg(res.message,{icon: 2,time:2000})
+                            }
+                        },error:function(code){   
+                                parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+                            }
+                    });
+				},
+			}
+			$('.layui-btn').on('click', function(){
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+		
+	</script>
+</html>

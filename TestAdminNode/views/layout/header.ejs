@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>天合光能股份有限公司</title>
+		<meta name="description" content="天合光能股份有限公司">
+		<meta name="keywords" content="index">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="renderer" content="webkit">
+		<meta name="robots" content="all">
+		<meta http-equiv="Cache-Control" content="no-siteapp" />
+		<link rel="icon" type="image/png" href="i/favicon.png">
+		<link rel="apple-touch-icon-precomposed" href="i/app-icon72x72@2x.png">
+		<meta name="apple-mobile-web-app-title" content="Amaze UI" />
+		<link rel="stylesheet" href="/Css/amazeui.min.css" />
+		<link rel="stylesheet" type="text/css" href="/layuiadmin/layui/css/layui.css" />
+		<!--<link rel="stylesheet" href="/Css/amazeui.datatables.css" />-->
+		<link rel="stylesheet" href="/Css/admin.css">
+		<link rel="stylesheet" href="/Css/app.css">
+		<link rel="stylesheet" href="/Css/datatableapp.css">
+		<script src="/Scripts/jquery.min.js"></script>
+		<script type="text/javascript" src="/Scripts/ready.js"></script>
+		<link rel="stylesheet" href="/layer/2.4/skin/layer.css">
+		<!--	    <link rel="stylesheet" href="/Css/font-awesome.min93e3.css">-->
+		<script src="/treetable/jquery.treetable.js"></script>
+		<link href="/treetable/jquery.treetable.theme.default.css" rel="stylesheet" />
+		<link href="/treetable/jquery.treetable.css" rel="stylesheet" />
+		<link href="/Css/rewrite.css" rel="stylesheet" />
+		<script src="/Scripts/toastr.js"></script>
+		<link href="/Css/toastr.css" rel="stylesheet" />
+		<link href="/layuiadmin/formSelects-v4.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="/Css/iconfont.css"/>
+		<link href="/webuploader/webuploader.css" rel="stylesheet" />
+	</head>
+	<script>
+		var _PageHeight = document.documentElement.clientHeight,
+			_PageWidth = document.documentElement.clientWidth;
+		var _LoadingTop = _PageHeight > 61 ? (_PageHeight - 61) / 2 : 0,
+			_LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0;
+		var _LoadingHtml = '<div id="loadingDiv" style="position:absolute;left:0;width:100%;height:' + _PageHeight + 'px;top:0;background:#f3f8ff;opacity:1;filter:alpha(opacity=80);z-index:10000;"><div style="position: absolute; cursor1: wait; left: ' + _LoadingLeft + 'px; top:' + _LoadingTop + 'px; width: auto; height: 57px; line-height: 57px; padding-left: 50px; padding-right: 5px; background: #fff url(/Images/lightbox-ico-loading.gif) no-repeat scroll 5px 10px; border: 1px solid #95B8E7; color: #696969; font-family:\'Microsoft YaHei\';">页面加载中，请等待...</div></div>';
+		document.write(_LoadingHtml);
+		document.onreadystatechange = completeLoading;
+
+		function completeLoading() {
+			if(document.readyState == "complete") {
+				var loadingMask = document.getElementById('loadingDiv');
+				loadingMask.parentNode.removeChild(loadingMask);
+			}
+		}
+	</script>
+	<body>
+		<style type="text/css">
+			/* ::-webkit-scrollbar {
+				display: none;
+			} */
+			.iconfont{
+				margin-right: 5px;
+			}
+			
+			/*上传文件*/
+			.wu-example{
+				/*width: 23rem;*/
+				height: 2.5rem;
+				margin:1rem auto;
+			}
+			/* 文字换行 */
+			.layui-input-block span{
+				word-wrap: break-word;
+			}
+			.flie-height .item{
+				height: 10rem;
+				width: 10rem;
+				border: 0.05rem solid #D6D6D6;
+				text-align: center;
+				float: left;
+				margin-right: 1rem;
+				font-size: 10px;
+			}
+			.flie-height .item img.img{
+				height: 45%;
+				width: 45%;
+				margin-top: 1.5rem;
+				margin-left: 1.5rem;
+				
+			}
+			.flie-height .item p{
+				margin: 0;
+			}
+			.flie-height{
+				height: 13rem;
+				padding-top: 1rem;
+				padding-left: 10px;
+				margin-bottom: 1rem;
+			}
+			.flie-height #flie{
+				width: 100%;
+			    height:100%;
+			    margin: auto;
+			}
+			.flie-height #thelist{
+			    height: 100%;
+			}
+			.flie-height .icon{
+				height: 1.5rem;
+				width: 1.5rem;
+				float: right;
+				position: relative;
+				background-image: url(/Images/gb_tb.png);
+			}
+			/* 滚动条样式 */
+			::-webkit-scrollbar {
+				/*滚动条整体样式*/
+				width: 1px;
+				/*高宽分别对应横竖滚动条的尺寸*/
+				height: 1px;
+				background-color: rgba(0, 0, 0, 0)
+			}
+			::-webkit-scrollbar-thumb {
+				/*滚动条里面小方块*/
+				border-radius: 10px;
+				-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+				background: #0e90d2;
+			}
+			
+			::-webkit-scrollbar-track {
+				/*滚动条里面轨道*/
+				-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+				border-radius: 10px;
+				background: rgba(0, 0, 0, 0);
+			}
+			/*必填项*/
+			.i{
+				color: red;
+			}
+			/*.layui-form-label*/
+			.layui-form-label{
+				width: 120px;
+			}
+			.layui-input-block{
+				margin-left:120px;
+			}
+			.cBody{
+				height: 100%;
+				padding: 0 10px;
+				overflow-y: auto;
+			}
+			.cBody>.demoTable{
+				margin-top: 5px;
+				height: 25px;
+			}
+			/*.layui-form-select .layui-input*/
+			.layui-form-select .layui-input{
+				padding-right: 0;
+			}
+			/*表格头部按钮*/
+			.demoTable button{
+				width:90px;
+				height: 25px;
+				border-radius: 5px !important;
+				line-height: 25px;
+				margin-right: 10px !important;
+			}
+			.demoTable div{
+				width:90px;
+				border-radius: 5px !important;
+				line-height: 25px;
+				margin-right: 10px !important;
+			}
+			/*表格搜索*/
+			.toolbar{
+				float: right;
+				margin-top: 0px;
+			}
+			.toolbar .layui-input{
+				height: 29px;
+				font-size: 12px;
+			}
+			/*表单*/
+			form{
+				width: 90%;
+				margin: auto;
+			}
+			/*编辑页顶部按钮*/
+			.toolbtn{
+				height: 50px;
+			}
+			.toolbtn div,.btnsave{
+				float: right;
+				margin-left: 10px;
+			}
+		</style>

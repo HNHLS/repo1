@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+    <% include ../layout/header.ejs %>
+    <script type="text/javascript" src="/Scripts/echarts.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        html,
+        body {
+            padding: 0 0 0 12px;
+        }
+        
+        .layui-fluid {
+            padding: 0 0 0 10px;
+            overflow-y: scroll;
+        }
+        
+        html,
+        body,
+        .layui-fluid {
+            height: 100%;
+            width: 99%;
+        }
+
+		.layui-row>div {
+		height: 100%;
+
+	}
+        
+        .top {
+            height: 95%;
+            border: 1px solid #37a3dd;
+            border-radius: 10px;
+            margin: 10px 10px;
+            box-shadow: 5px 10px 15px #ddd;
+            padding: 15px;
+        }
+        
+        .top .left img {
+            height: 20px;
+            width: 20px;
+            margin-right: 5px;
+        }
+        
+        .top .left span {
+            vertical-align: middle;
+            color: #37a3dd;
+            font-weight: 700;
+        }
+        /* 通知 */
+        
+        .content {
+            height: 77%;
+            overflow-y: scroll;
+        }
+        
+        .notice {
+            height: 100%;
+        }
+        
+        .notice td,
+        th {
+            padding: 10px;
+        }
+        
+        .notice tr td:first-child {
+            color: #333;
+        }
+        
+        .notice tr td:last-child {
+            color: #aaa;
+        }
+        
+        .notice tbody tr:nth-child(odd) {
+            background-color: #f5f9ff;
+        }
+        
+        .notice tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+        
+        .thead,
+        .thead thead,
+        .thead tr {
+            width: 100%;
+        }
+        
+        .thead tr th:first-child {
+            width: 75%;
+        }
+        
+        #main-line {
+            margin-top: 3px;
+        }
+        
+        .TotallTittle{
+			font-weight: 600;
+            font-size: 1.5rem;
+            color: #000;
+            padding: 0.5% 0;
+        }
+        
+        .TotalCount {
+			font-weight: 600;
+            font-size: 2rem;
+            padding-top: 0;
+            letter-spacing: 2px;
+        }
+        
+        .TotalBk {
+            background: #eef7ff;
+            width: 23%;
+            display: flex;
+            border-radius: 3px;
+            margin: 0 5% 0 0;
+            padding: 1% 1%;
+        }
+        
+        .img {
+            width: 80%;
+            height: auto;
+        }
+        
+        .mooth {
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        
+        #Speed {
+            color: #62df79;
+            font-size: 1.5rem;
+        }
+        
+        #task {
+            color: #00bcfb;
+            font-size: 1.5rem;
+        }
+        
+        #Week {
+            color: #ff6d6e;
+            font-size: 1.5rem;
+        }
+        
+        .OnLeft {
+            width: 80%;
+        }
+        
+        #main-pie {
+            width: 100%;
+            height: 80%;
+            position: relative;
+            top: 20%;
+        }
+        
+        .house {
+            position: absolute;
+            right: 1%;
+        }
+        
+        #Time {
+            position: absolute;
+            right: 5%;
+        }
+    </style>
+
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-row" style="height: 35%;">
+                <div class="layui-col-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12">
+					<div class="top">
+                    <div >
+                        <div class="left">
+                            <img src="/Images/weituo.png" alt="">
+                            <span>委托单</span>
+                        </div>
+                        <img src="/Images/fangzi.png" alt="" class="house">
+                    </div>
+                    <div id="main-line">
+                        <div class="TotallTittle">委托单总数</div>
+                        <div class="TotalCount"><%=total%></div>
+                    </div>
+                    <div style="display: flex;">
+                        <div class="TotalBk">
+                            <div class="OnLeft">
+                                <div id="Speed"><%=totalEstimateCost%></div>
+                                <div class="mooth">预计总成本/元</div>
+                            </div>
+                            <div>
+                                <img src="/Images/wenchengbfb.png" alt="" class="img">
+                            </div>
+                        </div>
+                        <div class="TotalBk">
+                            <div class="OnLeft">
+                                <div id="task"><%=totalActualCost%></div>
+                                <div class="mooth">实际总成本/元</div>
+                            </div>
+                            <div>
+                                <img src="/Images/tixing.png" alt="" class="img">
+                            </div>
+                        </div>
+                        <div class="TotalBk">
+                            <div class="OnLeft">
+                                <div id="Week"><%=rate%></div>
+                                <div class="mooth">委托完成率</div>
+                            </div>
+                            <div>
+                                <img src="/Images/xinzeng.png" alt="" class="img">
+                            </div>
+                        </div>
+                        <div style="position: absolute;top: 73%;right: 4%;">
+                            <button class="layui-btn layui-btn-radius" data-type="download">表单下载</button>
+                        </div>
+					</div>
+				</div>
+				</div>
+            </div>
+            <div class="layui-row" style="height:60%;">
+                <div class="layui-col-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12">
+					<div class="top">
+
+					
+                    <div >
+                        <div class="left">
+                            <img src="/Images/shebei.png" alt="">
+                            <span>成本金额统计</span>
+                        </div>
+
+                    </div>
+                    <div class="layui-inline" id="Time">
+                        <div class="layui-input-inline">
+                          <input type="text" class="layui-input" id="date1" placeholder="-">
+                        </div>
+                    </div>
+					<div id="main-pie"></div>
+				</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <% include ../layout/footer.ejs %>
+    <script type="text/javascript">
+        var startDate = ""
+		var endDate = ""
+        layui.use('laydate', function() {
+            var laydate = layui.laydate;
+            //日期范围
+            laydate.render({
+                elem: '#date1',
+                range: true,
+                type:'month',
+                trigger:'click',
+                done: function(value, date) {
+                    //得到日期生成的值，如：2017-08-18
+                    console.log(value.split(" - "))
+                    startDate=value.split(" - ")[0]+'-01'
+                    endDate=value.split(" - ")[1]+'-01'
+                    console.log(startDate,endDate)
+                    Echart(startDate,endDate);
+
+                }
+            });
+        });
+        var $ = layui.$, active = {
+            download:function(){
+                $.ajax({
+                    type: "get",
+                    url: "/modular_statistics/exportCost",
+                    success: function (msg) {
+                        console.log(msg)
+                        if (msg.status == "ok") {
+                            layer.confirm('是否确定下载？',function(){
+                                window.open(msg.message)
+                                layer.close(layer.index)
+                            })
+                        }
+                    }
+                })
+            }
+        }
+        function  Month(){
+            if(startDate==""&&endDate ==""){
+                startDate = getMonth(-7);
+                endDate = getMonth(0);
+                Echart(startDate,endDate);
+            }
+            
+        }
+        Month()
+        function Echart(startDate,endDate) {
+            var myChart = echarts.init(document.getElementById('main-pie'));
+            $.ajax({
+                type: "get",
+                url: "/modular_statistics/costTrend?startDate="+startDate+"&endDate="+endDate,
+                success: function (msg) {
+                    if (msg.status == "ok") {
+                        var message = msg.message
+                        var desc =[]
+                        var estimateCost = []
+                        var actualCost = []
+                        for(var j=0;j<message.length;j++){
+                            desc.push(message[j].desc)
+                            estimateCost.push(message[j].estimateCost)
+                            actualCost.push(message[j].actualCost)
+                        }
+                        var option = {
+                            color: ['#769efe', '#b9aae3'],
+                            legend: {
+                                data: ["预计成本", "实际成本"],
+                            },
+                            tooltip: {
+                                formatter: '{b} : {c}元'
+                            },
+                            xAxis: {
+                                data: desc
+
+                            },
+                            yAxis: {
+                                splitArea: {
+                                    show: false
+                                }
+                            },
+
+                            series: [{
+                                barWidth: 30,
+                                data: estimateCost,
+                                name: "预计成本",
+                                type: "bar",
+                                itemStyle: {
+                                    barBorderRadius: 5
+                                }
+                            }, {
+                                barGap: "-100%",
+                                barWidth: 30,
+                                data: actualCost,
+                                name: "实际成本",
+                                type: "bar",
+                                itemStyle: {
+                                    barBorderRadius: 5
+                                }
+                            }, {
+
+                                "type": "line",
+                                symbolSize: 10,
+                                symbol: 'circle',
+                                "itemStyle": {
+                                    "normal": {
+                                        "color": "#00fff9",
+                                        "barBorderRadius": 0,
+                                        "label": {
+                                            "show": true,
+                                            "position": "top",
+                                            formatter: function(p) {
+                                                return p.value > 0 ? (p.value) : '';
+                                            }
+                                        }
+                                    }
+                                },
+                                "data": estimateCost,
+                                "name":"预计成本"
+                            }, {
+
+                                "type": "line",
+                                symbolSize: 10,
+                                symbol: 'circle',
+                                "itemStyle": {
+                                    "normal": {
+                                        "color": "#f54586",
+                                        "barBorderRadius": 0,
+                                        "label": {
+                                            "show": true,
+                                            "position": "top",
+                                            formatter: function(p) {
+                                                return p.value > 0 ? (p.value) : '';
+                                            }
+                                        }
+                                    }
+                                },
+                                "data": actualCost,
+                                "name":"实际成本"
+                            }]
+                        };
+                        myChart.setOption(option, true);
+                    }
+			    }
+		    });
+            //图表自适应
+            window.onresize = myChart.resize;
+        }
+        $('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+        });
+        function getMonth(month){
+            var today = new Date();
+            var targetday_milliseconds=today.getTime() + 1000*60*60*24*30*month;
+            today.setTime(targetday_milliseconds); //注意，这行是关键代码
+            var tYear = today.getFullYear();
+            var tMonth = today.getMonth();
+            var tDate = today.getDate();
+            tMonth = doHandleMonth(tMonth + 1);
+            return tYear+"-"+tMonth+"-"+tDate;
+            }
+        function doHandleMonth(month){
+                var m = month;
+                if(month.toString().length == 1){
+                    m = "0" + month;
+                }
+                return m;
+        }
+	
+    </script>
+
+</html>

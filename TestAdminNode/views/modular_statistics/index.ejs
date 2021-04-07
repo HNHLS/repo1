@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<script type="text/javascript" src="/Scripts/echarts.min.js"></script>
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		html,body{
+			padding: 0 0 0 12px;
+		}
+		.cBody{
+			padding: 0 0 0 10px;
+			/* overflow-y: scroll; */
+		}
+		html,body,.cBody{
+			height: 100%;
+			width: 99%;
+		}
+		#main-line,#main-pie{
+			width: 90%;
+			height: 90%;
+			position: relative;
+			top: 5%;
+			left: 5%;
+		}
+		/* 布局 */
+		.layui-row>div{
+			height: 100%;
+			border: 1px solid #37a3dd;
+			border-radius:10px;
+			margin: 10px 10px;
+			box-shadow: 5px 10px 15px #ddd;
+			padding: 15px;
+		}
+		.entrust{
+			width: 55%;
+			float: left;
+		}
+		.noticeBlock{
+			width: 41%;
+			float: left;
+		}
+		.equipment{
+			width: 55%;
+			float: left;
+		}
+		.task{
+			width: 41%;
+			float: left;
+		}
+		/*  */
+		.top .left img{
+			height: 20px;
+			width: 20px;
+			margin-right: 5px;
+		}
+		.top .left span{
+			vertical-align:middle;
+			color:#37a3dd ;
+			font-weight: 700;
+		}
+		.flex{
+        display: flex;
+        align-items:center;
+    	}
+		
+		/* 通知 */
+		.content{
+			height: 70%;
+			overflow-y: scroll;
+		}
+		.notice{
+			height:100%;
+		}
+		.notice td,th{
+			padding: 10px;
+		}
+		.notice tr td:first-child{
+			color: #333;
+		}
+		.notice tr td:last-child{
+			color: #aaa;
+		}
+		.notice tbody tr:nth-child(odd) {
+			background-color: #f5f9ff;
+		}
+		.notice tbody tr:nth-child(even) {
+			background-color: #ffffff;
+		}
+		.thead,.thead thead,.thead tr{
+			width: 100%;
+		}
+		.thead tr th:first-child{
+			width: 75%;
+		}
+		.total{
+			margin-top: 3px;
+		}
+		.TotallTittle{
+			font-weight: 600;
+            font-size: 1.5rem;
+            color: #000;
+            padding: 0.5% 0;
+		}
+		.TotalCount {
+			font-weight: 600;
+            font-size: 2rem;
+            padding-top: 0;
+            letter-spacing: 2px;
+        }
+        
+        .TotalBk {
+            background: #eef7ff;
+            width: 23%;
+            display: flex;
+            border-radius: 3px;
+            margin: 0 2% 0 0;
+            padding: 4% 1%;
+        }
+        
+        .img {
+			height: 50%;
+            width: 50%;
+            height: auto;
+        }
+        
+        .mooth {
+			margin-top: 2rem;
+    		font-size: 0.5rem;
+			color: #a9a9a9;
+        }
+		.Speed {
+            color: #62df79;
+            font-size: 2rem;
+			font-weight: 600;
+        }
+        
+        .fonttask {
+            color: #00bcfb;
+            font-size: 2rem;
+			font-weight: 600;
+        }
+        
+        .Week {
+            color: #ff6d6e;
+            font-size: 2rem;
+			font-weight: 600;
+        }
+		.seven{
+			color: #ffdb5c;
+			font-size: 2rem;
+			font-weight: 600;
+		}
+		.OnLeft {
+            width: 80%;
+        }
+	</style>
+	<body>
+		<div class="cBody">
+            <div class="layui-row" style="height: 40%;">
+                <div class="entrust">
+					<div class="top">
+						<div class="left">
+							<img src="/Images/weituo.png" alt="">
+							<span>委托单</span>
+						</div>
+						<div class="total">
+							<div class="TotallTittle">总委托数量</div>
+							<div class="TotalCount" id="total"></div>
+						</div>
+						<div style="display: flex;">
+							<div class="TotalBk">
+								<div class="OnLeft">
+									<div class="Speed" id="today"></div>
+									<div class="mooth">今日新的委托单</div>
+								</div>
+								<div>
+									<img src="/Images/wenchengbfb.png" alt="" class="img">
+								</div>
+							</div>
+							<div class="TotalBk">
+								<div class="OnLeft">
+									<div class="fonttask" id="normal"></div>
+									<div class="mooth">3日内未确认的委托单</div>
+								</div>
+								<div>
+									<img src="/Images/tixing.png" alt="" class="img">
+								</div>
+							</div>
+							<div class="TotalBk">
+								<div class="OnLeft">
+									<div class="seven" id="warning"></div>
+									<div class="mooth">7日内未确认的委托单</div>
+								</div>
+								
+								<div>
+									<img src="/Images/naozhong.png" alt="" class="img">
+								</div>
+							</div>
+							<div class="TotalBk">
+								<div class="OnLeft">
+									<div class="Week" id="error"></div>
+									<div class="mooth">7日以上未确认的委托单</div>
+								</div>
+								<div>
+									
+									<img src="/Images/tx.png" alt="" class="img">
+								</div>
+							</div>
+					</div>
+					</div>
+                </div>
+                <div class="noticeBlock">
+					<div class="top">
+						<div class="left">
+							<img src="/Images/tongzhi.png" alt="">
+							<span>通知栏</span>
+						</div>
+					</div>
+					<table class="thead">
+						<thead>
+							<tr>
+								<th>内容</th>
+								<th>时间</th>
+							</tr>
+						</thead>
+					</table>
+					<div class="content">
+						<table class="notice">
+							<tbody>
+	
+							</tbody>
+						</table>
+					</div>
+                </div>
+            </div>
+			<div class="layui-row" style="height: 54%;">
+                <div class="equipment">
+					<div class="top">
+						<div class="left">
+							<img src="/Images/shebei.png" alt="">
+							<span>设备使用情况</span>
+						</div>
+					</div>
+                    <div id="main-line"></div>
+                </div>
+                <div class="task">
+					<div class="top">
+						<div class="left">
+							<img src="/Images/renwu.png" alt="">
+							<span>任务统计</span>
+						</div>
+					</div>
+                    <div id="main-pie"></div>
+                </div>
+            </div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var equipmentX=[]
+		//任务
+		var group=[]
+		var globalColorList = [["rgba(115,156,255,1)",'rgba(115,156,255,0.8)','rgba(115,156,255,0.7)','rgba(115,156,255,0.4)'],["rgba(138,110,209,1)",'rgba(138,110,209,0.8)','rgba(138,110,209,0.7)','rgba(138,110,209,0.4)']];
+		getdata()
+		console.log(group)
+		var myChart = echarts.init(document.getElementById("main-line"));
+		var option = {
+			title: {
+				text: '',
+				x: 'center',
+				y: "bottom"
+			},
+			tooltip: {
+				trigger: 'axis'
+			},
+			toolbox: {
+				show: false,
+			},
+			calculable: true,
+			xAxis: [{
+				type: 'category',
+				data: equipmentX,
+				axisLine:{
+					lineStyle:{
+						color:'#e1f4df',
+							width:3,   //这里是坐标轴的宽度,可以去掉
+					}
+				}
+			}],
+			yAxis: [{
+				type: 'value',
+				axisLabel: {
+					formatter: '{value}',
+					show: true,
+					textStyle: {
+						color: '#666'
+					}
+				},
+				axisLine:{
+					lineStyle:{
+						color:'#fff',
+							width:3,   //这里是坐标轴的宽度,可以去掉
+					}
+				}
+			}],
+			series: []
+		};
+		var MyChart = echarts.init(document.getElementById("main-pie"));
+		var Option = {
+				tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}: {c}',
+                            backgroundColor: 'rgba(18,79,130,.5)',
+                            borderColor: '#3788c4',
+                            borderWidth: 2,
+                            textStyle: {
+                                fontSize: 20,
+                                color: "#ffffff"
+                            }
+                        },
+			color: ['#37a2da','#32c5e9','#9fe6b8','#ffdb5c','#ff9f7f','#fb7293','#e7bcf3','#8378ea','#0bC3F5','#0376E9','#85E9B5','#FBF88D',],
+			series: [
+				{
+					name: '任务统计',
+					type: 'pie',
+					data: group,
+					clockWise : false,
+                    radius: ['30%', '60%'],
+                    center: ['40%', '40%'],
+                    roseType: 'radius',
+                    label: {
+                        show: true,
+                        normal: {
+                        	position: 'outside',
+                            fontSize: 16
+                            }
+                    },
+                    labelLine: {
+                        length: 1,
+                        length2: 20,
+                        smooth: true
+                        },
+				}
+			]
+		};
+		function getCookie2(name){
+		    var strcookie = document.cookie;//获取cookie字符串
+		    var arrcookie = strcookie.split("; ");//分割
+		    //遍历匹配
+		    for ( var i = 0; i < arrcookie.length; i++) {
+		        var arr = arrcookie[i].split("=");
+		        if (arr[0] == name){
+		            return arr[1];
+		        }
+		    }
+		    return "";
+		}
+		console.log(getCookie2("sessionId"))
+		
+		function getdata(){
+			$.ajax({
+				type:'GET',
+				url:'/modular_statistics/frontPage',
+				success:function(res){
+					console.log(res)
+					var data=res.message
+					var num=data.taskStat
+					if(res.status=="ok"){
+						document.getElementById("total").innerHTML=num.total
+                    	document.getElementById("today").innerHTML=num.today
+						document.getElementById("normal").innerHTML=num.normal
+						document.getElementById("warning").innerHTML=num.warning
+                    	document.getElementById("error").innerHTML=num.error
+						var equipmentStat=data.equipmentStat
+						var groupStat=data.groupStat
+						var notifications=data.notifications
+						var taskStat=data.taskStat
+						var equipmentStatOption=[];
+						var groupArray={};
+						for(var i=0;i<equipmentStat.length;i++){
+							equipmentX[i]=equipmentStat[i].dateStr
+							var divideByDepartmentList = equipmentStat[i].divideByDepartmentList;
+							if (divideByDepartmentList) {
+								for (let j = 0; j < divideByDepartmentList.length; j++) {
+									let desc = divideByDepartmentList[j].desc;
+									groupArray[desc]=groupArray[desc]?groupArray[desc]:[];
+									(groupArray[desc])[i]=divideByDepartmentList[j].count;
+								}
+							}
+						}
+						var tempIndex=0;
+						for (const groupName in groupArray) {
+							const colorList = [globalColorList[tempIndex]];
+							equipmentStatOption[tempIndex]={
+								name: groupName,
+								type: 'bar',
+								data: groupArray[groupName],
+								barWidth : 15,
+								itemStyle: {
+									normal: {
+										barBorderRadius: [15,15,0,0],
+										//好，这里就是重头戏了，定义一个list，然后根据所以取得不同的值，这样就实现了，
+										color: function (params){
+											//数组定义的一种颜色
+											var index=params.dataIndex;
+											if(params.dataIndex >= colorList.length){
+												index=params.dataIndex%colorList.length;
+											}
+											return new echarts.graphic.LinearGradient(1, 0, 0, 1,
+													[
+														{offset: 0, color: colorList[0][0]},
+														{offset: 0.5, color: colorList[0][1]},
+														{offset: 0.8, color: colorList[0][2]},
+														{offset: 1, color: colorList[0][3]}
+													]);
+										},
+									}
+								},
+							}
+							tempIndex++;
+						}
+						option.series=equipmentStatOption;
+						groupStat.sort(compare);
+						for(var j=0;j<groupStat.length;j++){
+							var obj={}
+							obj.value=groupStat[j].taskCount
+							obj.name=groupStat[j].groupName
+							group[j]=obj
+						}
+						console.log(group)
+						//通知
+						var str=''
+						for(var j=0;j<notifications.length;j++){
+							var content=notifications[j].content
+							if(content.length>40){
+								content=content.slice(0,40)
+							}
+							str='<tr><td>'+content+'</td><td>'+notifications[j].notifyTime+'</td></tr>'
+							$(".notice tbody").append(str)
+							
+						}
+						console.log(groupStat)
+						console.log(group)
+						myChart.setOption(option);
+						MyChart.setOption(Option);
+					}else{
+						alert(res.message)
+					}
+					
+				}
+			})
+		}
+		//排序
+		var compare = function(obj1,obj2){
+			var val1 = parseFloat(obj1.taskCount);
+			var val2 = parseFloat(obj2.taskCount);
+			if(val1<val2){
+				return 1;
+			}else if(val1>val2){
+				return -1;
+			}else{
+				return 0;
+			}
+		}
+		
+		
+	</script>
+</html>

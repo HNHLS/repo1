@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+<style>
+    .am-selected {
+        width: 100% !important;
+    }
+</style>
+
+<body data-type="generalComponents">
+    <div class="tpl-page-header-fixed" style="margin-top: 0px;height: 100%;">
+        <div class="" style="height: 100%">
+
+            <div class="tpl-portlet-components" style="height: 100%">
+                <div class="tpl-block ">
+
+                    <div class="am-g tpl-amazeui-form">
+
+                        <div class="am-u-sm-12 am-u-md-9">
+                            <form class="am-form am-form-horizontal" id="ajaxForm" method="post"
+                                action="/modular_users/roleedit">
+                                <input type="hidden" id="user-name" value="<%= id %>" name="id">
+                                <div class="am-form-group">
+                                    <label for="user-name" class="am-u-sm-3 am-form-label">
+                                        <font class="redlabel">*</font>角色
+                                    </label>
+                                    <div class="am-u-sm-9">
+                                        <select name="roleid" data-am-selected="{maxHeight: 200}">
+                                            <option value="">-请选择-</option>
+                                            <%for(var j=0;j<roles.length;j++){ %>
+                                            <%if(roles[j].id==roleid){%>
+                                            <option value='<%=roles[j].id%>' selected="selected">
+                                                <%=roles[j].name%>
+                                            </option>
+                                            <%}else{%>
+                                            <option value='<%=roles[j].id%>'>
+                                                <%=roles[j].name%>
+                                            </option>
+                                            <%}%>
+                                            <%}%>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="user-name" class="am-u-sm-3 am-form-label">
+                                        <font class="redlabel">*</font>部门
+                                    </label>
+                                    <div class="am-u-sm-9">
+                                        <select name="department_id" data-am-selected="{maxHeight: 200}">
+                                            <option value="">-请选择-</option>
+                                            <%for(var j=0;j<department.length;j++){ %>
+                                            <%if(department[j].id==depid){%>
+                                            <option value='<%=department[j].id%>' selected="selected">
+                                                <%=department[j].name%>
+                                            </option>
+                                            <%}else{%>
+                                            <option value='<%=department[j].id%>'>
+                                                <%=department[j].name%>
+                                            </option>
+                                            <%}%>
+                                                <%}%>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="user-name" class="am-u-sm-3 am-form-label">
+                                        <font class="redlabel">*</font>昵称
+                                    </label>
+                                    <div class="am-u-sm-9">
+                                        <input type="text" id="user-name" placeholder="昵称" value="<%= name %>"
+                                            name="name">
+                                    </div>
+                                </div>
+
+
+                                <div class="am-form-group">
+                                    <label for="user-name" class="am-u-sm-3 am-form-label">
+                                        <font class="redlabel">*</font>账号
+                                    </label>
+                                    <div class="am-u-sm-9">
+                                        <input type="text" id="user-name" placeholder="账号" value="<%= account %>"
+                                            name="account">
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="user-name" class="am-u-sm-3 am-form-label">
+                                        <font class="redlabel">*</font>密码
+                                    </label>
+                                    <div class="am-u-sm-9">
+                                        <input type="password" id="user-name" placeholder="密码" value="<%= password %>"
+                                            name="password">
+                                    </div>
+                                </div>
+
+                                <div class="am-form-group">
+                                    <div class="am-u-sm-9 am-u-sm-push-3">
+                                        <button type="button" class="am-btn am-btn-primary"
+                                            onclick="sub()">保存修改</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+    //配置
+    function sub() {
+        var bool=false
+        console.log($("input").val())
+        $("input").each(function(i,v){
+            if($(this).val()==""){
+                bool=true
+            }
+        })
+        if(bool){
+            layer.msg("必填项不能为空",{icon:2})
+        }else{
+            $.ajax({
+                type: "POST",
+                url: "/modular_users/adminuseredit",
+                data: $("#ajaxForm").serialize(),
+                success: function (msg) {
+                    console.log(msg);
+                    if (msg.errcode == 0) {
+                        alert("保存成功");
+                        //执行父级刷新
+                        parent.reloadtable();
+                    } else {
+
+                        alert(msg.message);
+                    }
+                }
+            });
+        }
+    }
+
+</script>

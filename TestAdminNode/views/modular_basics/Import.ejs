@@ -1,0 +1,342 @@
+<!doctype html>
+<html>
+<style type="text/css">
+	.info {
+		font-size: 0.7rem;
+		margin-top: 0.5rem;
+	}
+
+	.state {
+		font-size: 0.7rem;
+		margin-left: 2rem;
+	}
+
+	#thelist {
+		/*width: 300px;*/
+	}
+
+	.transition-loader {
+		position: absolute;
+		top: 80px;
+		left: 0;
+		height: 100%;
+		width: 100%;
+		display: none;
+	}
+
+	.transition-loader-inner {
+		transform: translateY(-50%);
+		top: 45%;
+		position: absolute;
+		width: calc(80% - 500px);
+		color: #2aafe9;
+		padding: 0 100px;
+		text-align: center;
+		width: 100%;
+	}
+
+	.transition-loader-inner label {
+		font-size: 0.2rem;
+		padding: 1%;
+		opacity: 0;
+		display: inline-block;
+	}
+
+	.transition-loader-inner label:after {
+		font-family: FontAwesome;
+		content: '\f111';
+	}
+
+	.transition-loader-inner label:nth-child(1) {
+		-webkit-animation: loader 3s 600ms infinite ease-in-out;
+		animation: loader 3s 600ms infinite ease-in-out;
+	}
+
+	.transition-loader-inner label:nth-child(2) {
+		-webkit-animation: loader 3s 500ms infinite ease-in-out;
+		animation: loader 3s 500ms infinite ease-in-out;
+	}
+
+	.transition-loader-inner label:nth-child(3) {
+		-webkit-animation: loader 3s 400ms infinite ease-in-out;
+		animation: loader 3s 400ms infinite ease-in-out;
+	}
+
+	.transition-loader-inner label:nth-child(4) {
+		-webkit-animation: loader 3s 300ms infinite ease-in-out;
+		animation: loader 3s 300ms infinite ease-in-out;
+	}
+
+	.transition-loader-inner label:nth-child(5) {
+		-webkit-animation: loader 3s 200ms infinite ease-in-out;
+		animation: loader 3s 200ms infinite ease-in-out;
+	}
+
+	.transition-loader-inner label:nth-child(6) {
+		-webkit-animation: loader 3s 100ms infinite ease-in-out;
+		animation: loader 3s 100ms infinite ease-in-out;
+	}
+
+	@keyframes loader {
+		0% {
+			opacity: 0;
+			transform: translateX(-300px) scale(1);
+		}
+
+		33% {
+			opacity: 1;
+			transform: translateX(0px) scale(2);
+		}
+
+		66% {
+			opacity: 1;
+			transform: translateX(0px) scale(1);
+		}
+
+		100% {
+			opacity: 0;
+			transform: translateX(300px) scale(2);
+		}
+	}
+
+	@-webkit-keyframes loader {
+		0% {
+			opacity: 0;
+			-webkit-transform: translateX(-300px);
+		}
+
+		33% {
+			opacity: 1;
+			-webkit-transform: translateX(0px);
+		}
+
+		66% {
+			opacity: 1;
+			-webkit-transform: translateX(0px);
+		}
+
+		100% {
+			opacity: 0;
+			-webkit-transform: translateX(300px);
+		}
+	}
+
+	.loadertxt {
+		color: #CCCCCC;
+		font-size: 14px;
+	}
+	.flie-height .item{
+		height: auto !important;
+		width: auto !important;
+		border: 0 !important;
+		margin: 0 !important;
+	}
+	.tpl-block {
+		min-height: 56rem;
+	}
+</style>
+<% include ../layout/header.ejs %>
+<!--<link href="/webuploader/webuploader.css" rel="stylesheet" />
+<script src="/webuploader/webuploader.js"></script>-->
+
+<body data-type="generalComponents">
+	<div class="tpl-page-header-fixed" style="margin-top: 0px;height: 100%;">
+		<div class="" style="height: 100%;">
+			<div class="tpl-portlet-components" style="height: 90%;">
+				<div class="tpl-block ">
+					<div class="am-g tpl-amazeui-form">
+						<div class="am-u-sm-12 am-u-md-9">
+						
+							<form class="am-form am-form-horizontal" id="ajaxForm" method="post"
+								action="/modular_basics/customer_inforedit">
+								<!--<div class="am-form-group">
+									<label for="user-name"></label>
+									<div style="width: 60%;margin: auto;">
+										<div style="float: left;width: 40%;font-size: 16px;"><span
+												style="color: red;font-size: 20px;position: relative;top: 5px;">*</span>使用部门</div>
+										<select data-am-selected="{searchBox: 1,maxHeight:160,btnWidth: '50%'}" id="standard" name="TypeId"
+											style="float: left;">
+											<option value="0">请选择部门</option>
+										</select>
+									</div>
+									<label for="user-name" class="am-u-sm-5 am-form-label"></label>
+								</div>-->
+								<div class="am-form-group">
+										<!--<label for="user-name"></label>-->
+										<div style="width: 60%;margin: auto;">
+											<div style="float: left;width: 40%;font-size: 16px;">模板下载</div>
+											<a href="javascript:void(0);" class="layui-btn layui-btn-sm" onclick="Download()">下载</a>
+										</div>
+										<div style="width: 60%;margin: auto;">
+											<div style="float: left;width: 40%;font-size: 16px;"><span
+													style="color: red;font-size: 20px;position: relative;top: 5px;">*</span>导入文件</div>
+	
+											<div class="wu-example" style="height: 50px">
+												<div class="btns">
+													<div id="picker" style="width: 100px;float: left;">选择文件</div>
+												</div>
+											</div>
+											<div class="flie-height">
+													<div id="flie">
+														<!--用来存放文件信息-->
+														<div id="thelist" class="uploader-list"></div>
+													</div>
+												</div>
+										</div>
+										<!--<label for="user-name" class="am-u-sm-5 am-form-label"></label>-->
+									</div>
+								<div class="transition-loader">
+									<div class="transition-loader-inner">
+										<label></label>
+										<label></label>
+										<label></label>
+										<label></label>
+										<label></label>
+										<label></label>
+										<div class="loadertxt">导入文件中,请勿关闭窗口</div>
+									</div>
+								</div>
+								<div class="am-form-group" style="padding-top: 50px ;">
+									<div class="am-u-sm-7 am-u-sm-push-4">
+										<button type="button" class="am-btn am-btn-primary" onclick="sub()">导入</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	var url
+	var type="<%=type%>"
+	console.log(type)
+	var GUID = WebUploader.Base.guid(); //当前页面是生成的GUID作为标示
+	console.log(GUID);
+
+	var uploader = WebUploader.create({
+
+		// swf文件路径
+		swf: '/webuploader/Uploader.swf',
+		// 文件接收服务端。
+		server: '<%=global.base%>/admin/upload/upload',
+		//分片处理大文件
+		chunked: true,
+		//上传并发数
+		threads: 1,
+
+		formData: { fileType: 'import' },
+
+		// 选择文件的按钮。可选。
+		// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+		pick: {
+			id: '#picker',
+			multiple: false,
+		},
+		fileNumLimit: 1,
+		accept: {
+			title: 'file',
+			extensions: 'xls,xlsx',
+			mimeTypes: 'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+		},
+		// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+		resize: false
+	});
+
+	uploader.on('beforeFileQueued', function (file) {
+
+
+	});
+	//all算是一个总监听器
+	uploader.on('all', function (type, arg1, arg2) {
+		//console.log("all监听：", type, arg1, arg2);
+
+	});
+
+	// 当有文件被添加进队列的时候
+	uploader.on('fileQueued', function (file) {
+		uploader.upload();
+		$("#thelist").html('<div id="' + file.id + '" class="item">' +
+			'<p class="info"><span>' + file.name + '</span><span class="state">未上传</span></p>' +
+			'</div>');
+	});
+
+
+	// 文件上传成功,合并文件。
+	uploader.on('uploadSuccess', function (file, response) {
+		$('#' + file.id).find('span.state').text('已上传');
+		uploader.removeFile(file);
+//		console.log(response._raw);
+		var chunked = JSON.parse(response._raw).chunked
+		var imgurl = JSON.parse(response._raw).message.url; //上传图片的路径
+		console.log(imgurl)
+		if (chunked) {
+			$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "import",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+				function (data) {
+					if (data.status!="ok") {
+						alert('文件合并失败！');
+					} else {
+						url = data.message.url
+					}
+				});
+		} else {
+			url = imgurl
+		}
+	});
+	uploader.on('uploadError', function (file) {
+		console.log("文件上传出错");
+		$('#' + file.id).find('span.state').text('上传出错');
+	});
+//	$("#ctlBtn").on('click', function () {
+//		if ($(this).hasClass('disabled')) {
+//			return false;
+//		}
+//		uploader.upload();
+//	});
+	function sub() {
+		console.log(url)
+		var enurl = encodeURIComponent(url)
+		$(".transition-loader").css("display", "block")
+		$(".am-btn-primary").attr("disabled", "disabled")
+		console.log(enurl)
+		$.ajax({
+			type: "POST",
+			url: "/modular_basics/Import?url=" + enurl+"&type="+type,
+			data: $("#ajaxForm").serialize(),
+			success: function (msg) {
+				console.log(msg);
+				if (msg.status=="ok") {
+					$(".transition-loader").css("display", "none")
+					alert("导入成功");
+					//执行父级刷新
+					window.parent.location.reload(); //刷新父页面
+					var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+					parent.layer.close(index);  // 关闭layer
+				} else {
+					$(".am-btn-primary").removeAttr("disabled")
+					$(".transition-loader").css("display", "none")
+					alert(msg.message);
+				}
+			}
+		});
+	}
+	function Download() {
+		console.log(type)
+		if(type=="判定标准"){
+			window.open("<%=global.moban%>" + "/template/%E5%88%A4%E5%AE%9A%E4%BE%9D%E6%8D%AE%E6%A8%A1%E6%9D%BF.xlsx")
+		}else{
+			window.open("<%=global.moban%>" + "/template/%E6%A3%80%E6%B5%8B%E4%BE%9D%E6%8D%AE%E6%A8%A1%E6%9D%BF.xlsx")
+		}
+		
+	}
+</script>

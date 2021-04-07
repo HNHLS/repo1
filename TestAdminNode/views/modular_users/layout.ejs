@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+    <style>
+        body{
+            overflow-y: scroll;
+        }
+        .cbody{
+            background-image: url(/Images/9f4c4c6ea3209ca46ea3a9f17f2c24d.jpg);
+            width:595px;
+            height:841px;
+            background-size: 100%;
+            background-repeat: no-repeat;
+            position: relative;
+            border: 1px solid #666;
+            margin: auto;
+        }
+        #cnas {
+            /*height: auto;*/
+            position: absolute;
+        }
+        #cma {
+            /*height: 123px;*/
+            position: absolute;
+        }
+        #testSpec {
+            /*height: 257px;*/
+            position: absolute;
+        }
+        #esign {
+            /*height: 100px;*/
+            position: absolute;
+        }
+        button{
+            margin: 850px 0 0 516px;
+            padding: 10px;
+            width: 80px;
+            background-color: #37a3dd;
+            border: none;
+            color: white;
+        }
+        .layui-input{
+            width: 80px;
+            display: inline;
+            margin-right: 10px;
+        }
+    </style>
+	<body>
+		<div class="cbody">
+			<img src="/Images/1e2f049b430f9bf4ba9f67ffceac53d.png" name="cnas" id="cnas" />
+			<img src="/Images/2eb47eb59eabda1afd9f1cdbca2df17.png" name="cma" id="cma">
+			<img src="/Images/8425f24a60ba8599785827bd29820cb.png" name="testSpec" id="testSpec">
+			<img src="/Images/816358e795a1dca0b2a3fbd27ec0518.png" name="esign" id="esign">
+			<button onclick="save()">保存</button>
+        </div>
+	</body>
+    <% include ../layout/footer.ejs %>
+    <script>
+        href("","系统设置","报告布局","")
+        var list=[]
+        //获取图片位置
+        $.ajax({
+            type:'GET',
+            url:'/modular_users/getReportOverlaySetting',
+            success:function(res){
+                console.log(res)
+                if(res.status=="ok"){
+                    list=res.message
+                    $('.cbody img').each(function(i,v){
+                        for(var o=0;o<list.length;o++){
+                            if($(v).attr("name")==list[o].name){
+                                $(v).css("top",list[o].y+"px")
+                                $(v).css("left",list[o].x+"px")
+                                $(v).css("width",list[o].width+"px")
+                            }
+                        }
+                    })
+                }else{
+                    alert(res.message)
+                }
+            }
+        })
+        //获取元素
+        var cnas =  document.getElementById("cnas");
+        var cma = document.getElementById("cma");
+        var testSpec = document.getElementById("testSpec");
+        var esign = document.getElementById("esign");
+        darg(cnas)
+        darg(cma)
+        darg(testSpec)
+        darg(esign)
+        
+        $('img').dblclick(function(){
+            var width=$(this).width()
+            var that=$(this)
+            var index=layer.open({
+                title:'修改图片大小',
+                area:["400px","200px"],
+                content:'<label class="layui-form-label">图片宽度</label><div class="layui-input-block"><input type="number" class="layui-input" id="width" value="'+width+'" name="width"><span>px</span></div>',
+                yes:function(){
+                    console.log($(".layui-input").val())
+                    that.css("width",$(".layui-input").val()+'px')
+                    console.log()
+                    layer.close(index)
+                }
+            })
+        })
+        var array=[]
+        //保存图片位置
+        function save(){
+            $('.cbody img').each(function(i,v){
+                var obj={}
+                console.log($(v).context.offsetLeft)
+                obj.x=$(v).context.offsetLeft
+                obj.y=$(v).context.offsetTop
+                obj.name=$(v).attr("name")
+                obj.width=$(v).width()
+                array[i]=obj
+            })
+            console.log(array)
+            $.ajax({
+                type:'GET',
+                url:'/modular_users/updateReportOverlaySetting?array='+JSON.stringify(array),
+                success:function(res){
+                    console.log(res)
+                    if(res.status=="ok"){
+                        alert(res.message)
+                    }else{
+                        alert(res.message)
+                    }   
+                }
+            })
+        }
+        function darg(obj) {
+            obj.onmousedown = function (event) {
+                // 专门兼容IE8的，阻止全选后拖拽，会自动进行搜索
+                if (obj.setCapture) {
+                obj.setCapture();
+                }
+                event = event || window.event
+                var ol = event.clientX - obj.offsetLeft;
+                var ot = event.clientY - obj.offsetTop;
+                document.onmousemove = function (event) {
+                event = event || window.event
+                var x = event.clientX - ol;
+                var y = event.clientY - ot;
+                console.log($(obj).height(),$(obj).width())
+                var objHeight=841-$(obj).height()
+                var objWidth=595-$(obj).width()
+                console.log(objHeight,objWidth)
+                if(x<=objWidth&&x>=0){
+                    obj.style.left = x + "px";
+                }
+                if(y<=objHeight&&y>=0){
+                    obj.style.top = y + "px";
+                }
+                }
+                document.onmouseup = function () {
+                // 鼠标移除和释放按下操作时,取消以下事件
+                document.onmousemove = null;
+                document.onmouseup = null;
+                }
+                // 阻止全选后拖拽，会自动进行搜索 该方法不适用IE8
+                return false;
+            }
+            }
+    </script>
+</html>

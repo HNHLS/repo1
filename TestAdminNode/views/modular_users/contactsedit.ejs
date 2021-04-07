@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>联系人姓名</label>
+					    	<div class="layui-input-block">
+					    		<input type="hidden" id="id" name="id" value="0" />
+					    		<input type="text" class="layui-input" lay-verify="required" autocomplete="off" name="name" id="name">
+					    	</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>手机号</label>
+					    	<div class="layui-input-block">
+					    		<input type="text" class="layui-input" lay-verify="required" autocomplete="off" name="phoneNumber" id="phoneNumber" >
+					    	</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label">邮箱</label>
+					    	<div class="layui-input-block">
+					    		<input type="text" class="layui-input" autocomplete="off" name="email" id="email" >
+					    	</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var id=<%=id%>
+		var name="<%=name%>"
+		var phoneNumber="<%=phoneNumber%>"
+		var email="<%=email%>"
+		$("#name").val(name)
+		$("#email").val(email)
+		$("#phoneNumber").val(phoneNumber)
+		$("#id").val(id)
+		layui.use('form', function(){
+			var form = layui.form
+			//监听提交
+			form.on('submit(formDemo)', function(data){
+				var name=data.field.name
+				var phoneNumber=data.field.phoneNumber
+				var email=data.field.email
+				var id=data.field.id
+				console.log(data.field)
+				if(id!=0){
+					$.ajax({
+						type:"post",
+						url:"/modular_users/updateContact",
+						async:true,
+						data:{
+							name:name,
+							phoneNumber:phoneNumber,
+							email:email,
+							id:id
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}else{
+					$.ajax({
+						type:"post",
+						url:"/modular_users/addContact",
+						data:{
+							name:name,
+							phoneNumber:phoneNumber,
+							email:email,
+							enterpriseId:"<%=enterpriseId%>" 
+						},
+						async:true,
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}
+			    return false;
+			});
+		});
+	</script>
+</html>

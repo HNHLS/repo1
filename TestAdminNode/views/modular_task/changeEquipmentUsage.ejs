@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+<script src="/layuiadmin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+<style>
+    .blueline {
+        border-bottom: 1px solid #b8ddf3;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .blueline .title {
+        background-color: #75bde6;
+        color: white;
+        padding: 6px 0px;
+        width: 90px;
+        text-align: center;
+        font-size: 12px;
+        border-radius: 8px 8px 0 0;
+    }
+</style>
+<body>
+<div class="cBody">
+    <div class="equipment">
+        <%if(!viewed){%>
+        <div class="blueline">
+            <div class="title">
+                调剂操作
+            </div>
+        </div>
+        <div>
+            <div class="layui-form-item">
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md6">
+                    <label class="layui-form-label">开始时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="startDate" value="" name="startDate" readonly>
+                    </div>
+                </div>
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md6">
+                    <label class="layui-form-label">结束时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="endDate" value="" name="endDate" readonly>
+                    </div>
+                </div>
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md6">
+                    <label class="layui-form-label"><span class="i">*</span>调剂时间(H)</label>
+                    <div class="layui-input-block">
+                        <input type="number" class="layui-input" id="time" value="" name="useCount" min="0">
+                    </div>
+                </div>
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md6">
+                    <label class="layui-form-label">备注:</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="extra" name="extra" value="">
+                    </div>
+                </div>
+            </div>
+            <button class="layui-btn" style="position: relative;left: 45%" onclick="saveChange()">添加</button>
+        </div>
+        <%}%>
+        <div class="blueline">
+            <div class="title">
+                调剂记录
+            </div>
+        </div>
+        <div class="table">
+            <table class="layui-table" id="history" lay-filter="test">
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    var testCourseUseEquipmentId = '<%= testCourseUseEquipmentId %>';
+
+
+    layui.use(['form', 'table', 'laydate', 'jquery'], function () {
+        var table = layui.table
+        var laydate = layui.laydate;
+        var $ = layui.jquery;
+        table.render({
+            elem: '#history',
+            url: '/modular_task/queryEquipmentUsageChangeHistory?testCourseUseEquipmentId='+testCourseUseEquipmentId,
+            page: true,
+            cellMinWidth: 10,
+            cols: [[ //表头
+                {field: 'sn', title: '序号', width: '7%', fixed: 'left'}
+                , {field: 'time', title: '调剂时间（小时）', width: "15%"}
+                , {field: 'startTime', title: '开始时间', width: "16%"}
+                , {field: 'endTime', title: '结束时间', width: "16%"}
+                , {field: 'description', title: '调剂描述', width: "20%"}
+                , {field: 'createTime', title: '添加记录时间', width: "16%"}
+                , {field: 'id', title: '操作', width: "11%",templet:function(d){
+                        return '<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="deleteRecord">删除</button>'
+                    }}
+            ]],
+            response: {
+                statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+            },
+            parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.status, //解析接口状态
+                    "msg": res.message, //解析提示文本
+                    "count": res.message.total, //解析数据长度
+                    "data": res.message.data //解析数据列表
+                };
+            },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+        });
+
+        function deleteRecord(data) {
+            var confirmIndex = layer.confirm("确定要删除该记录吗？", function () {
+                $.ajax({
+                    type: "post",
+                    url: "/modular_task/deleteUsageChangeRecord",
+                    data: {
+                        id: data.id,
+                    },
+                    success: function (res) {
+                        layer.msg(res.message)
+                        if (res.status == 'ok') {
+                            table.reload("history",{
+                                page: {
+                                    curr: 1 //重新从第 1 页开始
+                                }
+                            })
+                        }
+                        layer.close(confirmIndex);
+                    }
+                })
+            })
+
+        }
+
+        table.on('tool(test)',function (obj) {
+            if(obj.event === 'deleteRecord'){
+                deleteRecord(obj.data);
+            }
+        })
+        laydate.render({
+            elem: '#startDate'
+            , type: 'datetime'
+            , format: "yyyy-MM-dd HH:mm"
+            , trigger: 'click'
+            , done: function (value, data, endDate) {
+                console.log(value);
+                calculateTime(value, $("#endDate").val());
+            }
+        });
+        laydate.render({
+            elem: '#endDate'
+            , type: 'datetime'
+            , format: "yyyy-MM-dd HH:mm"
+            , trigger: 'click'
+            , done: function (value, data, endDate) {
+                console.log(value);
+                calculateTime($("#startDate").val(), value);
+            }
+        });
+
+        function calculateTime(startDateStr, endDateStr) {
+            if (startDateStr && endDateStr && startDateStr != "" && endDateStr != "") {
+                var startDate = new Date(startDateStr);  //开始时间
+                var endDate = new Date(endDateStr);    //结束时间
+                if (startDate != null && endDate != null) {
+                    var hours = Math.floor((endDate.getTime() - startDate.getTime()) / (3600 * 1000));
+                    $("#time").val(hours);
+                }
+            }
+
+        }
+
+        window.saveChange = function () {
+            var startDate = $("#startDate").val()
+            var endDate = $("#endDate").val()
+            var time = $("#time").val();
+            var extra = $("#extra").val();
+            $.ajax({
+                type: "post",
+                url: "/modular_task/saveEquipmentUsageChangeRecord",
+                data: {
+                    testCourseUseEquipmentId: "<%= testCourseUseEquipmentId %>",
+                    startDate: startDate,
+                    endDate: endDate,
+                    time: time,
+                    extra: extra
+                },
+                success: function (res) {
+                    console.log(res)
+                    if (res.status == "ok") {
+                        layer.msg(res.message)
+                        table.reload("history",{
+                            page: {
+                                curr: 1 //重新从第 1 页开始
+                            }
+                        })
+                    } else {
+                        layer.msg(res.message)
+                    }
+                }
+            });
+        }
+    });
+
+</script>
+</body>

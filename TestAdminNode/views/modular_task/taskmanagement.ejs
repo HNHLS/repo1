@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-sm" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>自行下单</button>
+			  <button class="layui-btn layui-btn-sm" data-type="assign"><i class="iconfont icon-xiafa"></i>批量下发</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","任务管理","检测接单","")
+		//角色下拉
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'handle'){
+				console.log(data)
+			    window.location.href="/modular_task/taskeditOut?delegateNum="+data.delegateNum
+			}else if(obj.event === 'Inhandle'){
+				window.location.href="/modular_task/taskeditIn?delegateNum="+data.delegateNum
+			}else if(obj.event === 'assign'){//下发
+				var arr=[]
+				arr.push(data.delegateNum)
+			    layer.open({
+					type: 2,
+					title:"指派他人",
+					area: ['800px', '250px'],
+					content: '/modular_task/handleothers?delegateNum='+arr
+				});
+			}else if(obj.event === "abnormal"){//查看异常
+				layer.open({
+					type: 2,
+					title:"查看异常",
+					area: ['100%', '100%'],
+					content: '/modular_task/abnormal?delegateNum='+data.delegateNum
+				});
+			}
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_task/tasklist",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'delegateNum',
+					title: '委托单号',
+					align: 'center',
+					width: '10%'
+				}, {
+					field: 'testProj',
+					align: 'center',
+					title: '测试项目',
+				},{
+					field: 'sampleNumber',
+					align: 'center',
+					title: '样品编号'
+				},{
+					field: 'sampleCount',
+					align: 'center',
+					title: '样品数量'
+				}, {
+					field: 'delegator',
+					align: 'center',
+					title: '委托人',
+					width: '6%'
+				}, {
+					field: 'department',
+					align: 'center',
+					title: '部门',
+				}, {
+					field: 'costAssumeDepartment',
+					align: 'center',
+					title: '成本承担单位',
+				},{
+					field: 'prior',
+					align: 'center',
+					title: '加急',
+					width:'5%',
+					templet:function(d){
+						return d.prior?'是':'否'
+					}
+				},{
+					field: 'fromBpm',
+					align: 'center',
+					title: '来自BPM',
+					width:'8%',
+					templet:function(d){
+						return d.fromBpm?'是':'否'
+					}
+				},{
+					field: 'state',
+					align: 'center',
+					title: '状态',
+				},{
+					field: 'currentHandler',
+					align: 'center',
+					title: '当前处理人员',
+				}, {
+					field: 'createDate',
+					align: 'center',
+					title: '委托日期',
+					width:'10%',
+				},  {
+					align: 'center',
+					title: '操作',
+					width:'8%',
+					templet:function(d){
+						if(d.fromBpm){
+							if(d.currentHandler==='待处理'){
+								return '<a class="layui-btn layui-btn-xs" lay-event="Inhandle">办理</a><a class="layui-btn layui-btn-xs" lay-event="assign">下发</a>'
+							}else{
+								if(!d.sampleProblem){
+									return '<a class="layui-btn layui-btn-xs" lay-event="Inhandle">办理</a>'
+								}else{
+									return '<a class="layui-btn layui-btn-xs" lay-event="Inhandle">办理</a><a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="abnormal">查看异常</a>'
+								}
+							}
+						}else{
+							if(!d.sampleProblem){
+								return '<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a>'
+							}else{
+								if(d.problemPending==0){
+									return '<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a><a class="layui-btn layui-btn-xs" lay-event="abnormal">查看异常</a>'
+								}else{
+									return '<a class="layui-btn layui-btn-xs" lay-event="handle">办理</a><a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="abnormal">查看异常</a>'
+								}
+							}
+						}
+					}
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		var costAssumeDepartment
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		form.on('select', function(data){
+			 console.log(data.value); //得到被选中的值]
+			 keyword = $('#search').val();
+			 costAssumeDepartment=$("#costAssumeDepartment").val()
+			 table.reload('tabReload', {
+		        page: {
+		          	curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		          	keyword:keyword,
+		          	startDate:startDate,
+		          	endDate:endDate,
+		          	costAssumeDepartment:costAssumeDepartment
+		        }
+		      });
+		});
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].delegateNum
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+		    reload: function(){
+		    	console.log(endDate)
+				keyword = $('#search').val();
+				costAssumeDepartment=$("#costAssumeDepartment").val()
+				//执行重载
+				table.reload('tabReload', {
+					page: {
+					curr: 1 //重新从第 1 页开始
+					}
+					,where: {
+						keyword:keyword,
+						startDate:startDate,
+						endDate:endDate,
+						costAssumeDepartment:costAssumeDepartment
+					}
+				});
+		    },    
+		    addRole: function(){ //获取选中数据
+		      window.location.href="/modular_task/taskeditOut?delegateNum="
+		    }
+		    ,assign: function(){
+		     	//获取选中状态            
+	           	if(ids.length == 0){
+	                layer.msg('批量下发至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要下发选中的项吗？',function(index){
+	                layer.open({
+						type: 2,
+						title:"指派他人",
+						area: ['800px', '250px'],
+						content: '/modular_task/handleothers?delegateNum='+ids
+					});
+	            })
+		   	}
+		};
+		  
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+		  	
+	});
+</script>
+</html>

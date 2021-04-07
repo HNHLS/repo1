@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-xs" data-type="Export"><i class="iconfont icon-daochu1"></i>导出</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","设备管理","设备维修","")
+		var number="<%=number%>"
+		console.log(number)
+		layui.use(['form', 'laydate','table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'approval'){
+			    window.location.href="/modular_equipment/Repairedit?id="+data.id+"&equipment_name="+data.name+"&equipment_no="+data.no+"&type=approval"
+			}else if(obj.event === 'confirm'){
+				window.location.href="/modular_equipment/Repairedit?id="+data.id+"&equipment_name="+data.name+"&equipment_no="+data.no+"&type=confirm"
+			}else if(obj.event === 'complete'){
+				window.location.href="/modular_equipment/Repairedit?id="+data.id+"&equipment_name="+data.name+"&equipment_no="+data.no+"&type=complete"
+			}else if(obj.event === 'personconfirm'){
+				window.location.href="/modular_equipment/Repairedit?id="+data.id+"&equipment_name="+data.name+"&equipment_no="+data.no+"&type=personconfirm"
+			}
+		});
+		table.render({
+			elem: '#tab',
+			url: "/modular_equipment/Repairlist",
+			cellMinWidth: 10,
+			even:true,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'no',
+					title: '设备编号',
+					align: 'center',
+				}, {
+					field: 'name',
+					align: 'center',
+					title: '设备名称',
+				},{
+					field: 'matime',
+					align: 'center',
+					title: '报修日期'
+				},{
+					field: 'maperson',
+					align: 'center',
+					title: '报修人'
+				},{
+					field: 'mastatestr',
+					align: 'center',
+					title: '状态',
+				},{
+					align: 'center',
+					title: '操作',
+					templet:function(d){
+						console.log(d.adminno==number)
+						if(d.testadminno==number){
+							if(d.mastatestr=="待审批"){//待审批
+								return '<a class="layui-btn layui-btn-xs" lay-event="approval">审批</a>'
+							}else{
+								return ''
+							}
+						}else if(d.adminno==number){
+							console.log('设备管理员')
+							console.log(d.mastatestr)
+							if(d.mastatestr=="待维修"){//待维修
+								return '<a class="layui-btn layui-btn-xs" lay-event="confirm">维修确认</a>'
+							}else if(d.mastatestr=="维修中"){//维修中
+								console.log(d.mastatestr)
+								return '<a class="layui-btn layui-btn-xs" lay-event="complete">维修完成</a>'
+							}else{
+								return ''
+							}
+						}else if(d.maintenance_personnum==number){
+							console.log('测试人员')
+							if(d.mastatestr=="已维修、待确定"){//待维修
+								return '<a class="layui-btn layui-btn-xs" lay-event="personconfirm">维修确认</a>'
+							}else{
+								return ''
+							}
+						}else{
+							return ''
+						}
+					}
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": 0, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.totalCount, //解析数据长度
+		        "data": res.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+					name:keyword,
+					startDate:startDate,
+					endDate:endDate
+		        }
+		      });
+		    }, 
+		    Export:function(){
+		    	$.ajax({
+	               	type:'post',
+	                url:'/modular_equipment/maintenexcel?name='+$('#search').val(),
+	                success:function(data){
+						console.log(data)
+	                    if(data.status=="ok"){
+							window.open(data.message)
+//							layer.msg(data.message);
+						}
+	                },error:function(code){   
+	                    parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                }
+	            });
+		    }
+		  };
+		  
+		  	$('.layui-btn').on('click', function(){
+			   var type = $(this).data('type');
+			   active[type] ? active[type].call(this) : '';
+			});
+	});
+</script>
+</html>

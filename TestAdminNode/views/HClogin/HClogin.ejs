@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>天合光能股份有限公司</title>
+		<meta name="description" content="天合光能股份有限公司">
+		<meta name="keywords" content="index">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="Cache-Control" content="no-siteapp" />
+		<link rel="icon" type="image/png" href="/i/favicon.png">
+		<link rel="apple-touch-icon-precomposed" href="/i/app-icon72x72@2x.png">
+		<meta name="apple-mobile-web-app-title" content="Amaze UI" />
+		<!--   <link rel="stylesheet" href="Css/amazeui.min.css">-->
+		<!-- <link rel="stylesheet" href="Css/loginapp.css">-->
+		<link rel="stylesheet" href="/Css/loginNew.css">
+		<link rel="stylesheet" type="text/css" href="/layuiadmin/layui/css/layui.css" />
+	
+		<!--新增-->
+		<link href="/Css/styles.css" rel="stylesheet" type="text/css" />
+		<link href="/Css/demo.css" rel="stylesheet" type="text/css" />
+		<link href="/Css/loaders.css" rel="stylesheet" type="text/css" />
+	
+	
+		<script src="/Scripts/jquery.min.js"></script>
+		<script type="text/javascript" src="/Scripts/ready.js"></script>
+	</head>
+	<style type="text/css">
+		.block{
+			width: 50%;
+			background-color: rgba(255,255,255,0.2);
+			height: 45%;
+			position: absolute;
+			top: 22.5%;
+			left: 25%;
+			border-radius: 10px;
+			box-shadow: -5px -5px 50px rgba(0,136,255,0.5);
+		}
+		.block>div{
+			width:30%;
+			height:45%;
+			background-color: rgba(44,155,251,0.8);
+			border-radius: 10px;
+			box-shadow:0px 0px 0px rgba(0,136,255,0);
+			transition: box-shadow 3s;
+			cursor: pointer;  
+            transition: all 0.4s;  
+            padding: 5% 0 0 0;
+		}
+		.block>div:hover{
+			transform: scale(1.03);  
+			box-shadow: 5px 5px 20px rgba(0,136,255,0.5);
+		}
+		.block div img{
+			width: 3.9rem;
+			height: 3.9rem;
+		}
+		.enter{
+			margin-top: 2rem;
+			width: 80px;
+			height: 20px;
+			border-radius: 20px;
+			line-height: 20px;
+			color: rgb(44,155,251);
+			background-color: white;
+			font-size: 0.6rem;
+		}
+		.blockleft{
+			position: absolute;
+			left: 12%;
+			top: 20%;
+		}
+		.blockright{
+			position: absolute;
+			right: 12%;
+			top: 20%;
+		}
+		#dltext{
+			width: 40%;
+			height: 30%;
+			margin-top: 16%;
+			margin-right: 11%;
+			float: right;
+			background-image: url(/Images/dl_zi.png);
+			background-repeat: no-repeat;
+			background-size: 100%;
+		}
+	</style>
+	<body class="theme-white" style="background: url(/Images/dl_bj.jpg) 50% 50% no-repeat;background-size:100%;">
+		<div id="dllogo" style="background-image:url(/Images/logo_3.png);width: 189px;height: 83px;">
+		<!--<img src="/Images/tianhe_logo.png" >-->
+		</div>
+		<div class="" style="float: left;color:#34498a;font-weight: 600;font-size: 30px;margin: 30px 0 0 10px;">
+			常州合创检测技术有限公司
+		</div>
+		<br>
+		<!--<div id="dltext"></div>-->
+		<div class="block">
+			<div class="blockleft" align="center">
+				<img src="/Images/kekaixing.png"/>
+				<div>可靠性检测</div>
+				<div class="enter">进入</div>
+			</div>
+			<div class="blockright" align="center">
+				<img src="/Images/lihua.png"/>
+				<div>电站检测</div>
+				<div class="enter">进入</div>
+			</div>
+		</div>
+	</body>
+	<script src="/Scripts/jquery.min.js"></script>
+	<script type="text/javascript" src="/Scripts/jquery-ui.min.js"></script>
+	<script src="/Scripts/Treatment.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/Scripts/amazeui.min.js"></script>
+	<script type="text/javascript">
+		$(".blockright").click(function(){
+			window.location.href="/HClogin/login"
+		})
+		$(".blockleft").click(function(){
+			window.location.href="/HClogin/login"
+		})
+	</script>
+</html>

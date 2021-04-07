@@ -1,0 +1,237 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+<style type="text/css">
+	* {
+		font-size: 12px;
+	}
+
+	.border-height {
+		border: 1px solid #DDDDDD;
+		margin: 0 1rem;
+	}
+
+	.title {
+		height: 15%;
+		line-height: 3rem;
+		/*padding-left: 1rem;*/
+	}
+
+	table {
+
+		width: 100%;
+	}
+
+	table.left {
+		height: 100%;
+	}
+
+	table tr {
+		border-top: 0.1rem solid #d9d9d9;
+		border-bottom: 0.1rem solid #d9d9d9;
+		border-right: 0.1rem solid #d9d9d9;
+	}
+
+	/* table.left tr{
+			height: 25%;
+		} */
+	table tr td {
+		padding: 0 1rem;
+
+	}
+
+	.num {
+		font-size: 17px;
+	}
+</style>
+
+<body data-type="generalComponents" style="background-color: white;">
+	<div class="tpl-page-header-fixed" style="margin-top: 0px;height: 48%;">
+		<div class="am-u-md-4" style="height: 100%;">
+			<div class="" style="height: 100%;">
+				<div class="title" style="height: 15%;">
+					<img src="/Images/weituo.png" /> 委托单
+				</div>
+				<div style="height: 75%;">
+					<div class="am-in" style="height: 100%;">
+						<table class="am-table-hover left" style="margin: 0;">
+							<tbody>
+								<tr style="border-left: 0.5rem solid #6be181;" onclick="openlist(0)">
+									<td>
+										<div class="num" style="color:#6be181 ;">
+											<%=daynum%>
+										</div>
+										<div class="">
+											今日新的委托单
+										</div>
+									</td>
+									<td class="am-text-center"><img src="/Images/weituo_1.png" /></td>
+								</tr>
+								<tr style="border-left: 0.5rem solid #16bbff;" onclick="openlist(1)">
+									<td>
+										<div class="num" style="color:#16bbff ;">
+											<%=daynum1_3%>
+										</div>
+										<div class="">
+											1-3工作日未确认的委托单
+										</div>
+									</td>
+									<td class="am-text-center"><img src="/Images/weituo_2.png" /></td>
+								</tr>
+								<tr style="border-left: 0.5rem solid #ffa914;" onclick="openlist(2)">
+									<td>
+										<div class="num" style="color:#ffa914 ;">
+											<%=daynum3_7%>
+										</div>
+										<div class="">
+											3-7个工作日未确认的委托单
+										</div>
+									</td>
+									<td class="am-text-center"><img src="/Images/weituo_3.png" /></td>
+								</tr>
+								<tr style="border-left: 0.5rem solid #ff6d6e;" onclick="openlist(3)">
+									<td>
+										<div class="num" style="color:#ff6d6e ;">
+											<%=daynum7_%>
+										</div>
+										<div class="">
+											7个工作日以上未确认的委托单
+										</div>
+									</td>
+									<td class="am-text-center"><img src="/Images/weituo_4.png" /></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="am-u-md-8" style="height: 100%;">
+			<div class="" style="height: 100%;">
+				<div class="title" style="height: 15%;padding-left:1.25rem">
+					<span class="am-icon-snapchat-ghost"
+						style="color: #ba554c;font-size: 1.8rem;margin-right: 0.25rem;"></span> 最近消息
+				</div>
+				<div class="border-height" style="height: 75%;overflow: auto">
+					<table class="am-table am-table-bd am-table-bdrs am-table-striped am-table-hover"
+						style="margin: 0;">
+						<thead>
+							<tr>
+								<td>
+									内容
+								</td>
+								<td>
+									时间
+								</td>
+								<td>
+									已读
+								</td>
+							</tr>
+						</thead>
+						<tbody id="tbody">
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="am-u-md-12" style="height: 44%;">
+		<div class="title">
+			<img src="/Images/liucheng.png" /> 参与任务统计
+		</div>
+		<div>
+
+		</div>
+		<div class="border-height" style="height: 85%;text-align: center;">
+			<div class="echarts" id="echarts-line-chart" style="height: 100%;width:100%;text-align: center;"></div>
+		</div>
+	</div>
+	<% include ../layout/footer.ejs %>
+	<script src="/Scripts/echarts-all.js"></script>
+	<script>
+		//拉取消息列表
+		GetMessAge();
+		function GetMessAge() {
+			$.ajax({
+				type: "get",
+				url: "/home/getmessage",
+				success: function (msg) {
+					console.log(msg);
+					var str = ""
+					$.each(msg.MessageItem, function (i, v) {
+						str += "<tr><td><span class=\"am-icon-volume-down\"></span><span>" + v.message + "</span></td><td>" + v.time + "</td><td><input type='checkbox'  onclick=\"read(" + v.id + ")\"></td></tr>"
+					})
+					if (msg.MessageItem.length == 0) {
+						str += "<tr><td  colspan=\"3\">无消息</td></tr>"
+					}
+//					console.log(str);
+					$("#tbody").html(str);
+				}
+			});
+		}
+		//处理已读
+		function read(id) {
+			//alert(id);
+			$.ajax({
+				type: "get",
+				url: "/home/readmessage?id=" + id,
+				success: function (msg) {
+					console.log(msg);
+					GetMessAge();
+				}
+			});
+		}
+
+		var data = JSON.parse(decodeURIComponent('<%=Month12%>'));
+		var data2 = JSON.parse('<%=MonthNum12%>');
+		var e = echarts.init(document.getElementById("echarts-line-chart"));
+		var date = new Date;
+		var option1 = {
+			title: {
+				text: "近12月"
+			},
+
+			tooltip: {
+				trigger: 'axis'
+			},
+			legend: {
+				data: ['参与量']
+			},
+			xAxis: [{
+				type: 'category',
+				data: data
+			}],
+			yAxis: [{
+				type: 'value'
+			}],
+			series: [{
+				"name": "参与量",
+				"type": "line",
+				"data": data2,
+			}]
+		};
+		e.setOption(option1);
+
+		//打开任务列表页
+		function openlist(type) {
+			var index = layer.open({
+				type: 2,
+				title: "待办任务",
+				content: "/home/daibanlist?type=" + type,
+				area: ['900px', '600px']
+			});
+		}
+
+		//通知菜单跳转
+		function ToCaoZuo(id, state) {
+			//处理打印及发放特列
+			if (state == 14) {
+				window.location.href = "/modular_task/printlist?type=14";
+			} else if (state == 15) {
+				window.location.href = "/modular_task/reportuselist?type=15";
+			} else {
+				window.location.href = "/modular_task/list?type=" + state;
+			}
+		}
+	</script>

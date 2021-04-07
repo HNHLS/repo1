@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="eqid" id="eqid" value="<%= eqid %>" />
+							<label class="layui-form-label"><span class="i">*</span>保养时间</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="upfiledate" value="<%= upfiledate %>" name="upfiledate">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>负责人</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="maincustoin" value="<%= maincustoin %>" name="maincustoin">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>保养表</label>
+							<div class="layui-input-block">
+								<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+									<div id="picker" style="width: 80px;float: right;">选择文件</div>
+								</div>
+								<div class="layui-input-block">
+									<div class="flie-height">
+										<div id="flie">
+											<!--用来存放文件信息-->
+											<div id="thelist" class="uploader-list"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_equipment/Maintain","设备管理","设备保养","新增")
+	var manno="<%=manno%>"
+	layui.use(['form','jquery','laydate','element', 'tree', 'layer','upload'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		var laydate=layui.laydate;
+		laydate.render({
+			elem: '#upfiledate'
+			,trigger: 'click'
+		});//日期范围
+		var $ = layui.$, active = {
+		    addRole: function(){//技术要求删除
+			    
+			}
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+		        type: "POST",
+		        url: "/modular_equipment/Maintainedit?fileaddrss="+JSON.stringify(fileaddrss),
+		        data: $("#addForm").serialize(),
+		        success: function (msg) {
+		            console.log(msg);
+		            if (msg.status =="ok") {
+		                alert("保存成功");
+		                //执行父级刷新
+		                window.location.href="/modular_equipment/Maintain"
+		            } else {
+		                alert(msg.message);
+		            }
+		        }
+		    });
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>
+<script type="text/javascript">
+	//校准需求
+	var fileaddrss =<%-fileaddrss%>
+	if(fileaddrss!=null&&fileaddrss!=[]){
+		
+	}else{
+		fileaddrss=[]
+	}
+		var upLoader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		upLoader.on('fileQueued', function(file) {upLoader.upload()});
+		// 文件上传成功,合并文件。
+		upLoader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							fileaddrss=[]
+							File.FileName = data.message.key
+							File.FileUrl = data.message.url
+							fileaddrss.push(File)
+							console.log(File)
+							console.log(fileaddrss)
+							$("#thelist div").remove()
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(fileaddrss)
+				fileaddrss=[]
+				File.FileName = fileNames
+				File.FileUrl = fileUrl
+				fileaddrss.push(File)
+				console.log(File)
+				console.log(fileaddrss)
+				$("#thelist div").remove()
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		upLoader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(fileaddrss!= null&&fileaddrss.length>0) {
+		console.log(need_path)
+		for(var i = 0; i < fileaddrss.length; i++) {
+			var FileName = fileaddrss[i].FileName
+			var FileUrl = encodeURIComponent(fileaddrss[i].FileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		$(obj).parent().remove()
+		if(fileaddrss[0].fileUrl == decodeURIComponent(url)) {
+			fileaddrss.splice(0, 1);
+		}
+	}
+</script>

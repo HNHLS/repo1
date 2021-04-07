@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+
+<% include ../layout/header.ejs %>
+<style type="text/css">
+    .info {
+        font-size: 0.7rem;
+        margin-top: 0.5rem;
+    }
+
+    .state {
+        font-size: 0.7rem;
+        margin-left: 2rem;
+    }
+
+    .tpl-scrollable {
+        min-height: 0px;
+    }
+
+    .actions-btn li {
+        border-radius: 0px;
+    }
+
+    .am-form-group {
+        margin-bottom: 0px;
+    }
+
+    .uploader-list .item {
+        height: 40px;
+        line-height: 20px;
+        padding: 3px 11px;
+        border: 1px solid;
+        margin-top: 2px;
+    }
+</style>
+
+<body data-type="generalComponents" style="height: 100%;overflow: scroll">
+
+    <div class="tpl-portlet" style="height: auto;">
+
+        <div class="border-height" style="height: 75%;overflow: auto">
+            <table class="am-table am-table-bd am-table-bdrs am-table-striped am-table-hover" style="margin: 0;">
+                <thead>
+                    <tr>
+                        <td>
+                            任务编号
+                        </td>
+                        <td>
+                            当前节点
+                        </td>
+                        <td>
+                            接收时间
+                        </td>
+                        <td>
+                            去处理
+                        </td>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <%for(var j=0;j<list.length;j++){ %>
+                    <tr>
+                        <td>
+                            <%=list[j].no%>
+                        </td>
+                        <td>
+                            <%=list[j].statename%>
+                        </td>
+                        <td>
+                            <%=list[j].addtime%>
+                        </td>
+                        <td>
+                            <a href="javascript:void(0)"
+                                onclick="ToCaoZuo('<%=list[j].id%>','<%=list[j].state%>')">去处理</a>
+                        </td>
+                    </tr>
+                    <%}%>
+                    <%if(list.length==0){%>
+                    <tr>
+                        <td colspan="4" style="text-align: center">
+                            暂无待办！
+                        </td>
+                    </tr>
+                    <%}%>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+</body>
+
+
+</html>
+<% include ../layout/footer.ejs %>
+                    <script>
+                        function ToCaoZuo(id, state) {
+                            parent.ToCaoZuo(id, state);
+                        }
+                    </script>

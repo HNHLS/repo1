@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title></title>
+	<script src="/layuiadmin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="/layuiadmin/layui/css/layui.css" />
+    <script src="/Scripts/echarts.min.js"></script>
+    <script src="/moment/moment.js"></script>
+	<style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+		html,body{
+            height: 100%;
+            width: 100%;
+        }
+        #addForm{
+            width: 80%;
+            margin: auto;
+        }
+        .i{
+            color: red;
+        }
+        .layui-form-item{
+            margin-top: 20px;
+        }
+        .title{
+            font-size: 16px;
+            text-align: center;
+            padding: 5px;
+        }
+	</style>
+</head>
+<body>
+    <div class="title">委托单号:<%=testCourseCostDto.subTaskNumber%>,样品编号:<%=testCourseCostDto.sampleNumber%>,检测项目:<%=testCourseCostDto.testItemName%><%if (testCourseCostDto.extra!=""){%>,备注:<%=testCourseCostDto.extra%><%}%></div>
+    <div id="main" style="height: 65%;width: 90%;margin: auto;"></div>
+    <form action="" id="addForm" class="layui-form">
+        <div class="toolbar">
+            <div class="layui-inline">
+                <label class="layui-form-label">时间选择</label>
+                <div class="layui-input-block">
+                    <div class="layui-inline">
+                        <input type="text" class="layui-input" id="startTime" value="" name="startTime">
+                    </div>
+                    <div class="layui-inline">
+                        <input type="text" class="layui-input" id="endTime" value="" name="endTime">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-inline">
+                 <div class="layui-btn layui-btn-sm" onclick="search()">查询</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+                <label class="layui-form-label"><span class="i">*</span>设备</label>
+                <div class="layui-input-block">
+                    <select name='Equipment'lay-filter='Equipment'></select>
+                </div>
+            </div>
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+                <label class="layui-form-label"><span class="i">*</span>开始时间</label>
+                <div class="layui-input-block">
+                    <input type="text" class="layui-input" id="startDate" value="<%=testCourseCostDto.startTimeStr%>" name="startDate" readonly>
+                </div>
+            </div>
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+                <label class="layui-form-label"><span class="i">*</span>样品数量:</label>
+                <div class="layui-input-block">
+                    <input type="number" class="layui-input" id="useCount" value="<%=testCourseCostDto.sampleNumber.split(",").length%>" name="useCount" min="0" max="<%=testCourseCostDto.limit%>">
+                </div>
+            </div>
+        </div>
+            <div class="layui-inline" style="position: relative;left: 45%;">
+                <div class="layui-btn" onclick="save()">保存</div>
+            </div>
+        </div>
+    </form>
+</body>
+<script>
+    // console.log("<%=testCourseId%>")
+    var testCourseId="<%=testCourseId%>"
+    var testCourseUseEquipmentId="<%=testCourseCostDto.testCourseUseEquipmentId%>"
+    var equipmentId='<%=equipmentId%>'
+    var useStartTime=<%=testCourseCostDto.startTime%>;
+    var useEndTime=<%=testCourseCostDto.completeTime%>;
+    layui.use(['form', 'laydate','jquery'], function() {
+        var $ = layui.jquery;
+        var form=layui.form;
+        var laydate=layui.laydate;
+        laydate.render({
+		   elem: '#startTime'
+		   ,trigger: 'click'
+        });
+        laydate.render({
+		   elem: '#endTime'
+		   ,trigger: 'click'
+        });
+        laydate.render({
+           elem: '#startDate'
+           ,type: 'datetime'
+            ,format:"yyyy-MM-dd HH:mm"
+		   ,trigger: 'click'
+        });
+        form.on('select(Equipment)',function(data){
+            search()
+        })
+        window.search=function(){
+            var endTime=$("#endTime").val()
+            var startTime=$("#startTime").val()
+            var id=$("select[name=Equipment]").val()
+            console.log(endTime,startTime,id)
+            $.ajax({
+                type:'GET',
+                url:'/modular_equipment/getEquipmentRemainCapacity',
+                data:{
+                    endTime: endTime,
+                    startTime: startTime,
+                    testCourseId: testCourseId,
+                    id: id
+                },
+                success:function(res){
+                    if(res.status=="ok"){
+                        var data=res.message;
+                        var time=[];
+                        var surplus=[];
+                        var current = [];
+                        var obj={};
+                        var afterCompleteTime=false;
+                        var p=new Promise(function(reslove,reject){
+                            for(let i=0;i<data.length;i++){
+                                time[i]=data[i].t
+                                surplus[i]=data[i].r
+                                if (afterCompleteTime) {
+                                    current[i] = 0;
+                                }else {
+                                    let tempDatetime = moment(time[i]).valueOf();
+                                    if (tempDatetime >= useStartTime && tempDatetime <= useEndTime) {
+                                        current[i]="<%=testCourseCostDto.sampleNumber%>".split(",").length;
+                                    }else if(tempDatetime>useEndTime){
+                                        afterCompleteTime=true;
+                                        current[i] = 0;
+                                    }else {
+                                        current[i] = 0;
+                                    }
+                                }
+                            }
+                            obj.time=time
+                            obj.surplus=surplus
+                            obj.current=current;
+                            reslove(obj)
+                        });
+                        p.then((data)=>{
+                            var myChart = echarts.init(document.getElementById("main"));
+
+                            var option = {
+                                tooltip: {
+                                    trigger: 'axis',
+                                    position: function (pt) {
+                                        return [pt[0], '100%'];
+                                    }
+                                },
+                                title: {
+                                    left: 'center',
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: data.time
+                                },
+                                yAxis: {
+                                    type: 'value',
+                                    boundaryGap: [0, '100%']
+                                },
+                                dataZoom: [{
+                                    type: 'inside',
+                                    start: 0,
+                                    end: 50
+                                }, {
+                                    start: 0,
+                                    end: 10,
+                                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                                    handleSize: '80%',
+                                    handleStyle: {
+                                        color: '#fff',
+                                        shadowBlur: 3,
+                                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                                        shadowOffsetX: 2,
+                                        shadowOffsetY: 2
+                                    }
+                                }],
+                                series: [
+                                    {
+                                        name: '设备余量',
+                                        type: 'line',
+                                        smooth: true,
+                                        symbol: 'none',
+                                        sampling: 'average',
+                                        itemStyle: {
+                                            color: 'rgb(6,100,180)'
+                                        },
+                                        areaStyle: {
+                                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                                offset: 0,
+                                                color: 'rgb(0,140,214)'
+                                            }, {
+                                                offset: 1,
+                                                color: 'rgb(168,196,206)'
+                                            }])
+                                        },
+                                        data: data.surplus
+                                    },
+                                    {
+                                        name: '本检测项占用',
+                                        type: 'line',
+                                        smooth: true,
+                                        symbol: 'none',
+                                        sampling: 'average',
+                                        itemStyle: {
+                                            color: 'rgb(236,28,28)'
+                                        },
+                                        areaStyle: {
+                                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                                offset: 0,
+                                                color: 'rgb(220,23,23)'
+                                            }, {
+                                                offset: 1,
+                                                color: 'rgb(217,160,58)'
+                                            }])
+                                        },
+                                        data: data.current
+                                    }
+                                ]
+
+                            }
+                            myChart.setOption(option);
+                            myChart.getZr().on('click',function(params){
+                                console.log(params)
+                                var pointInPixel = [params.offsetX, params.offsetY];
+                                var pointInGrid = myChart.convertFromPixel('grid', pointInPixel);
+                                if (myChart.containPixel('grid', pointInPixel)) {
+                                    var chart_x=myChart.getOption().xAxis[0].data[pointInGrid[0]]
+                                    console.log(chart_x)
+                                    $("#startDate").val(chart_x)
+                                    // form.render('laydate')
+                                }
+
+                            })
+                        },err=>{
+
+                        });
+
+                    }else{
+                        alert(res.message);
+                    }
+                }
+            })
+        }
+        window.save=function(){
+            var id=$("select[name=Equipment]").val()
+            var useCount=$("#useCount").val()
+            var startDate=$("#startDate").val()
+            $.ajax({
+                type:"get",
+                url:"/modular_equipment/modifyTestCoursePlan",
+                data:{
+                    testCourseUseEquipmentId:testCourseUseEquipmentId,
+                    equipmentId:id,
+                    useCount:useCount,
+                    startDate:startDate
+                },
+                success:function(res){
+                    console.log(res)
+                    if(res.status=="ok"){
+                        alert(res.message)
+                        parent.location.reload()
+                        var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                        parent.layer.close(index);
+                    }else{
+                        alert(res.message)
+                    }
+                }
+            });
+        }
+        $.ajax({
+            type:"get",
+            url:"/modular_equipment/listEquipmentByTestCourseId?testCourseId="+testCourseId,
+            success:function(res){
+                console.log(res)
+                var data=res.message
+                for(var i=0;i<data.length;i++){
+                    $("select[name=Equipment]").append("<option value='"+data[i].id+"' "+(data[i].id==equipmentId?"selected":"")+">"+data[i].name+"</option>")
+                }
+                form.render("select")
+                //设备下拉加载结束才能获取选中设备的id
+                search()
+            }
+        });
+    })
+
+
+</script>

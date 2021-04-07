@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item" style="width: 93.5%;">
+						<label class="layui-form-label"><span class="i">*</span>角色</label>
+						<div class="layui-input-block">
+							<select xm-select="example4" name="role" lay-verify="required" xm-select-search="" id="demoReload">
+					
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>工号</label>
+							<div class="layui-input-block">
+								<input type="hidden" name="id" id="id" value="<%=id%>" />
+								<input type="text" class="layui-input" lay-verify="required" readonly="readonly" value="<%=loginName%>" autocomplete="off" name="loginName" id="loginName" placeholder="请输入账号">
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>姓名</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=nickName%>" autocomplete="off" name="nickName" id="nickName" placeholder="请输入用户名">
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>邮箱</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=email%>" autocomplete="off" name="email" id="email" placeholder="请输入邮箱">
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label">备注</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" value="<%=extra%>" name="extra" autocomplete="off" id="extra" placeholder="请输入备注">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		layui.config({
+			base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+		}).extend({
+			formSelects: 'formSelects-v4'
+		});
+		var roleArray="<%=roleArray%>".split(",")
+		console.log(roleArray)
+		layui.use(['form', 'formSelects'], function() {
+			var form = layui.form
+			var formSelects = layui.formSelects;
+			layui.formSelects.config('example4', {
+				searchUrl:"/modular_users/queryAllRoleList",
+				beforeSuccess: function(id, url, searchVal, result) {
+					//我要把数据外层的code, msg, data去掉
+					console.log(result)
+					data = result.message.data;
+					//我要反转name
+					var array = []
+					$.each(data, function(index, item) {
+						console.log(item)
+						var obj = {}
+						obj.name = item.name
+						obj.value = item.name
+						array[index] = obj
+					});
+					//然后返回数据
+					return array;
+				},
+				success: function() {
+					formSelects.value('example4',roleArray);
+				}
+			})
+			//监听提交
+			form.on('submit(formDemo)', function(data) {
+				console.log(data.field)
+				$.ajax({
+					type: "post",
+					url:"/modular_users/adminuseredit",
+					data: data.field,
+					async: true,
+					success: function(res) {
+						console.log(res)
+						if(res.status == "ok") {
+							alert(res.message)
+							parent.location.reload()
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+							parent.layer.close(index);
+						} else {
+							layer.msg(res.message, {icon: 5})
+						}
+					}
+				});
+				return false;
+			});
+		});
+	</script>
+
+</html>

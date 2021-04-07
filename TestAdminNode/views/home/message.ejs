@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style>
+		#iframe{
+			height: 100%;
+			width: 100%;
+			border: 1px solid #37a3dd;
+			padding: 40px 15px;
+			position: absolute;
+			background-color: white;
+		}
+		.rectangle1{
+			position: absolute;
+			top: 15px;
+			left: 20px;
+			z-index: 5;
+		}
+		.rectangle2{
+			position: absolute;
+			bottom: 15px;
+			right: 20px;
+			z-index: 5;
+		}
+		.tpl-content-wrapper {
+			padding-left: 0;
+		}
+	</style>
+	<body>
+	<div class="tpl-content-wrapper" id="iframe">
+		<img class="rectangle1" src="/Images/rectangle1.png"/>
+		<img class="rectangle2" src="/Images/rectangle2.png"/>
+
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<button class="layui-btn layui-btn-sm" data-type="delRole"><i class="layui-icon layui-icon-delete"></i>批量已读</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - " autocomplete="off">
+				</div>
+				<div class="layui-inline">
+					<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<!-- <shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+			</script>
+		</shiro:hasRole> -->
+	</div>
+
+		
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","用户通知","通知列表","")
+		layui.extend({
+			bindKey:'/bindKey/bindKey'
+		})
+		//角色下拉
+		layui.use(['form', 'laydate','table','bindKey'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+			var bindkey = layui.bindKey;
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'edit'){
+			    window.location.href = "/modular_basics/Judgementedit?id="+data.id
+			}
+		});
+		
+		table.render({
+			elem: '#tab',
+			url: "/home/notification",
+			cellMinWidth: 10,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'sn',
+					align: 'center',
+					title: '序号',
+					width: '5%'
+				},{
+					field: 'title',
+					align: 'center',
+					title: '标题',
+					width: '30%'
+				},{
+					field: 'content',
+					align: 'center',
+					title: '内容',
+					width: '40%'
+				}, {
+					field: 'createTime',
+					align: 'center',
+					title: '发送时间',
+					width: '12%',
+					sort: true,
+				}, {
+					field: 'viewed',
+					align: 'center',
+					title: '是否已读',
+					templet:function(d){
+						return d.viewed?"是":"否"
+					}
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		    console.log(res)
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+		var keyword
+		var startDate
+		var endDate
+		laydate.render({
+		   elem: '#date'
+		   ,range: true
+		   ,trigger: 'click'
+		   ,done: function(value, date){
+		        //得到日期生成的值，如：2017-08-18
+		      console.log(value.split(" - "))
+		      startDate=value.split(" - ")[0]
+		      endDate=value.split(" - ")[1]
+		      console.log(startDate,endDate)
+		    }
+		});//日期范围
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].id
+		    }
+			console.log(ids)
+		});
+		bindLayuiDefaultTableRowClick(table);
+		var $ = layui.$, active = {
+		    reload: function(data){
+		      keyword = $('#search').val();
+		      //执行重载
+		      table.reload('tabReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	startDate: startDate,
+					keyword:keyword,
+					endDate:endDate
+		        }
+		      });
+		    }, delRole: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量已读至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	           	$.ajax({
+                    type:'get',
+					dataType:"json",
+                    url:'/home/updateViewed?ids='+JSON.stringify(ids),
+                    success:function(data){
+						console.log(data)
+                        if(data.status=="ok"){
+                           table.reload('tabReload', {
+								page: {
+									curr: 1
+								},
+								where: {
+//										page: 1
+								}
+							});
+                         }
+                       layer.msg(data.message);
+                    },error:function(code){   
+                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+                    }
+                });
+		   }
+		};
+
+			$('.layui-btn').on('click', function () {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+			bindkey.autoBind(active);
+	});
+</script>
+</html>

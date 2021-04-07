@@ -1,0 +1,583 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		/*数字框去除箭头*/
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+		 
+		input[type="number"] {
+		    -moz-appearance: textfield;
+		}
+		/*组件/层压件材料信息*/
+		.layui-tab-item .layui-form-label{
+			padding-top: 0px;
+		}
+		.synchro{
+			float: right;
+			height: 28px;
+		}
+		.small{
+			font-size: 12px;
+		}
+	</style>
+
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="returnlist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<%if(assign){%>
+					<div class="layui-btn layui-btn-sm" data-type="collar"><i class="iconfont icon-jilu"></i>分单</div>
+					<%}else{%>
+					<div class="layui-btn layui-btn-sm" data-type="Others"><i class="iconfont icon-winfo-icon-zhipai"></i>指派他人</div>
+					<div class="layui-btn layui-btn-sm" data-type="Own"><i class="iconfont icon-winfo-icon-zhipai"></i>指派自己</div>
+					<%}%>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div id="task">
+					<div class="basic">
+						<div class="blueline">
+							<div class="title">
+								基础信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>试验性质:</label>
+								<div class="layui-input-block">
+									<select name="testNature" id="testNature" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>项目类型:</label>
+								<div class="layui-input-block">
+									<select name="projType" id="projType" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>是否加急:</label>
+								<div class="layui-input-block">
+									<%if(prior){%>
+										<input type="radio" id="prior" name="prior" title="是" value="true" checked="checked"/>
+										<input type="radio" id="prior" name="prior" title="否" value="false"/>
+									<%}else{%>
+										<input type="radio" id="prior" name="prior" title="是" value="true" />
+										<input type="radio" id="prior" name="prior" title="否" value="false" checked="checked"/>
+									<%}%>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>测试目的:</label>
+								<div class="layui-input-block">
+									<textarea name="purpose" id="purpose" class="layui-textarea" lay-verify="required" style="resize: none;"><%=purpose%></textarea>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">备注信息:</label>
+								<div class="layui-input-block">
+									<textarea name="extra" id="extra" class="layui-textarea" style="resize: none;"><%=extra%></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!--委托信息-->
+					<div class="entrust">
+						<div class="blueline">
+							<div class="title">
+								委托信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">申请人:</label>
+								<div class="layui-input-block">
+									<span><%=proposer%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">工号:</label>
+								<div class="layui-input-block">
+									<span><%=staffNumber%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">创建时间:</label>
+								<div class="layui-input-block">
+									<span><%=createTime%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">联系电话:</label>
+								<div class="layui-input-block">
+									<span><%=phoneNumber%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">申请部门:</label>
+								<div class="layui-input-block">
+									<span><%=department%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>检测依据:</label>
+								<div class="layui-input-block">
+									<input type="hidden" name="" id="" value="<%=bpmTestStandard%>" />
+									<span class="i iconfont icon-jinggao small"> BPM导入检测依据</span>
+									<select name="testStandard" id="testStandard" xm-select="testStandard" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>判定依据:</label>
+								<div class="layui-input-block">
+									<input type="hidden" name="" id="" value="<%=bpmJudgementStandard%>" />
+									<span class="i iconfont icon-jinggao small"> BPM导入判定依据</span>
+									<select name="judgementStandard" id="judgementStandard" xm-select="judgementStandard" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>检测项目描述:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="testProj" value="<%=testProj%>" lay-verify="required"/>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>检测周期(天):</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="testPeriod" value="<%=testPeriod%>" lay-verify="required" />
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品处置:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="handleWay" value="<%=handleWay%>" lay-verify="required" />
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>要求日期:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="completeDateLimit" lay-verify="required" value="<%=completeDateLimit%>" id="completeDateLimit"/>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>成本预计:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="estimateCost" lay-verify="required" value="<%=estimateCost%>" />
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">成本承担组织:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="costAssumeDepartment" value="<%=costAssumeDepartment%>" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title"> 
+								样品信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>委托单号:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="delegateNum" value="<%=delegateNum%>" readonly="readonly"/>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>预计送样:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="arriveDate" lay-verify="required" value="<%=arriveDate%>" id="arriveDate"/>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品名称:</label>
+								<div class="layui-input-block">
+									<select name="sampleName" id="sampleName" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品编号:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="sampleNumber" lay-verify="required" value="<%=sampleNumber%>" id="sampleNumber" placeholder="例:YP001;YP002;..."  />
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品型号:</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" name="sampleModel" lay-verify="required" value="<%=sampleModel%>" />
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品数量:</label>
+								<div class="layui-input-block">
+									<input type="number" class="layui-input" name="sampleCount" lay-verify="required" value="<%=sampleCount%>" />
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品规格:</label>
+								<div class="layui-input-block">
+									L:<input type="number" class="layui-input" name="specsL" value="<%=specsL%>" style="padding-left:0px;width: 36px;display: inline-block"/>*
+									W:<input type="number" class="layui-input" name="specsW" value="<%=specsW%>" style="padding-left:0px;width: 36px;display: inline-block"/>*
+									H:<input type="number" class="layui-input" name="specsH" value="<%=specsH%>" style="padding-left:0px;width: 36px;display: inline-block"/>mm
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品状态:</label>
+								<div class="layui-input-block">
+									<select name="sampleState" id="sampleState" lay-verify="required">
+									</select>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label"><span class="i">*</span>样品来源:</label>
+								<div class="layui-input-block">
+									<select name="sampleFrom" id="sampleFrom" lay-verify="required">
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">最大系统电压[V]:</label>
+								<div class="layui-input-block">
+									<select name="maxVoltage" id="maxVoltage">
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<%if(chosen=="可靠性"){%>
+					<div id="inform">
+						<div class="inform">
+							<div class="Personnellist">
+								<div class="blueline">
+									<div class="title" style="width: 130px;float: left;">
+										组件/层压件材料信息
+									</div>
+									<div class="synchro layui-btn layui-btn-sm">
+										同步MES信息
+									</div>
+									<div style="clear: both;"></div>
+								</div>
+								<div class="layui-tab layui-tab-card">
+									<ul class="layui-tab-title">
+										<%if(components.length>0){%>
+											<%for(var i=0;i<components.length;i++){%>
+												<input type="hidden" id=""  name="componentssampleNumber" value="<%=components[i].sampleNumber%>" />
+												<%if(i==0){%>
+													<li class="layui-this"><%=components[i].sampleNumber%></li>
+												<%}else{%>
+													<li><%=components[i].sampleNumber%></li>
+												<%}%>
+											<%}%>
+										<%}%>
+									</ul>
+									<div class="layui-tab-content" >
+										<%if(components.length>0){%>
+											<%for(var i=0;i<components.length;i++){%>
+												<div class="layui-tab-item <%=i==0?'layui-show':''%>">
+													<div class="layui-form-item">
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">组件表面材料(供应商/类型/型号):</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input" name="componentSurfaceMaterial" value="<%=components[i].componentSurfaceMaterial%>" />
+														  </div>
+													  </div>
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">组件背板材料(供应商/类型/型号):</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input" name="componentBackplaneMaterial" value="<%=components[i].componentBackplaneMaterial%>" />
+														  </div>
+													  </div>
+												  </div>
+												  <div class="layui-form-item">
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">组件上表面EVA(厂家/类型/型号):</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input"  name="componentTopSurfaceEVA" value="<%=components[i].componentTopSurfaceEVA%>" />
+														  </div>
+													  </div>
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">组件下表面EVA(厂家/类型/型号):</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input"  name="componentLowerSurfaceEVA" value="<%=components[i].componentLowerSurfaceEVA%>" />
+														  </div>
+													  </div>
+												  </div>
+												  <div class="layui-form-item">
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">保险丝最大电流(A):</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input"  name="fuseCurrent" value="<%=components[i].fuseCurrent%>" />
+														  </div>
+													  </div>
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">电池片制绒工艺:</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input"  name="cellSheetTexturingProcess" value="<%=components[i].cellSheetTexturingProcess%>" />
+														  </div>
+													  </div>
+												  </div>
+												  <div class="layui-form-item">
+													  <div class="layui-col-xs6">
+														  <label class="layui-form-label">电池片规格/数量:</label>
+														  <div class="layui-input-block">
+															  <input type="text" class="layui-input"  name="cellSpecifications" value="<%=components[i].cellSpecifications%>" />
+														  </div>
+													  </div>
+												  </div>
+												</div>
+											<%}%>
+										<%}%>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				<%}%>
+				
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_task/taskmanagement", "任务管理", "任务列表", "任务委托单(内部)")
+		var delegateNum = "<%=delegateNum%>"
+		console.log("<%=delegateNum%>")
+		var testNature='<%=testNature%>'//实验性质
+		var projType='<%=projType%>'//项目类型
+		var sampleFrom='<%=sampleFrom%>'//样品来源
+		var sampleState='<%=sampleState%>'//样品状态
+		var sampleName='<%=sampleName%>'//样品名称
+		var maxVoltage='<%=maxVoltage%>'//最大系统电压
+		var testStandard='<%=testStandard%>'.split(",")//检测标准
+		var judgementStandard='<%=judgementStandard%>'.split(",")//判定标准
+		dropdown("试验性质","#testNature",testNature)
+		dropdown("项目类型","#projType",projType)
+		dropdown("样品来源","#sampleFrom",sampleFrom)
+		dropdown("样品状态","#sampleState",sampleState)
+		dropdown("样品名称","#sampleName",sampleName)
+		dropdown("最大系统电压","#maxVoltage",maxVoltage)
+		layui.config({
+			base: '/layuiadmin/lib/' //此处路径请自行处理, 可以使用绝对路径
+		}).extend({
+			formSelects: 'formSelects-v4'
+		});
+		layui.use(['form', 'table','laydate','jquery','formSelects'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			var formSelects=layui.formSelects
+			laydate.render({
+			   elem: '#completeDateLimit'
+			   ,trigger: 'click'
+			});
+			laydate.render({
+			   elem: '#arriveDate'
+			   ,trigger: 'click'
+			});
+			window.returnlist=function(){
+				window.location.href="/modular_task/taskmanagement"
+			}
+			var tips
+			$(".small").hover(function(){
+				var val=$(this).parent().find("input").val()
+				tips=layer.tips(val,this,{
+				  	tips: [1, '#3595CC'],
+				  	time:0
+				});
+			},function(){
+				layer.close(tips);
+			})
+			$(".synchro").click(function(){
+				$.ajax({
+					type: "GET",
+					url: "/modular_task/syncMESByConcatSampleStr?sampleNumberStr="+$("#sampleNumber").val(),
+					success: function(msg) {
+						console.log(msg);
+						$(".layui-tab-card div").remove()
+						$(".layui-tab-card ul").remove()
+						console.log(msg);
+						$(".layui-tab-card").append(msg)
+					}
+				});
+			})
+			window.standardlist=function(type,node,selected){
+				layui.formSelects.config(node, {
+					searchUrl: "/modular_task/standardlist?type="+type,
+					beforeSuccess: function(id, url, searchVal, result) {
+						//我要把数据外层的code, msg, data去掉
+						console.log(result)
+						data = result.message.data;
+						//我要反转name
+						var array = []
+						$.each(data, function(index, item) {
+							var obj = {}
+							console.log(item)
+							obj.name = item.name
+							obj.value = item.id
+							array[index] = obj
+						});
+						//然后返回数据
+						console.log(array)
+						return array;
+					},
+					success: function() {
+						formSelects.value(node,selected);
+					}
+				})
+			}
+			standardlist("检测标准","testStandard",testStandard)
+			standardlist("判定标准","judgementStandard",judgementStandard)
+			var $ = layui.$,
+				active = {
+					Own: function() { //指派自己
+						$.ajax({
+							type: "POST",
+							url: "/modular_task/acceptTask?delegateNum="+delegateNum,
+							data: $("#addForm").serialize(),
+							success: function(msg) {
+								console.log(msg);
+								if(msg.status == "ok") {
+									alert("指派成功");
+									//执行父级刷新
+									window.location.reload()
+								} else {
+									alert(msg.message);
+								}
+							}
+						});
+					},
+					Others: function() { //指派他人
+						var arr=[]
+						arr.push(delegateNum)
+						layer.open({
+							type: 2,
+							title:"指派他人",
+							area: ['800px', '250px'],
+							content: '/modular_task/handleothers?delegateNum='+arr
+						});
+					},
+//					save: function() { //保存
+//						
+//					},
+					collar:function(){//分单
+						window.location.href='/modular_task/separateorder?delegateNum='+delegateNum
+					}
+				}
+				form.on('submit(formDemo)', function(data){
+					console.log(data.field)
+					$.ajax({
+						type: "POST",
+						url: "/modular_task/updateDelegateTaskBPM",
+						data: $("#addForm").serialize(),
+						success: function(msg) {
+							console.log(msg);
+							if(msg.status == "ok") {
+								alert("保存成功");
+								//执行刷新
+								window.location.reload()
+							} else {
+								alert(msg.message);
+							}
+						}
+					});
+				    return false;
+				});
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+
+</html>

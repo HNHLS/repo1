@@ -1,0 +1,627 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<%if(type==0){%>
+						<%if(eqid!=0){%>
+						<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+						<%}else{%>
+							<div class="layui-btn layui-btn-sm save" data-type="agree"><i class="iconfont icon-baocun"></i>同意</div>
+							<div class="layui-btn layui-btn-sm save" data-type="reject"><i class="iconfont icon-baocun"></i>驳回</div>
+						<%}%>
+					<%}%>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="eqid" id="eqid" value="<%= eqid %>" />
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>检定日期</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<input type="text" class="layui-input" lay-verify="required" id="date_verification" value="<%= date_verification %>" name="date_verification">
+								<%}else{%>
+									<input type="text" class="layui-input" disabled="disabled" lay-verify="required" id="date_verification" value="<%= date_verification %>" name="date_verification">
+								<%}%>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>检定周期</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<input type="number" class="layui-input" lay-verify="required" id="verification_period" value="<%= verification_period %>" name="verification_period">
+								<%}else{%>
+									<input type="number" class="layui-input" readonly="readonly" lay-verify="required" id="verification_period" value="<%= verification_period %>" name="verification_period">
+								<%}%>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>检定单位</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<input type="text" class="layui-input" lay-verify="required" id="verification_unit" value="<%= verification_unit %>" name="verification_unit">
+								<%}else{%>
+									<input type="text" class="layui-input" readonly="readonly" lay-verify="required" id="verification_unit" value="<%= verification_unit %>" name="verification_unit">
+								<%}%>
+								
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>检定结果</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<select id="verification_situation" name="verification_situation" lay-filter="verification_situation" lay-verify="required">
+										<option value="OK">OK</option>
+										<option value="NG">NG</option>
+										<option value="准用">准用</option>
+									</select>
+								<%}else{%>
+									<select id="verification_situation" disabled="disabled" name="verification_situation" lay-filter="verification_situation" lay-verify="required">
+										<option value="OK">OK</option>
+										<option value="NG">NG</option>
+										<option value="准用">准用</option>
+									</select>
+								<%}%>
+								
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>测试主管</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<select id="firstname" name="firstname" lay-verify="required"></select>
+								<%}else{%>
+									<select id="firstname" name="firstname" disabled="disabled" lay-verify="required"></select>
+								<%}%>
+								
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>授权签字人</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<select id="secondname" name="secondname" lay-verify="required"></select>
+								<%}else{%>
+									<select id="secondname" name="secondname" disabled="disabled" lay-verify="required"></select>
+								<%}%>
+								
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>校准证书编号</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<input type="text" class="layui-input" lay-verify="required" id="verification_number" value="<%= verification_number %>" name="verification_number">
+								<%}else{%>
+									<input type="text" class="layui-input" readonly="readonly" lay-verify="required" id="verification_number" value="<%= verification_number %>" name="verification_number">
+								<%}%>
+								
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">备注</label>
+							<div class="layui-input-block">
+								<%if(eqid!=0){%>
+									<textarea name="remarks" id="remarks" class="layui-textarea"><%= remarks %></textarea>
+								<%}else{%>
+									<textarea name="remarks" id="remarks" readonly="readonly" class="layui-textarea"><%= remarks %></textarea>
+								<%}%>
+								
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">校准需求</label>
+						<div class="layui-input-block">
+							<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;display: <%=eqid==0?'none':'inline'%>">
+								<div id="fpicker" style="width: 80px;float: right;">选择文件</div>
+							</div>
+							<div class="layui-input-block">
+								<div class="flie-height">
+									<div id="flie">
+										<!--用来存放文件信息-->
+										<div id="fthelist" class="uploader-list"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">检定证书</label>
+						<div class="layui-input-block">
+							<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;display: <%=eqid==0?'none':'inline'%>">
+								<div id="spicker" style="width: 80px;float: right;">选择文件</div>
+							</div>
+							<div class="layui-input-block">
+								<div class="flie-height">
+									<div id="flie">
+										<!--用来存放文件信息-->
+										<div id="sthelist" class="uploader-list"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">检定校准表</label>
+						<div class="layui-input-block">
+							<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;display: <%=eqid==0?'none':'inline'%>">
+								<div id="tpicker" style="width: 80px;float: right;">选择文件</div>
+							</div>
+							<div class="layui-input-block">
+								<div class="flie-height">
+									<div id="flie">
+										<!--用来存放文件信息-->
+										<div id="tthelist" class="uploader-list"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_equipment/Calibration","设备管理","检定校准","新增/编辑")
+	var verification_situation="<%=verification_situation%>"
+	var firstno="<%=firstno%>"
+	var secondno="<%=secondno%>"
+	var id="<%=id%>"
+	var eqid="<%=eqid%>"
+	console.log(firstno,secondno)
+	layui.use(['form','jquery','laydate','element', 'tree', 'layer','upload'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		var laydate=layui.laydate;
+		laydate.render({
+			elem: '#date_verification'
+			,trigger: 'click'
+		});//日期范围
+		$("#verification_situation option").each(function(i,v){
+			if(verification_situation==$(v).val()){
+				$(v).prop("selected","selected")
+				form.render("select")
+			}
+		})
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+		        type: "POST",
+		        url: "/modular_equipment/Calibrationedit?need_path="+JSON.stringify(need_path)+"&certificate_path="+JSON.stringify(certificate_path)+"&table_path="+JSON.stringify(table_path),
+		        data: $("#addForm").serialize(),
+		        success: function (msg) {
+		            console.log(msg);
+		            if (msg.status =="0") {
+		                alert("保存成功");
+		                //执行父级刷新
+		                window.location.href="/modular_equipment/basic"
+		            } else {
+		                alert(msg.message);
+		            }
+		        }
+		    });
+		    return false;
+		});
+		var $ = layui.$, active = {
+//		    addRole: function(){//技术要求删除
+//			    
+//			},
+			agree:function(){
+				$.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/recordfirst?id="+id+"&state=1",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                 alert(msg.message);
+			                 window.location.href="/modular_equipment/Calibration"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			},
+			reject:function(){
+				$.ajax({
+			        type: "POST",
+			        url: "/modular_equipment/recordfirst?id="+id+"&state=2",
+			        data: $("#addForm").serialize(),
+			        success: function (msg) {
+			            console.log(msg);
+			            if (msg.status =="ok") {
+			                alert(msg.message);
+			                window.location.href="/modular_equipment/Calibration"
+			            } else {
+			                alert(msg.message);
+			            }
+			        }
+			    });
+			}
+		}
+		$.ajax({
+			type: "POST",
+			url: "/modular_qualifications/DepartmentAndRole?role=测试主管",
+			success: function (msg) {
+			    console.log(msg);
+			    var data=msg.message
+			    if (msg.status =="ok") {
+			    	for(var i=0;i<data.length;i++){
+			    		if(firstno==data[i].number){
+							$("#firstname").append('<option selected value="'+data[i].number+","+data[i].name+'" >'+data[i].name+'</option>')
+						}else{
+							$("#firstname").append('<option value="'+data[i].number+","+data[i].name+'">'+data[i].name+'</option>')
+						}
+			    	}
+					form.render("select");
+			    } else {
+			        alert(msg.message);
+			    }
+			}
+		});
+		$.ajax({
+			type: "POST",
+			url: "/modular_qualifications/DepartmentAndRole?role=授权签字人",
+			success: function (msg) {
+			    console.log(msg);
+			    var data=msg.message
+			    if (msg.status =="ok") {
+			    	for(var i=0;i<data.length;i++){
+			    		if(secondno==data[i].number){
+							$("#secondname").append('<option selected value="'+data[i].number+","+data[i].name+'" >'+data[i].name+'</option>')
+						}else{
+							$("#secondname").append('<option value="'+data[i].number+","+data[i].name+'">'+data[i].name+'</option>')
+						}
+			    	}
+					form.render("select");
+			    } else {
+			        alert(msg.message);
+			    }
+			}
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>
+<script>
+	//校准需求
+	var need_path =<%-need_path%>
+	if(need_path!=null&&need_path!=[]){
+		
+	}else{
+		need_path=[]
+	}
+		var upLoader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#fpicker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		upLoader.on('fileQueued', function(file) {upLoader.upload()});
+		// 文件上传成功,合并文件。
+		upLoader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			$("#recordTemplateName").val(file.name)
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							need_path=[]
+							File.FileName = data.message.key
+							File.FileUrl = data.message.url
+							need_path.push(File)
+							console.log(File)
+							console.log(need_path)
+							$("#fthelist div").remove()
+							thelist("#fthelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(need_path)
+				need_path=[]
+				File.FileName = fileNames
+				File.FileUrl = fileUrl
+				need_path.push(File)
+				console.log(File)
+				console.log(need_path)
+				$("#fthelist div").remove()
+				thelist("#fthelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		upLoader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(need_path!= null&&need_path.length>0) {
+		console.log(need_path)
+		for(var i = 0; i < need_path.length; i++) {
+			var FileName = need_path[i].FileName
+			var FileUrl = encodeURIComponent(need_path[i].FileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#fthelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+</script>
+<script>
+	//校准证书
+	var certificate_path =<%-certificate_path%>
+	if(certificate_path!=null&&certificate_path!=[]){
+		
+	}else{
+		certificate_path=[]
+	}
+		var uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#spicker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		uploader.on('fileQueued', function(file) {uploader.upload()});
+		// 文件上传成功,合并文件。
+		uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			$("#reportTemplateName").val(file.name)
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							certificate_path=[]
+							File.FileName = data.message.key
+							File.FileUrl = data.message.url
+							certificate_path.push(File)
+							console.log(File)
+							console.log(certificate_path)
+							$("#sthelist div").remove()
+							thelist("#sthelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(certificate_path)
+				certificate_path=[]
+				File.FileName = fileNames
+				File.FileUrl = fileUrl
+				certificate_path.push(File)
+				console.log(File)
+				console.log(certificate_path)
+				$("#sthelist div").remove()
+				thelist("#sthelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(certificate_path!= null&&certificate_path.length>0) {
+		console.log(certificate_path)
+		for(var i = 0; i < certificate_path.length; i++) {
+			var FileName = certificate_path[i].FileName
+			var FileUrl = encodeURIComponent(certificate_path[i].FileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#sthelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		if(eqid!="0"){
+			console.log(decodeURIComponent(url))
+			$(obj).parent().remove()
+			if(need_path[0].fileUrl == decodeURIComponent(url)) {
+				need_path.splice(0, 1);
+			}
+			if(certificate_path[0].fileUrl == decodeURIComponent(url)) {
+				certificate_path.splice(0, 1);
+			}
+			if(table_path[0].fileUrl == decodeURIComponent(url)) {
+				table_path.splice(0, 1);
+			}
+		}
+	}
+</script>
+<script>
+	//检定校准表
+	var table_path =<%-table_path%>
+	if(table_path!=null&&table_path!=[]){
+		
+	}else{
+		table_path=[]
+	}
+		var Uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#tpicker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		Uploader.on('fileQueued', function(file) {Uploader.upload()});
+		// 文件上传成功,合并文件。
+		Uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			$("#recordTemplateName").val(file.name)
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							table_path=[]
+							File.FileName = data.message.key
+							File.FileUrl = data.message.url
+							table_path.push(File)
+							console.log(File)
+							console.log(table_path)
+							$("#tthelist div").remove()
+							thelist("#tthelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(table_path)
+				table_path=[]
+				File.FileName = fileNames
+				File.FileUrl = fileUrl
+				table_path.push(File)
+				console.log(File)
+				console.log(table_path)
+				$("#tthelist div").remove()
+				thelist("#tthelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		Uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(table_path!= null&&table_path.length>0) {
+		console.log(table_path)
+		for(var i = 0; i < table_path.length; i++) {
+			var FileName = table_path[i].FileName
+			var FileUrl = encodeURIComponent(table_path[i].FileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#tthelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+</script>

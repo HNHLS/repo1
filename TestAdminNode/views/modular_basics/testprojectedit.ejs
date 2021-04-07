@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.conditionblock{
+			margin-top: 10px;
+		}
+		.conditionblock input{
+			width: 40%;
+			display: inline-block;
+		}
+		.conditionblock .delete{
+			margin-left: 5px;
+		}
+		.tar{
+			font-size: 12px;
+			color: red;
+			margin-top: 5px;
+		}
+		.equipmentblock{
+			padding: 10px 20px;
+			border: 1px solid #37a3dd;
+			text-align: center;
+			border-radius:10px;
+			margin-top: 10px;
+		}
+		.borderred{
+			border: 1px solid red;
+		}
+		.xm-select-label{
+			display: none !important;
+		}
+		/*复选框样式*/
+		.layui-form-checkbox span, .layui-form-checkbox:hover span{
+			border: 1px solid #485fd5;
+			background-color: white;
+			color: #485fd5;
+		}
+		.layui-form-checkbox i,.layui-form-checkbox:hover i{
+			border: 1px solid #485fd5;;
+			border-left: 0;
+		}
+		.layui-form-checked i,.layui-form-checked:hover i{
+			color: #485fd5;
+		}
+		.layui-form-checked span, .layui-form-checked:hover span{
+			background-color: #485fd5;
+			color: white;
+		}
+		#testItemArray>div{
+			padding: 5px 10px;
+			border-radius: 5px;
+			float: left;
+			border: 1px solid #37a3dd;
+			margin: 10px;
+		}
+		.inOrder{
+			background-color:#37a3dd;
+			color: white;
+		}
+		.main{
+			border: 1px solid #b7333a !important;
+			background-color: #b7333a;
+			color: white;
+		}
+		.icon{
+			height: 1.5rem;
+			width: 1.5rem;
+			float: right;
+			position: relative;
+			margin-left: 5px;
+			background-image: url(/Images/gb_tb.png);
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>测试序列名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="name" placeholder="测试序列名称" value="<%= name %>" name="name">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>测试项</label>
+							<div class="layui-input-block" style="margin-bottom: 10px;">
+								<select id="testStandard" name="testStandard" lay-search="" lay-filter="testStandard" >
+									<option value="">请选择检测依据</option>
+								</select>
+							</div>
+							<div class="layui-input-block">
+								<select id="testItem" name="testItem" xm-select="testItem" lay-filter="testItem">
+									<option></option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md8">
+							<div class="layui-input-block" id="testItemArray">
+								<%for(var i=0;i<testItemArray.length;i++){%>
+									<%if(testItemArray[i].inOrder){%>
+										<%if(testItemArray[i].main){%>
+											<div class="main" name="<%=testItemArray[i].id%>"><%=testItemArray[i].name%><a class="icon" tyle="text-decoration:none;" onClick="article_del(this)" href="javascript:;" title="删除"></a></div>
+										<%}else{%>
+											<div class="inOrder" onclick="testItemclick(this)" name="<%=testItemArray[i].id%>"><%=testItemArray[i].name%><a class="icon" tyle="text-decoration:none;" onClick="article_del(this)" href="javascript:;" title="删除"></a></div>
+										<%}%>
+									<%}else{%>
+										<div onclick="testItemclick(this)" name="<%=testItemArray[i].id%>"><%=testItemArray[i].name%><a class="icon" tyle="text-decoration:none;" onClick="article_del(this)" href="javascript:;" title="删除"></a></div>
+									<%}%>
+								<%}%>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_basics/testproject","基础管理","测试序列列表","新增/编辑")
+	var testItemArray=JSON.parse(decodeURIComponent("<%=encodeURIComponent(JSON.stringify(testItemArray))%>"))
+	console.log(testItemArray)
+	layui.use(['form','jquery'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		$.ajax({
+            type: "get",
+            url: "/modular_basics/standard-list-info?type=检测标准&page=-1&limit=0&keyword=",
+            success: function (msg) {
+                console.log(msg.message);
+                var data=msg.message.data
+                if (msg.status=="ok") {
+					for(var i=0;i<data.length;i++){
+						$("#testStandard").append('<option>'+data[i].name+'</option>')
+					}
+					form.render("select")
+                } else {
+                    alert(msg.message);
+                }
+            }
+		});
+		window.testItemclick=function(obj){
+			console.log($(obj).hasClass("inOrder"))
+			if($(obj).hasClass("inOrder")){
+				$(obj).removeClass("inOrder")
+			}else{
+				$(obj).addClass("inOrder")
+			}
+		}
+		window.article_del=function(obj){
+			$(obj).parent().remove()
+		}
+        form.on('select(testStandard)', function(data){
+		   //console.log(data.elem);得到select原始DOM对象
+		  console.log(data.value); //得到被选中的值]
+		  formselect(data.value)
+		  //console.log(data.othis); 得到美化后的DOM对象
+		}); 
+		form.on('select(testItem)', function(data){
+		   //console.log(data.elem);得到select原始DOM对象
+		  	console.log(data.value); //得到被选中的值]
+		  	var id=data.value.split(",")[0]
+			var name=data.value.split(",")[1]
+			var mani=data.value.split(",")[2]
+		  	var obj={}
+		  	obj.id=id
+			obj.name=name
+			if(mani==1){
+				$("#testItemArray").append('<div class="main" name="'+id+'">'+name+'<a class="icon" tyle="text-decoration:none;" onClick="article_del(this)" href="javascript:;" title="删除"></div>')
+			}else{
+				$("#testItemArray").append('<div onclick="testItemclick(this)" name="'+id+'">'+name+'<a class="icon" tyle="text-decoration:none;" onClick="article_del(this)" href="javascript:;" title="删除"></div>')
+			}
+		  //console.log(data.othis); 得到美化后的DOM对象
+		}); 
+		window.formselect=function(standard){
+			$.ajax({
+				type: "get",
+				url: "/modular_basics/testItemlist?page=-1&limit=0&standard="+standard,
+				success: function (msg) {
+					console.log(msg.message);
+					var data=msg.message.data
+					$("#testItem option").remove()
+					if (msg.status=="ok") {
+						for(var i=0;i<data.length;i++){
+							$("#testItem").append('<option value="'+data[i].id+','+data[i].name+','+data[i].main+'">'+data[i].name+'</option>')
+						}
+						form.render("select")
+					} else {
+						alert(msg.message);
+					}
+				}
+			})
+		}
+		formselect("")
+		var $ = layui.$, active = {
+		    addRole:function(){
+		    	
+		    }
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			var array=[]
+			var id=data.field.id
+			var name=data.field.name
+			$("#testItemArray>div").each(function(i,v){
+				var obj={}
+				if($(v).hasClass("inOrder")||$(v).hasClass("main")){
+					obj.name=$(v).text()
+					obj.id=$(v).attr("name")
+					obj.inOrder=true
+					array[i]=obj
+				}else{
+					obj.name=$(v).text()
+					obj.id=$(v).attr("name")
+					obj.inOrder=false
+					array[i]=obj
+				}
+			})
+			$.ajax({
+	            type: "POST",
+				url: "/modular_basics/testprojectedit",
+				data:{
+					id:id,
+					name:name,
+					testItemArray:array
+				},
+	            success: function (msg) {
+	                console.log(msg);
+	                if (msg.status =="ok") {
+	                    alert("保存成功");
+	                    //执行父级刷新
+	                    window.location.href="/modular_basics/testproject"
+	                } else {
+	                    alert(msg.message);
+	                }
+	            }
+	        });
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>

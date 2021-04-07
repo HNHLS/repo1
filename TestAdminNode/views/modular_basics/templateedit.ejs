@@ -1,0 +1,326 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return"  onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label">原始记录名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="recordTemplateName" value="<%= recordTemplateName %>" name="recordTemplateName">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+							<div id="Picker" style="width: 80px;float: right;">选择文件</div>
+						</div>
+						<div class="layui-input-block">
+							<div class="flie-height">
+								<div id="flie">
+									<!--用来存放文件信息-->
+									<div id="Thelist" class="uploader-list"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">报告名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" readonly="readonly" id="reportTemplateName" value="<%= reportTemplateName %>" name="reportTemplateName">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="wu-example layui-inline layui-form-label" style="padding-right: 0;">
+							<div id="picker" style="width: 80px;float: right;">选择文件</div>
+						</div>
+						<div class="layui-input-block">
+							<div class="flie-height">
+								<div id="flie">
+									<!--用来存放文件信息-->
+									<div id="thelist" class="uploader-list"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_basics/template", "基础管理", "模板管理", "新增/编辑")
+//	var id = <%=id%>
+	layui.use('form', function() {
+		var form = layui.form
+		var $ = layui.$, active = {
+		    addRole:function(){
+		    	
+		    }
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+				type: "POST",
+				url: "/modular_basics/templateedit?recordTemplateUrl=" + JSON.stringify(recordTemplateUrl)+"&reportTemplateUrl="+ JSON.stringify(reportTemplateUrl),
+				data: $("#addForm").serialize(),
+				success: function(msg) {
+					console.log(msg);
+					if(msg.status == "ok") {
+						alert("保存成功");
+						//执行父级刷新
+						window.location.href = "/modular_basics/template";
+					} else {
+						alert(msg.message);
+					}
+				}
+			});
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>
+<script>
+	//原始记录
+	var recordTemplateUrl =<%-recordTemplateUrl%>
+	if(recordTemplateUrl!=null&&recordTemplateUrl!=[]){
+		
+	}else{
+		recordTemplateUrl=[]
+	}
+		var upLoader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#Picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		upLoader.on('fileQueued', function(file) {upLoader.upload()});
+		// 文件上传成功,合并文件。
+		upLoader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			$("#recordTemplateName").val(file.name)
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							recordTemplateUrl=[]
+							File.fileName = data.message.key
+							File.fileUrl = data.message.url
+							recordTemplateUrl.push(File)
+							console.log(File)
+							console.log(recordTemplateUrl)
+							$("#Thelist div").remove()
+							thelist("#Thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(recordTemplateUrl)
+				recordTemplateUrl=[]
+				File.fileName = fileNames
+				File.fileUrl = fileUrl
+				recordTemplateUrl.push(File)
+				console.log(File)
+				console.log(recordTemplateUrl)
+				$("#Thelist div").remove()
+				thelist("#Thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		upLoader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(recordTemplateUrl!= null&&recordTemplateUrl.length>0) {
+		console.log(recordTemplateUrl)
+		for(var i = 0; i < recordTemplateUrl.length; i++) {
+			var FileName = recordTemplateUrl[i].fileName
+			var FileUrl = encodeURIComponent(recordTemplateUrl[i].fileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#Thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+//	function article_del(obj, url) {
+//		console.log(decodeURIComponent(url))
+//		console.log(recordTemplateUrl)
+//		$(obj).parent().remove()
+//		for(var i = 0; i < recordTemplateUrl.length; i++) {
+//			console.log(recordTemplateUrl[i].FileUrl)
+//			if(recordTemplateUrl[i].fileUrl == decodeURIComponent(url)) {
+//				recordTemplateUrl.splice(i, 1);
+//			}
+//		}
+//	}
+</script>
+<script>
+	//报告
+	var reportTemplateUrl =<%-reportTemplateUrl%>
+	if(reportTemplateUrl!=null&&reportTemplateUrl!=[]){
+		
+	}else{
+		reportTemplateUrl=[]
+	}
+		var uploader = WebUploader.create({
+			// swf文件路径
+			swf: '../../../public/webuploader/Uploader.swf',
+			// 文件接收服务端。
+			server: '<%=global.base%>/admin/upload/upload',
+			//分片处理大文件
+			chunked: true,
+			//上传并发数
+			threads: 1,
+
+			formData: {
+				fileType: "template"
+			},
+			// 选择文件的按钮。可选。
+			// 内部根据当前运行是创建，可能是input元素，也可能是flash.
+			pick: {
+				id: '#picker',
+			},
+			// 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+			resize: false,
+			duplicate: true
+		});
+		uploader.on('fileQueued', function(file) {uploader.upload()});
+		// 文件上传成功,合并文件。
+		uploader.on('uploadSuccess', function(file, response) {
+			console.log(file)
+			console.log(response)
+			var File = {}
+			var fileType = file.ext;
+			var fileNames = file.name.replace(/\s+/g, "");
+			var fileUrl = encodeURIComponent(response.message.url)
+			var id = file.id;
+			var str
+			if(fileNames.length > 8) {
+				str = fileNames.substring(0, 7) + "..."
+			} else {
+				str = fileNames
+			}
+			$("#reportTemplateName").val(file.name)
+			var chunked = response.message.chunked
+			if(chunked) {
+				$.post("<%=global.base%>/admin/upload/mergeChunk", {
+						fileType: "template",
+						fileName: file.name,
+						id: file.id,
+						totalSize:file.size
+					},
+					function(data) {
+						console.log(data,"111")
+						if(data.status!="ok") {
+							alert('文件合并失败！');
+						} else {
+							reportTemplateUrl=[]
+							File.fileName = data.message.key
+							File.fileUrl = data.message.url
+							reportTemplateUrl.push(File)
+							console.log(File)
+							console.log(reportTemplateUrl)
+							$("#thelist div").remove()
+							thelist("#thelist",id, fileType, fileNames, str, data.message.url)
+						}
+					});
+			} else {
+				console.log(reportTemplateUrl)
+				reportTemplateUrl=[]
+				File.fileName = fileNames
+				File.fileUrl = fileUrl
+				reportTemplateUrl.push(File)
+				console.log(File)
+				console.log(reportTemplateUrl)
+				$("#thelist div").remove()
+				thelist("#thelist",id, fileType, fileNames, str, fileUrl)
+			}
+		});
+		uploader.on('uploadError', function(file) {
+			console.log("文件上传出错");
+			$('#' + file.id).find('div.state').text('上传出错');
+		});
+	if(reportTemplateUrl!= null&&reportTemplateUrl.length>0) {
+		console.log(reportTemplateUrl)
+		for(var i = 0; i < reportTemplateUrl.length; i++) {
+			var FileName = reportTemplateUrl[i].fileName
+			var FileUrl = encodeURIComponent(reportTemplateUrl[i].fileUrl)
+			var str
+			console.log(FileUrl)
+			var FileType = FileName.split(".")
+			if(FileName.length > 8) {
+				str = FileName.substring(0, 7) + "..."
+			} else {
+				str = FileName
+			}
+			var fileType = FileType[FileType.length - 1]
+			downfile("#thelist","", fileType, FileName, str, FileUrl)
+		}
+	}
+	function article_del(obj, url) {
+		console.log(decodeURIComponent(url))
+		console.log(reportTemplateUrl)
+		$(obj).parent().remove()
+		if(reportTemplateUrl[0].fileUrl == decodeURIComponent(url)) {
+			reportTemplateUrl.splice(0, 1);
+		}
+		if(recordTemplateUrl[0].fileUrl == decodeURIComponent(url)) {
+			recordTemplateUrl.splice(0, 1);
+		}
+	}
+</script>

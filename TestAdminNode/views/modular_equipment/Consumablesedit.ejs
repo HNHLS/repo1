@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>耗材名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="consumname" value="<%= consumname %>" name="consumname">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">规格型号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="consummodel" value="<%= consummodel %>" name="consummodel">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>负责人</label>
+							<div class="layui-input-block">
+								<select id="consumman" name="consumman" lay-filter="consumman" lay-verify="required"></select>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>数量</label>
+							<div class="layui-input-block">
+								<input type="number" class="layui-input" lay-verify="required" id="consumnum" value="<%= consumnum %>" name="consumnum">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>预警数量</label>
+							<div class="layui-input-block">
+								<input type="number" class="layui-input" lay-verify="required" id="consumwarnnum" value="<%= consumwarnnum %>" name="consumwarnnum">
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_equipment/Consumables","设备管理","耗材/备件管理","新增/编辑")
+	var consummanid="<%=consummanid%>"
+	layui.use(['form','jquery'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		$.ajax({
+            type: "get",
+            url: "/modular_qualifications/personnellist?page=-1&limit=0&keyword=",
+            success: function (msg) {
+                console.log(msg)
+                var data=msg.message.data
+                if (msg.status=="ok") {
+					for(var i=0;i<data.length;i++){
+						if(consummanid==data[i].id){
+							$("#consumman").append('<option selected value="'+data[i].id+","+data[i].name+'" >'+data[i].name+'</option>')
+						}else{
+							$("#consumman").append('<option value="'+data[i].id+","+data[i].name+'">'+data[i].name+'</option>')
+						}
+						
+					}
+					form.render("select")
+                } else {
+                    alert(msg.message);
+                }
+            }
+        });
+		var $ = layui.$, active = {
+		    addRole:function(){
+		    	
+		    }
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			$.ajax({
+	            type: "POST",
+	            url: "/modular_equipment/Consumablesedit",
+	            data: $("#addForm").serialize(),
+	            success: function (msg) {
+	                console.log(msg);
+	                if (msg.status ==0) {
+	                    alert("保存成功");
+	                    //执行父级刷新
+	                    window.location.href="/modular_equipment/Consumables"
+	                } else {
+	                    alert(msg.message);
+	                }
+	            }
+	        });
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+</script>

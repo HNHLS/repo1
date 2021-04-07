@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+			  <button class="layui-btn layui-btn-sm" data-type="addRole"><i class="layui-icon layui-icon-add-1"></i>新增</button>
+			  <button class="layui-btn layui-btn-sm" data-type="delRole"><i class="layui-icon layui-icon-delete"></i>批量删除</button>
+			</div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+				<a class="layui-btn layui-btn-xs" lay-event="menuedit">菜单编辑</a>
+			</script>
+		</shiro:hasRole>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("","系统设置","角色管理","")
+		layui.use(['form', 'table'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].id
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+		    addRole: function(){ //获取选中数据
+		      	layer.open({
+					type: 2,
+					title:"新增角色",
+					area: ['800px', '250px'],
+					content: '/modular_users/roleedit?id=0'
+				});
+		    }
+		    ,delRole: function(){
+		     //获取选中状态            
+	            if(ids.length == 0){
+	                layer.msg('批量删除至少选中一项数据',function(){});
+	                return false;
+	            }
+				console.log(ids)
+	            layer.confirm('确定要删除选中的项吗？',function(index){
+	                $.ajax({
+	                    type:'post',
+						dataType:"json",
+	                    url:"/modular_users/roledel?ids="+JSON.stringify(ids),
+	                    success:function(data){
+							console.log(data)
+	                        if(data.status=="ok"){
+								ids=[]
+	                           table.reload('tabReload', {
+									page: {
+										curr: 1
+									},
+									where: {
+//										page: 1
+									}
+								});
+	                         }
+	                       layer.msg(data.message);
+	                    },error:function(code){   
+	                        parent.layer.msg('操作失败!',{icon: 5,time:1000});  
+	                    }
+	                });
+	            })
+		   }
+		 };
+		// 监听工具条
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+			    //console.log(obj)
+			if(obj.event === 'edit'){
+			    layer.open({
+					type: 2,
+					title:'角色编辑',
+					area: ['800px', '250px'],
+					content: '/modular_users/roleedit?id='+data.id+'&name='+data.name
+				});
+			}else if(obj.event === 'menuedit'){
+				window.location.href="/modular_users/menu?rid="+data.id
+			}
+		});
+		
+		table.render({
+			elem: '#tab',
+			url: '/modular_users/rolelist',
+			cellMinWidth: 10,
+			cols: [
+				[{checkbox: true},
+				{
+					field: 'sn',
+					title: 'ID',
+					align: 'center',
+					sort: true
+				}, {
+					field: 'name',
+					align: 'center',
+					title: '角色名称'
+				}, {
+					field: 'createTime',
+					align: 'center',
+					title: '添加时间',
+					sort: true,
+				}, {
+					align: 'center',
+					title: '操作',
+					toolbar: '#doit'
+				}]
+			],
+			id: 'tabReload',
+			page: true,
+			response: {
+		      statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+		    },
+		    parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+		      return {
+		        "code": res.status, //解析接口状态
+		        "msg": res.message, //解析提示文本
+		        "count": res.message.total, //解析数据长度
+		        "data": res.message.data //解析数据列表
+		      };
+		    },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+		});
+//		form.on('select', function(data){
+//			 console.log(data.value); //得到被选中的值]
+//			 var id=data.value
+//			 table.reload('tabReload', {
+//		        page: {
+//		          	curr: 1 //重新从第 1 页开始
+//		        }
+//		        ,where: {
+//		          	search: search.val(),
+//					page: 1
+//		        }
+//		      });
+//		});
+		$('.layui-btn').on('click', function(){
+		   	var type = $(this).data('type');
+		   	active[type] ? active[type].call(this) : '';
+		});
+	});
+</script>
+</html>

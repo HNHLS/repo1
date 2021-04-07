@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/index.css">
+	<style type="text/css">
+		.downpanel .layui-select-title span {
+            line-height: 38px;
+        }
+        /*继承父类颜色*/
+        .downpanel dl dd:hover {
+            background-color: inherit;
+        }
+        ul>li>ul{
+        	margin: 0;
+        }
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<label class="layui-form-label">人员</label>
+						<div class="layui-input-block">
+							<select class="user" name="user">
+								
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script type="text/javascript">
+	var testCourseId='<%=testCourseId%>'
+	var noReport=<%=noReport%>
+	layui.use(['form','jquery'], function(){
+			var form = layui.form
+			var $=layui.jquery
+			//监听提交
+			$.ajax({
+				type: "get",
+				url: "/modular_qualifications/personnellist?limit=0&page=-1&testCourseId="+testCourseId,
+				async: true,
+				success: function(res) {
+					console.log(res)
+					var data=res.message.data
+					for (var i=0;i<data.length;i++) {
+						$(".user").append('<option value="'+data[i].id+'">'+data[i].name+'</option>')
+					}
+					form.render("select");
+				}
+			});
+			form.on('submit(formDemo)', function(data){
+				console.log(data.field)
+				var user=data.field.user
+				$.ajax({
+					type:"post",
+					url:"/modular_task/forwardOriginalDataCheck",
+					data:{
+						testCourseId:testCourseId,
+						id:user,
+					},
+					success:function(res){
+						console.log(res)
+						if(res.status=="ok"){
+							alert(res.message)
+							if (noReport) {
+								window.parent.history.go(-1);
+							}else{
+								window.parent.location.href="/modular_task/teststart";
+							}
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            				parent.layer.close(index);
+
+						}else{
+							layer.msg(res.message==null?"下发失败":res.message,{icon: 5})
+						}
+					}
+				});
+			    return false;
+			});
+		});
+</script>

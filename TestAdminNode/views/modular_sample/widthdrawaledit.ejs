@@ -1,0 +1,376 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<link rel="stylesheet" type="text/css" href="/Css/jquery.jOrgChart.css" />
+	<style type="text/css">
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		.layui-input-block{
+			line-height:36px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<%if(returned){%>
+					<!--<div class="layui-btn layui-btn-sm" data-type="code"><i class="iconfont icon-tiaoxingma"></i>已退样</div>-->
+					<%}else{%>
+					<div class="layui-btn layui-btn-sm" data-type="withdrawal"><i class="iconfont icon-tuihui1"></i>退样</div>
+					<%}%>
+				</div>
+				<div id="withdrawal">
+					<div class="blueline">
+						<div class="title">
+							退样信息
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<input type="hidden" id="" value="<%=basicInfo.delegateNum%>" name="delegateNum"/>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">接收人:</label>
+							<div class="layui-input-block">
+								<%if(!returned){%>
+									<input type="text" class="layui-input" value="<%=returnInfo.receiver%>" name="receiver" />
+								<%}else{%>
+									<span><%=returnInfo.receiver%></span>
+								<%}%>
+								
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">申请部门:</label>
+							<div class="layui-input-block">
+								<%if(!returned){%>
+									<input type="text" class="layui-input" value="<%=returnInfo.department%>" name="department" />
+								<%}else{%>
+									<span><%=returnInfo.department%></span>
+								<%}%>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">联系电话:</label>
+							<div class="layui-input-block">
+								<%if(!returned){%>
+									<input type="text" class="layui-input" value="<%=returnInfo.phoneNumber%>" name="phoneNumber" />
+								<%}else{%>
+									<span><%=returnInfo.phoneNumber%></span>
+								<%}%>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">单位地址:</label>
+							<div class="layui-input-block">
+								<%if(!returned){%>
+									<input type="text" class="layui-input" value="<%=returnInfo.address%>" name="address" />
+								<%}else{%>
+									<span><%=returnInfo.address%></span>
+								<%}%>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">退样时间:</label>
+							<div class="layui-input-block">
+								<%if(!returned){%>
+									<input type="text" class="layui-input" id="returnDate" value="<%=returnInfo.returnDate%>" name="returnDate" />
+								<%}else{%>
+									<span><%=returnInfo.returnDate%></span>
+								<%}%>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+				<div id="jOrg">
+					<div class="blueline">
+						<div class="title">
+							委托信息
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">申请人:</label>
+							<div class="layui-input-block">
+								<span><%=basicInfo.delegator%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">创建时间:</label>
+							<div class="layui-input-block">
+								<span><%=basicInfo.applyDate%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">申请单位:</label>
+							<div class="layui-input-block">
+								<span><%=basicInfo.delegatorOrg%></span>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">联系电话:</label>
+							<div class="layui-input-block">
+								<span><%=basicInfo.phoneNumber%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">单位地址:</label>
+							<div class="layui-input-block">
+								<span><%=basicInfo.address%></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="tab">
+					<div class="mail">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									样品信息
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">委托单号:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.delegateNum%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">检测项目:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.testProj%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">是否加急:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.prior?"是":"否"%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品名称:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleName%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品编号:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleNum%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品数量:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleCount%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品型号:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleModel%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品规格:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleSpecs%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品来源:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleFrom%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">预计送样时间:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.sampleArriveDate%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">来样方式:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.arriveWay%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">项目来源:</label>
+									<div class="layui-input-block">
+										<span><%=basicInfo.projFrom%></span>
+									</div>
+								</div>
+							</div>
+							<div class="">
+								<%if(chosen=="可靠性"){%>
+									<table class="layui-hide" id="table" lay-filter="table"></table>
+								<%}else{%>
+									<table class="layui-hide" id="table1" lay-filter="table1"></table>
+								<%}%>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+		<script src="/Scripts/jquery.jOrgChart.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/moment/moment.js"></script>
+	</body>
+	<script>
+		href("","样品管理","退样管理","")
+		var delegateNum = "<%=basicInfo.delegateNum%>"
+		console.log(moment(new Date()).format("YYYY-MM-DD HH:mm:ss"));
+		layui.use(['form','laydate','table'], function(){
+			var form = layui.form
+			var laydate=layui.laydate
+			var table=layui.table
+			laydate.render({
+			   elem: '#returnDate'
+				, type: 'datetime'
+				, format: "yyyy-MM-dd HH:mm"
+				, max:moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+			});//日期范围
+			var $ = layui.$, active = {
+			    withdrawal: function(){//退样
+				    $.ajax({
+				        type: "POST",
+				        url: "/modular_sample/returnSample",
+				        data: $("#addForm").serialize(),
+				        success: function (msg) {
+				            console.log(msg);
+				            if (msg.status =="ok") {
+				                alert(msg.message);
+				                //执行父级刷新
+				                window.location.href="/modular_sample/withdrawal"
+				            } else {
+				                alert(msg.message);
+				            }
+				        }
+				    });
+				},
+			}
+			$('.layui-btn').on('click', function(){
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+			table.render({
+				elem: '#table',
+				url: "/modular_sample/getSampleCode?delegateNum=" + delegateNum,
+				cellMinWidth: 10,
+				cols: [
+					[{
+						field: 'sn',
+						title: '序号',
+						align: 'center',
+					}, {
+						field: 'sampleNumber',
+						align: 'center',
+						title: '样品编号',
+					}, {
+						field: 'uniqueNumber',
+						align: 'center',
+						title: '样品序列号'
+					},{
+						field: 'storageNum',
+						align: 'center',
+						title: '库位编号'
+					},{
+						field: 'inStorage',
+						align: 'center',
+						title: '是否在库'
+					}]
+				],
+				id: 'tabReload',
+				page: false,
+				response: {
+					statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+				},
+				parseData: function(res) { //将原始数据解析成 table 组件所规定的数据
+					console.log(res)
+					return {
+						"code": res.status, //解析接口状态
+						"msg": res.message, //解析提示文本
+						"count": res.message.total, //解析数据长度
+						"data": res.message //解析数据列表
+					};
+				},
+				text: {
+					none: '暂无相关数据！' //默认无数据
+				},
+			});
+			//理化
+			table.render({
+				elem: '#table1',
+				url: "/modular_sample/getSubTaskSampleCode?delegateNum=" + delegateNum,
+				cellMinWidth: 10,
+				cols: [
+					[{
+						field: 'sn',
+						title: '序号',
+						align: 'center',
+					}, {
+						field: 'subTaskNumber',
+						align: 'center',
+						title: '单号',
+					}, {
+						field: 'fullTestItemDesc',
+						align: 'center',
+						title: '完整测试项'
+					},{
+						field: 'sampleAmount',
+						align: 'center',
+						title: '样品数量'
+					},{
+						field: 'storageNum',
+						align: 'center',
+						title: '库位编号'
+					}]
+				],
+				id: 'tabReload1',
+				page: false,
+				response: {
+					statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+				},
+				parseData: function(res) { //将原始数据解析成 table 组件所规定的数据
+					console.log(res)
+					return {
+						"code": res.status, //解析接口状态
+						"msg": res.message, //解析提示文本
+						"count": res.message.total, //解析数据长度
+						"data": res.message //解析数据列表
+					};
+				},
+				text: {
+					none: '暂无相关数据！' //默认无数据
+				},
+			});
+		});
+		
+	</script>
+</html>

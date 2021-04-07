@@ -1,0 +1,131 @@
+/*
+*注意：当前脚本不可修改[damai]
+*/
+table {
+    width: 100%;
+    text-align: center;
+    font-family: "微软雅黑";
+    border: 1px solid #F1F1F1;
+}
+table td {
+    border: 1px solid #bebebe;
+    width: auto;
+    height: 30px;
+}
+table td input {
+    width: 100%;
+    height: 99%;
+    border: 0px;
+}
+table td select {
+    width: 100%;
+    height: 99%;
+    border: 0px;
+}
+table td input[type='checkbox'] {
+    width: auto;
+    height: auto;
+}
+table td input[readonly='readonly'] {
+    background-color: #EEEEEE;
+}
+
+
+#title {
+    text-align: left;
+    color: red;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #337ab7;
+}
+
+body {
+    width: 100%;
+}
+
+ul {
+    width: 96%;
+    height: 30px;
+    margin: auto;
+}
+
+ul>li {
+    float: left;
+    list-style: none;
+    cursor: pointer;
+    width: 20%;
+    height: 100%;
+    /*padding: 0 25px;*/
+    line-height: 30px;
+    /*background-color: aqua;*/
+    display: block;
+    text-align: center;
+}
+
+li:not(.active):hover {
+    background-color: #eee;
+}
+
+.active a {
+    color: white;
+}
+
+.active {
+    background-color: #0088FF;
+}
+
+.box {
+    /*display: none;*/
+    width: 96%;
+    border: 1px solid #ddd;
+    margin: auto;
+    padding: 20px;
+}
+
+.Display {
+    display: none;
+}
+.show {
+    display: none;
+}
+
+input[disabled=disabled] {
+    cursor: not-allowed;
+}
+
+
+.tbody{
+    text-align: center; font-weight: 800;color: white; background-color: #0088FF;height: 40px;
+}
+.subbutton{
+    float: right; padding:5px 10px;
+}
+.hide{
+    display: none;
+}
+#showpar{
+    text-align: center;
+    width: 100%;
+    font-weight: 900;
+}
+.addbtn {
+    width: 100%;
+    height: 40px;
+    background: white;
+}
+input[disabled]{
+    background: white !important;
+    color:black !important;
+}
+select[disabled]{
+    background: white !important;
+    color:black !important;
+}
+

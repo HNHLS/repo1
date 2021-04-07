@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+
+<% include ../layout/header.ejs %>
+
+	<body data-type="generalComponents">
+
+		<div class="tpl-page-header-fixed gundongtiao1" style="margin-top: 0px;">
+
+			<div class="gundongtiao2">
+
+				<div class="tpl-portlet-components gundongtiao3">
+					<!-- <div class="portlet-title">
+						<div class="caption font-green bold">
+							 
+						</div>
+                        
+					</div> -->
+                    <div style="width:60%;float: left;height: 100%;">
+                        <div class="am-g">
+                            <div class="am-u-sm-12 am-u-md-6">
+                                <div class="am-btn-toolbar">
+                                    <div class="caption font-green bold">
+                                            全部标准列表
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="am-u-sm-12 am-u-md-6">
+                                <div class="am-input-group am-input-group-sm">
+                                    <input type="text" class="am-form-field" name="name" placeholder="输入标准号/名称关键字检索">
+                                    <span class="am-input-group-btn">
+                                     <button class="am-btn  am-btn-default   am-icon-search" type="button" id="SelectServer"></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tpl-block gundongtiao4" >
+                            <table id="example" class="am-table am-table-striped am-table-hover table-main">
+                                <thead>
+                                    <tr class="text-c">
+                                        <!-- <th><input type="checkbox" name="checkall" value="" id="sel_1" onclick="selectAll()"></th> -->
+                                        <th>标准编号</th>
+                                        <th>标准名称</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="width:40%;float: left;max-height: 80vh;overflow-y: scroll">
+                            <div class="am-g" style="height:42px">
+                                <div class="am-u-sm-12 am-u-md-6">
+                                    <div class="am-btn-toolbar">
+                                        <div class="caption font-green bold">
+                                            已选择标准列表
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="am-u-sm-12 am-u-md-6">
+                                    <div class="actions">
+										<ul class="actions-btn">
+											<li class="purple-on" onclick="sub()">选择带回</li>
+										</ul>
+									</div>
+                                </div>
+                            </div>
+                            <table id="addtable" class="am-table am-table-striped am-table-hover table-main">
+                                <thead>
+                                    <tr class="text-c">
+                                        <th></th>
+                                        <th>标准编号</th>
+                                        <th>标准名称</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="add">
+									<%if(Data){%>
+                                    <%for(var i=0;i<Data.length;i++){%>
+                                        <tr class="text-c">
+                                            <td><input class="hidId" type="hidden" value="<%=Data[i].Id%>,<%=Data[i].StandardNo%>,<%=Data[i].StandardName%>" /></td>
+                                            <td><%=Data[i].StandardNo%></td>
+                                            <td><span title="<%=Data[i].StandardName%>">
+                                                <%if(Data[i].StandardName.length>20){%>
+                                                    <%=Data[i].StandardName.substring(0, 20)%>...
+                                                <%}else{%>
+                                                    <%=Data[i].StandardName%>
+                                                <%}%>
+                                            </span></td>
+                                            <td><a style="text-decoration:none" class="ml-5" onClick="del(this)" href="javascript:;" title="删除"><span class="am-icon-trash-o"></span></a></td>
+                                        </tr>
+									<%}%>
+									<%}%>
+                                </tbody>
+                            </table>
+                    </div>
+				</div>
+			</div>
+		</div>
+
+<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		var lang = {
+			"sProcessing": "<div class=\"am-modal-bd\"><span class=\"am-icon-spinner am-icon-spin\"></span></div>",
+			"sLengthMenu": "每页 _MENU_ 项",
+			"sZeroRecords": "没有匹配结果",
+			"sInfo": "当前显示第 _START_ 至 _END_ 项，共 _TOTAL_ 项。",
+			"sInfoEmpty": "当前显示第 0 至 0 项，共 0 项",
+			"sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+			"sInfoPostFix": "",
+			"sSearch": "搜索:",
+			"sUrl": "",
+			"sEmptyTable": "表中数据为空",
+			"sLoadingRecords": "载入中...",
+			"sInfoThousands": ",",
+			"oPaginate": {
+				"sFirst": "首页",
+				"sPrevious": "上页",
+				"sNext": "下页",
+				"sLast": "末页",
+				"sJump": "跳转"
+			},
+			"oAria": {
+				"sSortAscending": ": 以升序排列此列",
+				"sSortDescending": ": 以降序排列此列"
+			}
+		};
+
+		//表格配置
+		var table = $("#example").dataTable({
+			language: lang, //提示信息
+			autoWidth: false, //禁用自动调整列宽
+			stripeClasses: ["odd", "even"], //为奇偶行加上样式，兼容不支持CSS伪类的场合
+			processing: true, //隐藏加载提示,自行处理
+			serverSide: true, //启用服务器端分页
+			searching: false, //禁用原生搜索
+			orderMulti: true, //启用多列排序
+			ordering: false, //使用排序
+			//scrollX: true,//是否横向滚动
+			bStateSave: true, //记录cookie
+			order: [], //取消默认排序查询,否则复选框一列会出现小箭头
+			renderer: "jquery-ui", //渲染样式：Bootstrap和jquery-ui
+			pagingType: "simple_numbers", //分页样式：simple,simple_numbers,full,full_numbers
+			ajax: function(data, callback, settings) {
+				//封装请求参数
+				console.log(data)
+				var param = {};
+				param.pageSize = data.length; //页面显示记录条数，在页面显示每页显示多少项的时候
+				param.startIndex = data.start; //开始的记录序号
+				param.pageIndex = (data.start / data.length); //当前页码
+				//自定义的参数
+				param.name = $("input[name='name']").val(); //获取要筛选的名字
+				//获取排序的参数
+				/*console.log(data.order);
+				param.order=data.order;*/
+				//ajax请求数据方法
+				$.ajax({
+					type: "GET",
+					url: "/modular_basics/standard-list-info", //url请求的地址
+					cache: false, //禁用缓存
+					data: param, //传入组装的参数
+					dataType: "json",
+					success: function(result) {
+						//封装返回数据重要
+						var returnData = {};
+						//这里直接自行返回了draw计数器,应该由后台返回
+						returnData.draw = data.draw;
+						//返回数据全部记录
+						returnData.recordsTotal = result.TotalCount;
+						//后台不实现过滤功能，每次查询均视作全部结果
+						returnData.recordsFiltered = result.TotalCount;
+						//返回的数据列表
+						returnData.data = result.StandardList;
+						console.log(result.StandardList)
+						$("#num").text(result.TotalCount);
+						//调用DataTables提供的callback方法，代表数据已封装完成并传回DataTables进行渲染
+						//此时的数据需确保正确无误，异常判断应在执行此回调前自行处理完毕
+						callback(returnData);
+					}
+				});
+			},
+			//列表表头字段
+			columns: [
+				// {
+				// 	"data": null,
+				// 	"sClass": "text-c",
+				// 	"render": function(data, type, full, meta) {
+				// 		return '<input type="checkbox" class="checkchild" value="' + data.Id + '"  />';
+				// 	},
+				// 	"bSortable": false
+				// },
+				/*	{
+						"data": "id",
+						"sClass": "text-c"
+					},*/
+				{
+					"data": "StandardNo",
+					"sClass": "text-c",
+				},
+				{
+					"data": "StandardName",
+					"sClass": "text-c",
+					"render": function(data, type, full, meta) {
+						console.log(data)
+						var len=data.length
+						if(len>20){
+							var Data=data.substring(0,20)+"...";
+						}else{
+							var Data=data
+						}
+						return '<td><span title="'+data+'">'+Data+'</span></td>';
+					},
+				},
+				{
+					"data": null,
+					"sClass": "text-c",
+					"defaultContent": "<button>Edit</button>",
+					"render": function(data, type, full, meta) {
+                        console.log(data)
+                        var StandardName = data.StandardName.replace(/\ +/g,"");
+                        var Standardname = StandardName.replace(/[\r\n]/g,"");
+                        var StandardNo = data.StandardNo.replace(/\ +/g,"");
+                        var Standardno = StandardNo.replace(/[\r\n]/g,"");
+                        console.log(Standardname)
+						return '<button class="am-btn am-btn-default am-btn-xs am-text-secondary" onclick="selected(' + data.Id + ',\'' + Standardno +'\',\''+Standardname+'\')" title="选择标准">选择</button>';
+					},
+				},
+			],
+		}).api();
+		//查询按钮
+		$("#SelectServer").click(function() {
+			table.ajax.reload();
+		});
+
+		//操作后的刷新列表
+		function reloadtable() {
+			table.ajax.reload();
+		}
+
+		function selectAll() {
+			var isCheck = $("#sel_1").is(':checked'); //获得全选复选框是否选中
+			$(".checkchild").each(function() {
+				this.checked = isCheck; //循环赋值给每个复选框是否选中
+			});
+		}
+		//新增
+		function add() {
+
+		}
+		//删除选中
+		function datadel() {
+			var data = [];
+			$.each($(".checkchild:checked"), function(val, index) {
+				console.log($(this).val());
+				data.push(parseInt($(this).val()));
+			})
+			console.log(data)
+			layer.confirm('确认要删除吗？', function(index) {
+				$.ajax({
+					type: 'POST',
+					url: '/modular_basics/standard_list?data='+JSON.stringify(data),
+					dataType: 'text',
+					success: function(msg) {
+						console.log(msg);
+						var msgdata = JSON.parse(msg);
+						if(msgdata.Errcode == 0) {
+							layer.msg("已删除", {
+								icon: 1,
+								time: 1000
+							});
+							table.ajax.reload();
+						} else {
+							// layer.msg(data,{icon:1,time:1000});
+						}
+
+					},
+					error: function(msg) {
+						var msgdata = JSON.parse(msg);
+						console.log(msgdata.Errmsg);
+					},
+				});
+			});
+		}
+		/*单个-删除*/
+		function article_del(obj, id) {
+			layer.confirm('确认要删除吗？', function(index) {
+				console.log(parseInt(id))
+				var data=[]
+				data.push(parseInt(id));
+				$.ajax({
+					type: 'POST',
+					url: '/modular_basics/standard_list?data='+JSON.stringify(data),
+					dataType: 'text',
+					success: function(msg) {
+						console.log(msg)
+						var msgdata = JSON.parse(msg);
+						console.log(msgdata.Errcode)
+						if(msgdata.Errcode == 0) {
+							layer.msg('已删除!', {
+								icon: 1,
+								time: 1000
+							});
+							table.ajax.reload();
+						}
+					},
+					error: function(msg) {
+						console.log(msg);
+					},
+				});
+			});
+		}
+		/*添加 编辑*/
+		function layerdownload(num) {
+			console.log(num)
+			var index = layer.open({
+				type: 2,
+				title: "下载标准",
+				content: "/modular_basics/standardlayer_list?id=" + num,
+				area: ['600px', '400px']
+			});
+
+        }
+        function del(e){
+            console.log(e)
+            $(e).parent().parent().remove()
+        }
+        /*选择*/
+        var valueArray = new Array();
+		function selected(id,StandardNo,StandardName) {
+            console.log(id,StandardNo,StandardName)
+            var len=StandardName.length
+            $(".hidId").each(function(key,value){
+                valueArray[key] = $(this).val().split(",")[0];
+            })
+            console.log(valueArray,String(id))
+            if(valueArray.indexOf(String(id))==-1){
+                if (len > 20) {
+                    var Data = StandardName.substring(0, 20) + "...";
+                } else {
+                    var Data = StandardName
+                }
+                $("tbody.add").append('<tr class="text-c"><td><input class="hidId" type="hidden" value="' + id + ',' + StandardNo +','+StandardName+'" /></td><td>'+StandardNo+'</td><td><span title="'+StandardName+'">'+Data+'</span></td><td><a style="text-decoration:none" class="ml-5" onClick="del(this)" href="javascript:;" title="删除"><span class="am-icon-trash-o"></span></a></td></tr>')
+                //layer.full(index);
+            }else{
+                alert("选择标准重复")
+            }
+        }
+        //选择带回
+        var array=new Array()
+        function sub(){
+            $(".hidId").each(function(key,value){
+                var selectstandard={}
+                selectstandard.StandardId = $(this).val().split(",")[0];
+                console.log($(this).val())
+                selectstandard.StandardNo= $(this).val().split(",")[1];
+                selectstandard.StandardName= $(this).val().split(",")[2];
+                array[key]=selectstandard
+            })
+            console.log(array)
+            parent.getUnitbackdata(JSON.stringify(array));
+        }
+</script>
+</html>

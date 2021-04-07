@@ -1,0 +1,399 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			color: #fff;
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		/*数字框去除箭头*/
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+		 
+		input[type="number"] {
+		    -moz-appearance: textfield;
+		}
+		/*组件/层压件材料信息*/
+		.layui-tab-item .layui-form-label{
+			padding-top: 0px;
+		}
+		.synchro{
+			float: right;
+			height: 28px;
+		}
+		.sampleNum{
+			display: inline-block;
+		}
+		.selectedsample{
+			display: inline-block;
+			border: 1px solid #37a3dd;
+			padding:3px 7px;
+			border-radius: 5px;
+			margin-left: 5px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<div class="layui-btn layui-btn-sm layui-btn-danger" data-type="reject"><i class="iconfont icon-jinggao"></i>驳回</div>
+					<div class="layui-btn layui-btn-sm" data-type="assign"><i class="iconfont icon-xiafa"></i>下发</div>
+					<!--<div class="layui-btn layui-btn-sm save" data-type="save"><i class="iconfont icon-baocun"></i>保存</div>-->
+				</div>
+				<div id="task">
+					<div class="entrust">
+						<div class="blueline">
+							<div class="title"> 
+								基础信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测依据:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testStandard%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">判定依据:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.judgeStandard%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测项目:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testProj%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测周期(天):</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testPeriod%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">要求完成日期:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.completeDateLimit%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">试验性质:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.testNature%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">项目类型:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.projType%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">是否加急:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.prior?'是':'否'%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">测试目的:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.purpose%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">备注信息:</label>
+								<div class="layui-input-block">
+									<span><%=basicInfo.remark%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sampling">
+						<div class="blueline">
+							<div class="title"> 
+								样品信息
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">委托单号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.delegateNum%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品名称:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.sampleName%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品编号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.sampleNumber%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品型号:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.sampleModel%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品数量:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.sampleAmount%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">样品规格:</label>
+								<div class="layui-input-block">
+									<span><%=sampleInfo.sampleSpecs%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="plan">
+						<div class="blueline">
+							<div class="title"> 
+								项目计划
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测开始时间:</label>
+								<div class="layui-input-block">
+									<span><%=plan.testStartTime%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">检测结束时间:</label>
+								<div class="layui-input-block">
+									<span><%=plan.testCompleteTime%></span>
+								</div>
+							</div>
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">报告开始时间:</label>
+								<div class="layui-input-block">
+									<span><%=plan.reportStartTime%></span>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+								<label class="layui-form-label">报告完成时间:</label>
+								<div class="layui-input-block">
+									<span><%=plan.reportCompleteTime%></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="sign">
+						<div class="blueline">
+							<div class="title"> 
+								授权签字
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs12 layui-col-sm12 layui-col-md6">
+								<label class="layui-form-label">报告列表:</label>
+								<div class="layui-input-block">
+									<table class="layui-table">
+									  <thead>
+									    <tr>
+									      <th>报告名称</th>
+									      <th>操作</th>
+									    </tr> 
+									  </thead>
+									  <tbody>
+									  	<%if(reportList.length>0){%>
+									  		<%for(var i=0;i<reportList.length;i++){%>
+									  			<tr>
+													<td><%=reportList[i].fileName%></td>
+													<td>
+														<%if(reportList[i].filePreviewUrl==""){%>
+															<a class="layui-btn layui-btn-xs">转换中</a>
+														<%}else{%>
+															<a class="layui-btn layui-btn-xs" href="<%=reportList[i].filePreviewUrl%>" target="_blank">预览</a>
+														<%}%>
+															<a class="layui-btn layui-btn-xs" href="<%=reportList[i].fileUrl%>" target="_blank">Word文档</a>
+													</td>
+											    </tr>
+									  		<%}%>
+									  	<%}%>
+									  </tbody>
+									</table>  
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs12 layui-col-md6">
+								<label class="layui-form-label">报告备注:</label>
+								<div class="layui-input-block">
+									<textarea class="layui-textarea" style="min-height: 150px" disabled><%-reportRemark%></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-xs12 layui-col-sm12 layui-col-md6">
+								<label class="layui-form-label">审核意见:</label>
+								<div class="layui-input-block">
+									<table class="layui-table">
+									  <thead>
+									    <tr>
+									      <th>审核意见</th>
+									      <th>审核人员</th>
+									      <th>审核时间</th>
+									    </tr> 
+									  </thead>
+									  <tbody>
+									  	<%if(opinionList.length>0){%>
+									  		<%for(var i=0;i<opinionList.length;i++){%>
+									  			<tr>
+											      <td><%=opinionList[i].opinion%></td>
+											      <td><%=opinionList[i].staffName%></td>
+											      <td><%=opinionList[i].createTime%></td>
+											    </tr>
+									  		<%}%>
+									  	<%}%>
+									  </tbody>
+									</table>  
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_task/reportaudit", "任务管理", "报告审核","审核")
+		var delegateNum='<%=delegateNum%>'
+		var subTaskNumber='<%=subTaskNumber%>'
+		layui.use(['form', 'table','laydate','jquery'], function() {
+			var form = layui.form
+			var table = layui.table
+			var laydate=layui.laydate
+			var $=layui.jquery
+			var $ = layui.$,
+				active = {
+					reject: function(index,layero) { //驳回
+						layer.open({
+							type: 1,
+							title:'错误信息',
+							skin: 'layui-layer-rim', //加上边框
+							area: ['420px', '240px'], //宽高
+							content: '<textarea class="layui-textarea opinion" placeholder="请输入驳回错误信息" rows="" cols=""></textarea>',
+							btn: ['确定','取消'],
+							btn1:function(){
+								$.ajax({
+									url:'/modular_task/doReportReview?delegateNum='+delegateNum+'&subTaskNumber='+subTaskNumber+'&action=0&opinion='+$(".opinion").val(),
+									type:'GET',
+									success:function(res){
+										console.log(res)
+										if(res.status=="ok"){
+											layer.close(index);
+			                				window.location.href="/modular_task/reportaudit"
+										}
+									}
+								})
+							},
+							btn2:function(){
+//								alert("2")
+							},
+						});
+					},
+					assign: function() { //通过并下发
+						$.ajax({
+							url:'/modular_task/doReportReview?delegateNum='+delegateNum+'&subTaskNumber='+subTaskNumber+'&action=1',
+							type:'GET',
+							success:function(res){
+								if(res.status=="ok"){
+									alert(res.message)
+									window.location.href="/modular_task/reportaudit"
+								}else{
+									alert(res.message)
+								}
+							}
+						})
+					},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+</html>

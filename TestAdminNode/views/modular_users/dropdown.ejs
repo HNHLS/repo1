@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.block .list{
+			cursor: pointer;
+			font-size: 12px;
+		}
+		.block{
+			margin-top: 20px;
+		}
+		.layui-inline{
+			float: left;
+			margin: 5px 10px 0 0;
+		}
+		.unselect{
+			border:1px solid  #486add;
+			background-color: white;
+			color: #486add;
+			padding: 5px;
+		}
+		.select{
+			background-color: #486add;
+			color: white;
+			padding: 6px;
+		}
+		.clear{
+			clear: both;
+		}
+		.layui-form-select{
+			width: 300px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<div class="inform-enterprise">
+				<form class="layui-form">
+					<div class="head">
+						<div class="layui-btn-container">
+							<!--<button class="layui-btn layui-btn-normal layui-btn-sm" >新增本级</button>-->
+							<a class="layui-btn layui-btn-normal layui-btn-sm" id="add">新增</a>
+							<!--<a class="layui-btn layui-btn-normal layui-btn-sm" id="edit">修改</a>-->
+							<a class="layui-btn layui-btn-normal layui-btn-sm" id="del">删除</a>
+						</div>
+						<div class="layui-form">
+							<select name="type" id="type">
+								<!--<option value=""></option>-->
+							</select>
+						</div>
+					</div>
+					<div class="block">
+						<div class="clear"></div>
+					</div>
+				</form>
+				
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+</html>
+<script type="text/javascript">
+	href("","系统设置","下拉框管理","")
+	function categoryName(value) {
+		console.log(value)
+		$.ajax({
+			type: "get",
+			url:"/modular_users/listOption?category="+value,
+			async: true,
+			success: function(res) {
+				console.log(res)
+				var children = res.message
+				$(".block div:not(.clear)").remove()
+				for(var i = 0; i < children.length; i++) {
+					$(".block").append('<div class="layui-inline list unselect" onclick="select(this)">' + children[i]+ '</div>')
+				}
+			}
+		});
+	}
+	function select(obj){
+		console.log("11")
+		if($(obj).hasClass("select")){
+			$(obj).removeClass("select")
+			$(obj).addClass("unselect")
+		}else{
+			$(obj).addClass("select")
+			$(obj).removeClass("unselect")
+			$(obj).siblings().removeClass("select")
+			$(obj).siblings(":not(.clear)").addClass("unselect")
+		}
+	}
+	layui.use(['form','jquery'],function() {
+			var form=layui.form;
+			var $=layui.jquery;
+			var value
+			$.ajax({
+	    		type:"get",
+	    		url:"/modular_users/listCategory",
+				success: function(res) {
+					console.log(res)
+					var data = res.message
+					value=data[0]
+					for(var i = 0; i < data.length; i++) {
+						$("#type").append('<option>' + data[i] + '</option>')
+					}
+					form.render("select");
+					categoryName(value)
+				}
+			});
+			
+			$("#add").click(function() {
+				console.log(value)
+				layer.open({
+					type: 2,
+					title: "新增",
+					offset:['25%','25%'],
+					area: ['700px', '360px'],
+					content: '/modular_users/dropdownedit?category='+value
+				});
+		    })
+//			$("#edit").click(function() {
+//				console.log(value)
+//					if($(".select").length>0){
+//						layer.open({
+//							type: 2,
+//							title: "修改",
+//							offset:['25%','25%'],
+//							area: ['700px', '360px'],
+//							content: 'addbasic.html?type=1&value='+value
+//						});
+//					}else{
+//						top.layer.msg("请选择需要修改的项")
+//					}
+//		    })
+	    	$("#del").click(function(){
+	    		if($(".select").length>0){
+	    			layer.confirm('确定要删除该基础数据吗？',function(index){
+		    			$.ajax({
+				    		type:"post",
+				    		url:"/modular_users/removeOption?category="+value+"&value="+$(".select").text(),
+							success: function(res) {
+								console.log(res)
+								var message = res.message
+								if(res.status=="ok"){
+									categoryName(value)
+									layer.msg(res.message)
+								}else{
+									layer.msg(res.message,{icon: 5})
+								}
+				    		}
+				    	});
+		    		})
+	    		}else{
+	    			layer.msg("请选择删除项")
+	    		}
+	    	})
+	    	form.on("select",function(data){
+	    		console.log(data.value)
+	    		value=data.value
+	    		categoryName(value)
+	    	})
+    	})
+</script>

@@ -1,0 +1,292 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+<style>
+	.layui-form-switch{
+		margin-top:0;
+		min-width:45px;
+	}
+</style>
+	<body data-type="generalComponents">
+			
+		<div class="tpl-page-header-fixed" style="margin-top: 0px;">
+			<div class="">
+				<div class="tpl-portlet-components">
+					<div style="width: 20%;float: left;border-right: 1px solid #03A9F3;min-height: 600px;">
+
+						<div class="tpl-left-nav-list" style="border-bottom: 1px solid #23ABF0;">
+							<ul class="tpl-left-nav-menu" id="menulist">
+
+								<%for(var i=0;i<menu.length;i++){ %>
+								<li class="tpl-left-nav-item" data-json="<%=menu[i].menujson%>">
+									<%if(i==0){%>
+									<a class="nav-link active iopen menuitem" onclick="openjson(this)" data-roleMenuId="<%=menu[i].roleMenuId %>">
+										<i class="<%=menu[i].icon%>"></i>
+										<span><%=menu[i].name%></span>
+										<div class="layui-form" style="width: 40px;display: inline-block;float: right;line-height: 20px;">
+											<input type="hidden" class="id" value="<%=menu[i].id %>"/>
+											<input type="hidden" class="rid" value="<%=rid %>"/>
+											<input type="hidden" class="roleMenuId" value="<%=menu[i].roleMenuId %>"/>
+											<%if(menu[i].enable){%>
+											<input type="checkbox" name="switch" lay-skin="switch" lay-filter="switchTest" checked>
+											<%}else{%>
+											<input type="checkbox" name="switch" lay-skin="switch" lay-filter="switchTest" >
+											<%}%>
+										</div>
+									</a>
+									<%}else{%>
+									<a class="nav-link iopen menuitem" onclick="openjson(this)" data-roleMenuId="<%=menu[i].roleMenuId%>">
+										<i class="<%=menu[i].icon%>"></i>
+										<span><%=menu[i].name%> </span>
+										<div class="layui-form" style="width: 40px;display: inline-block;float: right;line-height: 20px;">
+											<input type="hidden" class="id" value="<%=menu[i].id %>"/>
+											<input type="hidden" class="rid" value="<%=rid %>"/>
+											<input type="hidden" class="roleMenuId" value="<%=menu[i].roleMenuId %>"/>
+											<%if(menu[i].enable){%>
+											<input type="checkbox" name="switch" lay-skin="switch" lay-filter="switchTest" checked>
+											<%}else{%>
+											<input type="checkbox" name="switch" lay-skin="switch" lay-filter="switchTest" >
+											<%}%>
+										</div>
+									</a>
+									<%}%>
+								</li>
+								<%}%>
+							</ul>
+						</div>
+					</div>
+					<div style="width: 50%;float: left;border-right: 1px solid #03A9F3;min-height: 600px;padding-left: 10px;">
+						<div class="tpl-left-nav-list" style="width: 100%;">
+							<ul class="tpl-left-nav-menu" id="menuli">
+								<!--<li class="tpl-left-nav-item" style="margin:10px;">
+									<a data-href="index.html" class="nav-link active">
+										<span>待办</span>
+									</a>
+								</li>-->
+
+							</ul>
+						</div>
+					</div>
+					<div style="width: 30%;float: left;">
+						<form class="am-form am-form-horizontal" id="ajaxForm" style="margin-top: 10px;width: 80%;font-weight: normal;">
+							<div class="am-form-group">
+								<label for="user-name" class="am-u-sm-3 am-form-label">名称</label>
+								<div class="am-u-sm-9">
+									<input type="hidden" id="user-id" value="" name="id">
+									<input type="hidden" id="user-pid" value="" name="pid">
+									<input type="text" id="user-name" placeholder="名称" value="" name="name" id="">
+								</div>
+							</div>
+							<div class="am-form-group">
+								<label for="user-name" class="am-u-sm-3 am-form-label">链接</label>
+								<div class="am-u-sm-9">
+									<input type="text" id="user-name" placeholder="链接" value="" name="href" id="">
+								</div>
+							</div>
+							<div class="am-form-group">
+								<label for="user-name" class="am-u-sm-3 am-form-label">排序</label>
+								<div class="am-u-sm-9">
+									<input type="text" id="user-name" placeholder="排序" value="" name="sort" id="">
+								</div>
+							</div>
+							<div class="am-form-group">
+								<div class="am-u-sm-9 am-u-sm-push-3">
+									<button type="button" class="am-btn am-btn-primary" onclick="sub(0)">新增</button>
+									<button type="button" class="am-btn am-btn-primary" onclick="sub(1)">保存</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+				</div>
+			</div>
+	<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_users/role","系统设置","角色管理","菜单配置")
+		layui.use(['form','element'], function(){
+			var form = layui.form; //只有执行了这一步，部分表单元素才会自动修饰成功
+			var element=layui.element
+			form.on('switch(switchTest)', function(data){
+			    var id=$(data.othis).siblings(".id").val()
+			    var rid=$(data.othis).siblings(".rid").val()
+			    var enable=data.elem.checked
+			    $.ajax({
+			    		url:"/modular_users/toggleRoleMenu",
+						type:"get",
+						data:{
+							"id":rid,
+							"menuId":id,
+							"enable":enable
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								layer.msg(res.message)
+								location.reload() 
+							}else{
+								layer.msg(res.message)
+								data.elem.checked=true
+								form.render("checkbox")
+							}
+						},
+			    	})
+			});
+		})
+		
+		//添加菜单页
+		function addmenu(rid) {
+			var index = layer.open({
+				type: 2,
+				title: "添加菜单",
+				content: "/modular_users/addmenu?rid=<%=rid%>",
+				area: ['600px', '400px']
+			});
+		}
+		//删除菜单项
+		function deletemenu(rid) {
+			//询问是否删除
+			layer.confirm('确认要删除吗？', function(index) {
+				$.ajax({
+					type: "get",
+					url: "/modular_users/menudelete?id=" + rid,
+					//data: $("#ajaxForm").serialize(),
+					success: function(msg) {
+						console.log(msg);
+						if(JSON.parse(msg).errcode == 0) {
+							//alert("已删除");
+							reloadpage();
+						} else {
+							alert(JSON.parse(msg).errmsg);
+						}
+					}
+				});
+			});
+		}
+		//刷新界面
+		function reloadpage() {
+			window.location.reload();
+		}
+
+		//处理子集菜单
+		function openjson(btn) {
+			$(".menuitem").removeClass("active")
+			$(btn).addClass("active");
+			var val = $(btn).attr("data-roleMenuId");
+//			alert(val);
+			getitem(val);
+		}
+
+		$(".active").click();
+
+		//发起请求
+		function getitem(val) {
+			console.log(val)
+			if(val != null&&val != "") {
+				//获取列表            
+				$.ajax({
+					type: "get",
+					url: "/modular_users/menuitemlist?id=" + val,
+					//data: $("#ajaxForm").serialize(),
+					success: function(msg) {
+						console.log(msg);
+						if(msg.status == "ok") {
+							//追加到菜单列表
+							var html = "";
+							$.each(msg.message, function(index, data) {
+								html += "<li class=\"tpl-left-nav-item\" style=\"margin:10px;\"><a class=\"nav-link active\" data-id=\"" + data.id + "\" data-href=\"" + data.url + "\" data-sort=\"" + data.sortNum + "\" data-name=\"" + data.name + "\" onclick=\"showinput(this)\">";
+								html += "<span>" + data.name+"--"+data.url+ "</span></a><span class=\"am-icon-trash-o\" style=\"width:20px;float:right;margin-top:-33px\"  onclick=\"deleteitem("+data.id+")\"></span></li>"
+							})
+							if(html != "") {
+								$("#menuli").html("");
+							} else {
+								$("#menuli").html("<li class=\"tpl-left-nav-item\" style=\"margin:10px;\"><a class=\"nav-link active\"><span>还没有菜单项->右侧新增</span></a></li>");
+							}
+							$("#menuli").append(html);
+						} else {
+							alert(JSON.parse(msg).errmsg);
+						}
+					}
+				});
+			}else{
+				$("#menuli").html("<li class=\"tpl-left-nav-item\" style=\"margin:10px;\"><a class=\"nav-link active\"><span>权限未开启</span></a></li>");
+			}
+		}
+		//新增菜单子项
+		function sub(num) {
+			//暂未验证
+			if(num == 0) {
+				var roleMenuId = $(".active").attr("data-roleMenuId");
+				$("input[name='pid']").val(roleMenuId);
+					$.ajax({
+						type: "post",
+						url: "/modular_users/addmenujson",
+						data: $("#ajaxForm").serialize(),
+						success: function(msg) {
+							//console.log(msg);
+							if(JSON.parse(msg).status == "ok") {
+								//alert("已删除");
+								//reloadpage();
+								//刷新到菜单列表
+								getitem(roleMenuId);
+							} else {
+								alert(JSON.parse(msg).errmsg);
+							}
+						}
+					});
+			}else{
+				var roleMenuId = $(".active").attr("data-roleMenuId");
+				$("input[name='pid']").val(roleMenuId);
+				$.ajax({
+						type: "post",
+						url: "/modular_users/updatemenujson",
+						data: $("#ajaxForm").serialize(),
+						success: function(msg) {
+							//console.log(msg);
+							if(JSON.parse(msg).status == "ok") {
+								//alert("已删除");
+								//reloadpage();
+								//刷新到菜单列表
+								getitem(roleMenuId);
+							} else {
+								alert(JSON.parse(msg).errmsg);
+							}
+						}
+					});
+			}
+		}
+		//展示相应的数据
+		function showinput(btn) {
+			var id =   $(btn).attr("data-id");
+			var name = $(btn).attr("data-name");
+			var href = $(btn).attr("data-href");
+			var sort = $(btn).attr("data-sort");
+			//console.log(id);
+			$("input[name='id']").val(id);
+			$("input[name='name']").val(name);
+			$("input[name='href']").val(href);
+			$("input[name='sort']").val(sort);
+		}
+		
+		function deleteitem(id){
+		  //询问是否删除
+			layer.confirm('确认要删除吗？', function(index) {
+				$.ajax({
+					type: "get",
+					url: "/modular_users/menuitemdelete?id=" + id,
+					//data: $("#ajaxForm").serialize(),
+					success: function(msg) {
+						console.log(msg);
+						if(JSON.parse(msg).status == "ok") {
+							//alert("已删除");
+							reloadpage();
+						} else {
+							alert(JSON.parse(msg).errmsg);
+						}
+					}
+				});
+			});
+		}
+	</script>
+
+</html>

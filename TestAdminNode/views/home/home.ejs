@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include ../layout/header.ejs %>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title></title>
+	<!--<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">-->
+	<!--    <link rel="stylesheet" href="css/fontawesome.min.css">-->
+	<link rel="stylesheet" href="/Css/bootstrap.min.css">
+	<link rel="stylesheet" href="/Css/templatemo-style.css">
+
+</head>
+
+<body id="reportsPage" style="background: url(/Images/sy-bjtu.jpg); width: 100%; height: 100%;">
+
+	<div id="home" style="padding: 30px; height: 100%;">
+		<div style="height: 100%;">
+
+			<!-- row -->
+			<div class="row tm-content-row" style="height: 100%;">
+
+				<img src="/Images/syzstu.png" style="position: absolute; left: 33.3333%; z-index: 0;">
+				<!--	1111111111111-->
+				<div class="col-sm-12 col-md-12 col-lg-8 col-xl-8 tm-block-col fansile"
+					style="z-index: 1; height: 50%;">
+					<div class="tm-block" style=" opacity: 0.8; height: 100%;">
+
+						<div class="xindna_count">
+							<div class="xindna_count_  count_1" style="margin-left: 9%;">
+								<!--<div class="wenzidiv">-->
+								<div class="xindan_font">今日新单</div>
+								<div class="jiujiujiu"><%=daynum%></div>
+								<!--</div>-->
+							</div>
+							<div class="xindna_count_   count_2">
+								<div class="xindan_font" style="border-left: 5px solid #FD8D4A;">当月委托单</div>
+								<div class="jiujiujiu"><%=monthnum%></div>
+							</div>
+							<div class="xindna_count_   count_3" style="margin-left: 9%;">
+								<div class="xindan_font" style="border-left: 5px solid #7460EF;">本年委托单</div>
+								<div class="jiujiujiu"><%=yearnum%></div>
+							</div>
+							<div class="xindna_count_   count_4">
+								<div class="xindan_font" style="border-left: 5px solid #FD4A6C;">全部委托单</div>
+								<div class="jiujiujiu"><%=allnum%></div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+				<!--      222222222222-->
+				<div class="col-sm-12 col-md-12 col-lg-4 col-xl-4 tm-block-col" style=" height: 50%;">
+
+					<div class="tm-block tm-block_" style="height: 100%;">
+						<div class="top10_"><span class="white_weight">&emsp;<span class="gang">|</span>
+								&emsp;近1年任务量统计</span><span class="yellow_se"></span> </div>
+						<div id="twotwo" style="height: 95%; width: 95%;"></div>
+					</div>
+				</div>
+
+				<!--  333333333333-->
+				<div class="col-sm-12 col-md-12 col-lg-8 col-xl-8 tm-block-col" style="z-index: 4; height: 45%;">
+					<div class=" tm-block tm-block_">
+						<div class="top10_"><span class="white_weight">&emsp;<span
+									class="gang">|</span>&emsp;按年月统计</span></div>
+						<div id="threethree" style="height: 100%; width: 100%;"></div>
+					</div>
+				</div>
+
+				<!--444444444444-->
+				<div class="col-sm-12 col-md-12 col-lg-4 col-xl-4 tm-block-col" style="height: 45%;">
+					<div class="tm-block tm-block_">
+						<div class="top10_"><span class="white_weight">&emsp;<span
+									class="gang">|</span>&emsp;按项目统计</span><span class="yellow_se">&emsp;top10</span>
+						</div>
+						<div id="fourfour" style="height: 100%; width: 95%; margin-left: -4%;"></div>
+					</div>
+				</div>
+
+				<input type="text" value="<%=NumlistForDep%>">
+
+			</div>
+		</div>
+
+	</div>
+
+	<script src="/Scripts/jquery.min.js"></script>
+	<!-- <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script> -->
+	<script src="/Scripts/echarts.min2.js"></script>
+	<script>
+		//初始化
+		var array1 = JSON.parse('<%=NumlistForDep%>');
+		console.log(array1);
+
+		var array2 = JSON.parse(decodeURIComponent('<%=Month12%>'));
+		console.log(array2);
+
+		var array3 = JSON.parse('<%=Month12Num1%>');
+		console.log(array3);
+
+		var array4 = JSON.parse('<%=Month12Num2%>');
+		console.log(array4);
+
+		var array5 = JSON.parse(decodeURIComponent('<%=ProjectTop%>'));
+		console.log(array5);
+
+		//第三方数据
+		var array6 = JSON.parse('<%=Month12Num3%>');
+		console.log(array5);
+
+		//第二个
+		var dom = document.getElementById("twotwo");
+		var myChart1 = echarts.init(dom);
+		var app = {};
+		option = null;
+
+		option = {
+			//图表具体数量明细显示
+	toolbox: {
+			show: true,
+			feature: {
+				mark: { show: true },
+				dataView: { show: true, readOnly: false },
+				magicType: {
+					show: true,
+					type: ['pie', 'funnel']
+				},
+				restore: { show: true },
+				saveAsImage: { show: true }
+			}
+		},
+
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'none'
+				},
+				formatter: function (params) {
+					return params[0].name + ': ' + params[0].value;
+				}
+			},
+			xAxis: {
+				//  	position:'top',
+				data: ['新北所', '节能所', '建材所', '地基所', '测量所', '结构所', '第三方'],
+				axisTick: { show: false },
+				axisLine: { show: false },
+				axisLabel: {
+
+					textStyle: {
+						color: 'white',
+
+					}
+				}
+			},
+			yAxis: {
+				axisLabel: {
+					textStyle: {
+						color: 'white'
+					}
+				},
+				splitLine: {
+					lineStyle: {
+						// 使用深浅的间隔色
+						color: ['#0371D8']
+					}
+				},
+				axisTick: { show: true },
+				axisLine: { show: false },
+				//      axisLabel: {interval :3},
+				interval: 200
+			},
+			series: [{
+				name: 'hill',
+				type: 'pictorialBar',
+				barCategoryGap: '-130%',
+				// symbol: 'path://M0,10 L10,10 L5,0 L0,10 z',
+				symbol: 'path://M0,10 L10,10 C5.5,10 5.5,5 5,0 C4.5,5 4.5,10 0,10 z',
+				itemStyle: {
+					normal: {
+						color: function (params) {
+							// build a color map as your need.
+							var colorList = [
+								'#FAD860', '#F3A43B', '#60C0DD', '#D7504B', '#C6E579', '#F4E001', '#F0805A', '#26C0C0', '#60C0DD', '#D7504B'
+							];
+							return colorList[params.dataIndex]
+						},
+						opacity: 0.7
+					},
+					emphasis: {
+						opacity: 1
+					}
+				},
+				data: array1,
+				z: 10
+			}, {
+				name: 'glyph',
+				type: 'pictorialBar',
+				barGap: '-100%',
+				symbolPosition: 'end',
+				symbolSize: 50,
+				symbolOffset: [0, '-120%'],
+
+			}]
+
+
+
+		}
+		if (option && typeof option === "object") {
+			myChart1.setOption(option, true);
+		}
+
+
+
+
+
+
+		//	第三个
+
+
+		var dom = document.getElementById("threethree");
+		var myChart2 = echarts.init(dom);
+		var app = {};
+		option = null;
+		app.title = '堆叠柱状图';
+
+		option = {
+			//图表具体数量明细显示
+	toolbox: {
+			show: true,
+			feature: {
+				mark: { show: true },
+				dataView: { show: true, readOnly: false },
+				magicType: {
+					show: true,
+					type: ['pie', 'funnel']
+				},
+				restore: { show: true },
+				saveAsImage: { show: true }
+			}
+		},
+
+			tooltip: {
+
+				trigger: 'axis',
+				axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+					type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+				}
+			},
+			legend: {
+				textStyle: {
+					color: 'white'
+				},
+				data: ['验收', '非验收','第三方']
+			},
+			grid: {
+				left: '3%',
+				right: '4%',
+				bottom: '20%',
+				containLabel: true
+			},
+			xAxis: [
+
+				{
+					color: 'white',
+					type: 'category',
+					data: array2,
+					axisLabel: {
+						textStyle: {
+							color: 'white'
+						}
+					},
+					axisLine: {
+						lineStyle: {
+							// 使用深浅的间隔色
+							color: ['#0371D8'],
+							width: 3,
+
+						}
+					},
+				}
+			],
+			yAxis: [
+
+				{
+					type: 'category',
+					color: 'white',
+					axisLabel: {
+						textStyle: {
+							color: 'white'
+						}
+
+					},
+					axisLine: {
+						lineStyle: {
+							// 使用深浅的间隔色
+							color: ['#0371D8'],
+							width: 3
+						}
+					},
+					type: 'value',
+
+					splitLine: {
+						lineStyle: {
+							// 使用深浅的间隔色
+							color: ['#0371D8']
+						}
+					},
+				},
+
+			],
+
+			series: [
+
+				{
+					name: '验收',
+					type: 'bar',
+					barWidth: 10,//柱图宽度
+					data: array3,
+					itemStyle: {
+						normal: {
+							color: '#FF552C'
+						},
+					}
+				},
+				{
+					name: '非验收',
+					type: 'bar',
+					stack: '广告',
+					barWidth: 10,//柱图宽度
+					data: array4,
+					itemStyle: {
+						normal: {
+							color: '#47A5DA'
+
+
+						},
+
+					}
+				},
+				{
+					name: '第三方',
+					type: 'bar',
+					stack: '广告',
+					barWidth: 10,//柱图宽度
+					data: array6,
+					itemStyle: {
+						normal: {
+							color: '#47A5DA'
+
+
+						},
+
+					}
+				}
+
+			]
+
+		};
+		if (option && typeof option === "object") {
+			myChart2.setOption(option, true);
+
+
+
+		}
+
+
+
+
+
+
+
+
+		//			第四个
+
+
+		var dom = document.getElementById("fourfour");
+		var myChart3 = echarts.init(dom);
+		var app = {};
+		option = null;
+		option = {
+			//图表具体数量明细显示
+	toolbox: {
+			show: true,
+			feature: {
+				mark: { show: true },
+				dataView: { show: true, readOnly: false },
+				magicType: {
+					show: true,
+					type: ['pie', 'funnel']
+				},
+				restore: { show: true },
+				saveAsImage: { show: true }
+			}
+		},
+
+			textStyle: {
+				color: 'white'
+			},
+
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b} : {c}%"
+			},
+
+			axisLabel: {
+				textStyle: {
+					color: 'white'
+				}
+			},
+
+			calculable: true,
+			series: [
+				{
+					name: '漏斗图',
+					type: 'funnel',
+
+					left: '10%',
+					top: 60,
+					//x2: 80,
+					bottom: 60,
+					width: '70%',
+					// height: {totalHeight} - y - y2,
+					min: 0,
+					max: '<%=ProjectNum%>',
+					minSize: '0%',
+					maxSize: '100%',
+					sort: 'descending',
+					gap: 2,
+					label: {
+						show: true,
+						position: 'outside'
+					},
+					labelLine: {
+						length: 40,
+						lineStyle: {
+							width: 3,
+							type: 'solid',
+
+						}
+					},
+
+
+					itemStyle: {
+						borderColor: '#fff',
+						borderWidth: 1,
+						normal: {
+
+							color: function (params) {
+								// build a color map as your need.
+								var colorList = [
+									'#41A8FF', '#4291CE', '#6578DA', '#31429A', '#18266E'
+								];
+								return colorList[params.dataIndex]
+							},
+
+						},
+
+					},
+					emphasis: {
+						label: {
+							fontSize: 15
+						}
+					},
+					data: array5
+				}
+			]
+		};
+
+
+		if (option && typeof option === "object") {
+			myChart3.setOption(option, true);
+
+		}
+
+
+		/*窗口自适应，关键代码*/
+
+
+
+		setTimeout(function () {
+			window.onresize = function () {
+				myChart1.resize();
+				myChart2.resize();
+				myChart3.resize();
+			}
+		}, 100)
+
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.equipment{
+			border: 1px solid #37a3dd;
+			padding:5px 7px;
+			border-radius: 5px;
+			margin-left: 5px;
+			display: inline-block;
+			margin-top: 5px;
+		}
+		.toolbar{
+			margin-top: 10px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				
+			</div> 
+			<div class="toolbar">
+				<div class="layui-inline">
+				    <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索" value="<%=equipmentName%>">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload" id="reload">搜索</button>
+			</div>
+			<%if(type==0){%>
+				<%if(func){%>
+				<%}else{%>
+				<div class="layui-btn layui-btn-sm" style="margin-top: 10px;" data-type="back">
+					设备带回
+				</div>
+				<%}%>
+			<%}else{%>
+				<div class="layui-btn layui-btn-sm" style="margin-top: 10px;" data-type="auxiliaryback">
+					设备带回
+				</div>
+			<%}%>
+			
+			<div class="equipmentlist">
+				<%if(equipmentarray.length>0){%>
+					<%for(var i=0;i<equipmentarray.length;++i){%>
+						<div class='equipment'><input type="hidden" value="<%=equipmentarray[i].id%>" /><%=equipmentarray[i].add%></div>
+					<%}%>
+				<%}%>
+			</div>
+			
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+			<shiro:hasRole name="superadmin">
+				<script type="text/html" id="doit">
+					<a class="layui-btn layui-btn-xs" lay-event="<%if(func){%><%=func%><%}else{%>selection<%}%>">选择</a>
+				</script>
+			</shiro:hasRole>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		var num="<%=num%>"
+		var equipmentName="<%=equipmentName%>"
+		var currentPiece="<%=currentPiece%>"
+		var group=$.grep("<%=group%>".split(","),function(x){
+			return x!=""
+		})
+		var main=<%=main%>
+		console.log(group)
+		layui.use(['form', 'laydate','table','jquery'], function() {
+			var table = layui.table;
+			var form=layui.form;
+			var laydate=layui.laydate;
+			var $=layui.jquery
+		// 监听工具条
+		
+		table.on('tool(tb)', function(obj) {
+			var data = obj.data;
+			console.log(data)
+				//console.log(obj)
+			if(obj.event === 'selection'){
+				var name=data.equipment_name
+				var number=data.equipment_no
+				var add=name+'、'+number
+				var id=data.id
+				var has=true
+				var temp=data.use_department.split(",");
+				for (var i = 0; i < temp.length; i++) {
+					group.push(temp[i]);
+				}
+				$(".equipment").each(function(i,v){
+					console.log($(v).text())
+					if($(v).text()==add){
+						has=false
+					}
+				})
+				if(has){
+					$(".equipmentlist").append("<div class='equipment'><input type='hidden' value='"+id+"' />"+name+"、"+number+"</div>")
+				}else{
+					layer.msg('设备已选择',{icon:2})
+				}
+			}else if(obj.event==='chooseStandardPiece'){
+				var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+				parent.setSelectedStandardPiece(data);
+				parent.layer.close(index);
+			}
+		});
+		
+		window.tablereload=function(name){
+			table.render({
+				elem: '#tab',
+				url: "/modular_equipment/equipmentlist?name="+name+"&stopkind=1",
+				cellMinWidth: 10,
+				cols: [
+					[
+					{
+						field: 'equipment_name',
+						title: '设备名称',
+						align: 'center',
+						width:140,
+					},{
+						field: 'equipment_no',
+						title: '设备编号',
+						align: 'center',
+						width:140,
+					},{
+						field: 'custodian',
+						title: '负责人',
+						align: 'center',
+					},{
+						field: 'fixed_no',
+						align: 'center',
+						title: '固定资产编号',
+					},{
+						field: 'infostate',
+						align: 'center',
+						title: '设备状态',
+						templet:function(d){
+							switch(d.infostate) {
+								case 0:
+									return "启用";
+									break;
+								case 1:
+									return "停用";
+									break;
+								case 2:
+									return "报废";
+									break;
+								case 3:
+									return "待机";
+									break;
+								case 4:
+									return "校准中";
+									break;
+								case 5:
+									return "维护中";
+									break;
+								case 6:
+									return "保养中";
+									break;
+								case 7:
+									return "核查中";
+									break;
+							}
+						}
+					},{
+						field: 'specification_model',
+						align: 'center',
+						title: '规格型号',
+					},{
+						field: 'use_department',
+						align: 'center',
+						title: '使用群组',
+					},{
+						align: 'center',
+						title: '操作',
+						toolbar: '#doit'
+					}]
+				],
+				page: true,
+				id: 'tabReload',
+				parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				console.log(res)
+				return {
+					"code": 0, //解析接口状态
+					"msg": res.message, //解析提示文本
+					"count": res.totalCount, //解析数据长度
+					"data": res.data //解析数据列表
+				};
+				},
+				text: {
+					none: '暂无相关数据！'//默认无数据
+				},
+				done:function (res){
+					if (currentPiece) {
+						var that = this.elem.next();
+						res.data.forEach(function (item, index) {
+							if (item.factory_number.replace(/\s+/g,"") === currentPiece) {
+								var tr = that.find(".layui-table-box tbody tr[data-index='" + index + "']");
+								tr.css("background-color", "lightblue");
+							}
+						});
+					}
+				}
+			});
+		} 
+		var keyword
+		var ids=[]
+		table.on('checkbox(tb)', function(obj) {
+			ids=[]
+			var checkStatus = table.checkStatus('tabReload')
+		    ,data = checkStatus.data;
+		    console.log(data)
+		    for(var i=0;i<data.length;i++){
+		      	ids[i]=data[i].id
+		    }
+			console.log(ids)
+		});
+		var $ = layui.$, active = {
+		    reload: function(){
+		      keyword = $('#search').val();
+		      //执行重载
+		      tablereload(keyword)
+		    }, 
+		    back:function(){
+				var equipmentarray=[]
+				$(".equipment").each(function(i,v){
+					var obj={}
+					obj.add=$(v).text()
+					obj.id=$(v).find("input").val()
+					equipmentarray[i]=obj
+				})
+				console.log(equipmentarray)
+		    	var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                parent.getnode(equipmentarray,num,group)
+                parent.layer.close(index);
+			},
+			auxiliaryback:function(){
+				var equipmentarray=[]
+				$(".equipment").each(function(i,v){
+					var obj={}
+					obj.add=$(v).text()
+					obj.id=$(v).find("input").val()
+					equipmentarray[i]=obj
+				})
+				console.log(equipmentarray)
+		    	var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                parent.auxiliarygetnode(equipmentarray,num)
+                parent.layer.close(index);
+			}
+		};
+		tablereload(equipmentName)
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	});
+	
+</script>
+</html>

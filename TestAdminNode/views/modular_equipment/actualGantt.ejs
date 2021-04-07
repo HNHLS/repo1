@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title>Lightbox customization</title>
+	<script src="/layuiadmin/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/Scripts/dhtmlxgantt.js?v=7.0.0"></script>
+	<link rel="stylesheet" type="text/css" href="/layuiadmin/layui/css/layui.css" />
+	<link rel="stylesheet" href="/Css/dhtmlxgantt.css?v=7.0.0">
+	<script src="/Scripts/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/Scripts/testdata.js?v=7.0.0"></script>
+	<script src="/Scripts/locale.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="/layer/2.4/skin/layer.css">
+	<script src="/Layer/2.4/layer.js"></script>
+	<style>
+		html, body {
+			height: 100%;
+			padding: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		.gantt_btn_set.gantt_delete_btn_set{
+			display: none;
+		}
+		.gantt_cal_light .gantt_btn_set{
+			border: 1px solid #bbb;
+		}
+		.gantt_task_line.gantt_project{
+			display: none;
+		}
+		.gantt_duration{
+			display: none;
+		}
+		.gantt_message_area{
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div class="cBody">
+		<div class="layui-btn-group demoTable">
+		</div>
+		<div class="toolbar">
+			<div class="layui-inline">
+				<form id="addForm" class="layui-form" action="">
+					<div class="console">
+						<div class="layui-inline">
+							<input type="hidden" name="batch" id="batch" value="" />
+							<select name="role"  id="demoReload">
+								<option value="">选择群组</option>
+							</select>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="layui-inline">
+				<input type="text" class="layui-input" id="date" placeholder=" - ">
+			</div>
+			<div class="layui-inline">
+				<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+			</div>
+			<button class="layui-btn layui-btn-sm" onclick="reload()">搜索</button>
+			
+		</div>
+	</div>
+<div class="" style="clear: right;"></div>
+<div id="gantt_here" style='width:100%; height:82%;'></div>
+<script>
+	layui.use(['form', 'laydate','jquery'], function() {
+			var $ = layui.jquery;
+			var form=layui.form;
+			var laydate=layui.laydate;
+			$.ajax({
+				type: "get",
+				url: "/modular_qualifications/departmenttreelist",
+				async: true,
+				success: function(res) {
+					console.log(res)
+					var data=res.message.list
+					for(var i=0;i<data.length;i++){
+						var list=data[i].list
+						for (var j=0;j<list.length;j++) {
+							$("#demoReload").append('<option value="'+list[j].id+'">'+list[j].name+'</option>')
+						}
+					}
+					form.render("select");
+				}
+			});
+			var keyword=''
+			var startDate=''
+			var endDate=''
+			var groupId=''
+			laydate.render({
+			   elem: '#date'
+			   ,range: true
+			   ,trigger: 'click'
+			   ,done: function(value, date){
+				//得到日期生成的值，如：2017-08-18
+				console.log(value.split(" - "))
+				startDate=value.split(" - ")[0]
+				endDate=value.split(" - ")[1]
+				console.log(startDate,endDate)
+				}
+			});//日期范围
+			form.on('select', function(data){
+				console.log(data.value); //得到被选中的值]
+				groupId=data.value
+			});
+			window.reload=function(){
+				keyword = $('#search').val();
+				//执行重载
+				gantt.clearAll()
+				Gantt(groupId,keyword,startDate,endDate)
+			}
+			window.reality=function(){
+				keyword = $('#search').val();
+				//执行重载
+				gantt.clearAll()
+				Gantt(groupId,keyword,startDate,endDate)
+			}
+	})
+	function save(){
+		$.ajax({
+	    	type:"get",
+	    	url:"/modular_equipment/saveSubTaskTestPlan?subTaskNumber="+subTaskNumber,
+	    	success:function(res){
+	    		console.log(res)
+	    		alert(res.message)
+	    	}
+	    });
+	}
+	function Gantt(groupId,keyword,startDate,endDate){
+		$.ajax({
+			type:"get",
+			url:"/modular_equipment/queryActualEquipmentGantt?groupId="+groupId+"&keyword="+keyword+"&startDate="+startDate+"&endDate="+endDate,
+			success:function(res){
+				console.log(res)
+				if(res.status=="ok"){
+					var data=res.message
+					var obj={}
+					for(var i=0;i<data.length;i++){
+						if(data[i].parent){
+
+						}else{
+							data[i].type="project"
+						}
+					}
+					obj.data=data
+					console.log(obj)
+					gantt.parse(obj);
+				}else{
+					alert(res.message)
+				}
+
+			}
+		});
+	}
+	Gantt('','','','')
+	var testCourseUseEquipmentId
+	gantt.attachEvent("onBeforeLightbox", function(id) {
+		    var task = gantt.getTask(id);
+		    var testCourseId=task.testCourseCostDto.testCourseId
+		    var start_date=new Date(task.start_date);
+		    var Hour=start_date.getHours()
+		    var Minutes=start_date.getMinutes()
+			console.log(task);
+		    console.log(start_date,Hour,Minutes,task.start_date)
+		    if(task.main){
+				
+			    return false;
+		    }else{
+		    	return false
+		    }
+
+	});
+	gantt.plugins({
+		tooltip: true
+	});
+	gantt.templates.tooltip_date_format = gantt.date.date_to_str("%Y-%m-%d %H:%i");
+	gantt.attachEvent('onGanttReady', function () {
+		gantt.templates.tooltip_text = function (start, end, task) {
+			return "<b>任务:</b> " + task.text + "<br/>" +
+					"<b>实际开始时间:</b> " +
+					gantt.templates.tooltip_date_format(start) +
+					"<br/><b>实际结束时间:</b> " + gantt.templates.tooltip_date_format(end);
+		};
+
+	});
+	gantt.config.scales = [
+		{unit: "month", step: 1, format: "%F, %Y"},
+		{unit: "day", step: 1, format: "%D, %d"},
+	];
+	gantt.config.columns=[
+	    {name:"text",       label:"设备名称",  tree:true, width:'500' },
+	    {name:"start_date", label:"实际开始时间", align: "center" , width:'120' },
+	    {name:"end_date",   label:"实际结束时间",   align: "center" , width:'120' },
+	]
+	gantt.config.drag_links = false;
+	gantt.config.drag_move = false;
+	gantt.config.fit_tasks = true;
+	gantt.config.drag_mode="ignore"
+	gantt.config.drag_progress = false;
+	gantt.config.autoscroll = true;
+	gantt.config.min_column_width = 60;
+	gantt.config.duration_unit = "minute";
+	gantt.config.scale_height = 20 * 3;
+	gantt.config.row_height = 30;
+	gantt.config.date_grid = "%Y/%m/%d %H:%i";
+
+	gantt.init("gantt_here");
+
+</script>
+</body>
+	

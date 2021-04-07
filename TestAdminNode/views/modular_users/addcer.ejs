@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style>
+		/*.typeselect {
+			width: 32% !important;
+		}*/
+		
+		.am-selected {
+			width: auto !important;
+		}
+	</style>
+
+	<body data-type="generalComponents">
+		<div class="tpl-page-header-fixed" style="margin-top: 0px;">
+			<div class="">
+
+				<div class="tpl-portlet-components">
+					<div class="tpl-block ">
+
+						<div class="am-g tpl-amazeui-form">
+
+							<div class="am-u-sm-12 am-u-md-9">
+								<form class="am-form am-form-horizontal" id="ajaxForm" method="post" action="/modular_users/roleedit">
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label"><font class="redlabel">*</font>姓名</label>
+										<div class="am-u-sm-9">
+											<input type="hidden" id="user-id" value="<%= id %>" name="id">
+
+											<select name="userid" data-am-selected="{maxHeight: 200,searchBox: 1}">
+												<%for(var j=0;j<UserList.length;j++){ %>
+												<option value="<%=UserList[j].id%>" <%=userid==UserList[j].id? "selected": ""%>>
+													<%=UserList[j].name%>
+												</option>
+												<%}%>
+											</select>
+										</div>
+									</div>
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label"><font class="redlabel">*</font>证书类别</label>
+										<div class="am-u-sm-9">
+											<select id="type1" class="typeselect" data-am-selected>
+												<option>-请选择-</option>
+												<option value="0" <%=type==0? "selected": ""%> >材料</option>
+												<option value="1" <%=type==1? "selected": ""%> >桩基</option>
+												<option value="2" <%=type==2? "selected": ""%> >其他</option>
+											</select>
+											<select id="type2" data-am-selected="{maxHeight: 200,searchBox: 1}" class="typeselect">
+												<option>-请选择-</option>
+												<%if(PTypeList!=null){%>
+												<%for(var j=0;j<PTypeList.length;j++){ %>
+												<option value="<%=PTypeList[j].id%>" <%=pid==PTypeList[j].id? "selected": ""%>>
+													<%=PTypeList[j].name%>
+												</option>
+												<%}%>
+												<%}%>
+											</select>
+											<select id="type3" class="typeselect" data-am-selected name="typeid">
+												<option>-请选择-</option>
+												<%if(CTypeList!=null){%>
+												<%for(var j=0;j<CTypeList.length;j++){ %>
+												<option value="<%=CTypeList[j].id%>" <%=typeid==CTypeList[j].id? "selected": ""%>>
+													<%=CTypeList[j].name%>
+												</option>
+												<%}%>
+												<%}%>
+											</select>
+										</div>
+
+									</div>
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label"><font class="redlabel">*</font>证书编号</label>
+										<div class="am-u-sm-9">
+											<input type="text" id="user-name" placeholder="证书编号" value="<%= no %>" name="no">
+										</div>
+									</div>
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label">证书缩略图</label>
+										<div class="am-u-sm-9">
+											<input type="text" class="am-form-field tpl-form-no-bg" placeholder="证书缩略图" value="<%= url %>" name="url">
+										</div>
+									</div>
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label">发证日期</label>
+										<div class="am-u-sm-9">
+											<input type="text" class="am-form-field tpl-form-no-bg" placeholder="发证日期" data-am-datepicker value="<%= give_time %>" name="give_time">
+										</div>
+									</div>
+
+									<div class="am-form-group">
+										<label for="user-name" class="am-u-sm-3 am-form-label">有效期</label>
+										<div class="am-u-sm-9">
+											<input type="text" class="am-form-field tpl-form-no-bg" placeholder="有效期" data-am-datepicker value="<%= validity_time %>" name="validity_time">
+										</div>
+									</div>
+
+									<div class="am-form-group">
+										<div class="am-u-sm-9 am-u-sm-push-3">
+											<button type="button" class="am-btn am-btn-primary" onclick="sub()">保存修改</button>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	function sub() {
+		$.ajax({
+			type: "POST",
+			url: "/modular_users/ceredit",
+			data: $("#ajaxForm").serialize(),
+			success: function(msg) {
+				console.log(msg);
+				if(msg.errcode == 0) {
+					alert("保存成功");
+					//执行父级刷新
+					parent.reloadtable();
+				} else {
+
+					alert(msg.message);
+				}
+			}
+		});
+
+	}
+	//type1
+	$("#type1").change(function() {
+		var type = $(this).val();
+		$.ajax({
+			type: "get",
+			url: "/modular_users/gettype?type=" + type,
+			success: function(msg) {
+				console.log(msg);
+				var str = "";
+				$.each(msg, function(i, v) {
+					str += "<option value=\"" + v.id + "\">" + v.name + "</option>"
+				})
+				console.log(str);
+				$("#type2").html(str);
+			}
+		});
+
+	})
+	//type2
+	$("#type2").change(function() {
+		var type = $(this).val();
+		$.ajax({
+			type: "get",
+			url: "/modular_users/getchild?id=" + type,
+			success: function(msg) {
+				console.log(msg);
+				var str = "";
+				$.each(msg, function(i, v) {
+					str += "<option value=\"" + v.id + "\">" + v.name + "</option>"
+				})
+				console.log(str);
+				$("#type3").html(str);
+			}
+		});
+
+	})
+</script>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 25%;">
+							<label class="layui-form-label"><span class="i">*</span>审核人员</label>
+					    	<div class="layui-input-block">
+					    		<select name="reviewStaff" id="reviewStaff" lay-verify="required">
+					    			
+					    		</select>
+					    	</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<input hidden value="<%=reportRemark%>" id="reportRemark">
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var delegateNum="<%=delegateNum%>"
+
+			layui.use(['form','jquery'], function(){
+				var form = layui.form
+				var $=layui.jquery
+				$.ajax({
+					type: "POST",
+					url: "/modular_qualifications/DepartmentAndRole?role=授权签字人",
+					success: function (msg) {
+						console.log(msg)
+						var data=msg.message
+						if (msg.status=="ok") {
+							for(var i=0;i<data.length;i++){
+								$("#reviewStaff").append('<option value="'+data[i].id+","+data[i].name+'">'+data[i].name+'</option>')
+							}
+							form.render("select")
+						} else {
+							alert(msg.message);
+						}
+					}
+				});
+				//监听提交
+				form.on('submit(formDemo)', function(data){
+					var reviewStaff=data.field.reviewStaff
+					console.log(data.field)
+					$.ajax({
+						type:"post",
+						url:"/modular_task/forwardReportReview",
+						async:true,
+						data:{
+							reviewStaff:reviewStaff,
+							delegateNum:delegateNum,
+							reportRemark: $("#reportRemark").val()
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.window.location.href="/modular_task/reportwriting"
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+								parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+					return false;
+				});
+			});
+	</script>
+</html>

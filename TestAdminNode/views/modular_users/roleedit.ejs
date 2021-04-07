@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 25%;">
+							<label class="layui-form-label"><span class="i">*</span>角色名称</label>
+					    	<div class="layui-input-block">
+					    		<input type="hidden" id="id" name="id" value="0" />
+					    		<input type="text" class="layui-input" lay-verify="required" autocomplete="off" name="name" id="name" placeholder="请输入角色名称">
+					    	</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		var type=<%=id%>
+		var name="<%=name%>"
+		$("#name").val(name)
+		$("#id").val(type)
+		layui.use('form', function(){
+			var form = layui.form
+			//监听提交
+			form.on('submit(formDemo)', function(data){
+				var name=data.field.name
+				var id=data.field.id
+				console.log(data.field)
+				if(type!=0){
+					$.ajax({
+						type:"post",
+						url:"/modular_users/update",
+						async:true,
+						data:{
+							name:name,
+							id:id 
+						},
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}else{
+					$.ajax({
+						type:"post",
+						url:"/modular_users/save",
+						data:{
+							name:name
+						},
+						async:true,
+						success:function(res){
+							console.log(res)
+							if(res.status=="ok"){
+								alert(res.message)
+								parent.location.reload()
+								var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                				parent.layer.close(index);
+							}else{
+								layer.msg(res.message,{icon: 5})
+							}
+						}
+					});
+				}
+			    return false;
+			});
+		});
+	</script>
+</html>

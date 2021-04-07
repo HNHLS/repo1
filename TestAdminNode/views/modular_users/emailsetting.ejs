@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style>
+		.layui-input-block{
+			margin-left: 140px;
+		}
+		.layui-form-label{
+			width: 140px;
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="console" style="margin-top: 5%;">
+					<div class="layui-form-item">
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>发件人名称</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=addresser%>" autocomplete="off" name="addresser" id="addresser" >
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>发件人邮箱地址</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=email%>" autocomplete="off" name="email" id="email" >
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label">发件人邮箱密码</label>
+							<div class="layui-input-block">
+								<input type="password" class="layui-input" value="<%=password%>" autocomplete="off" name="password" id="password" >
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>SMTP主机地址</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=smtpHost%>" autocomplete="off" name="smtpHost" id="smtpHost" >
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label"><span class="i">*</span>SMTP端口号</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" value="<%=smtpPort%>" name="smtpPort" autocomplete="off" id="smtpPort" >
+							</div>
+						</div>
+						<div class="layui-inline">
+							<label class="layui-form-label">测试收件人</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" value="<%=testEmail%>" name="testEmail" autocomplete="off" id="testEmail" >
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-inline" style="position: relative;left: 45%;">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script type="text/javascript">
+		layui.use('form', function() {
+			var form = layui.form
+			//监听提交
+			form.on('submit(formDemo)', function(data) {
+				console.log(data.field)
+				$.ajax({
+					type: "post",
+					url:"/modular_users/updateMailSetting",
+					data: data.field,
+					async: true,
+					success: function(res) {
+						console.log(res)
+						if(res.status == "ok") {
+							alert(res.message)
+							parent.location.reload()
+							var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+							parent.layer.close(index);
+						} else {
+							layer.msg(res.message, {icon: 5})
+						}
+					}
+				});
+				return false;
+			});
+		});
+	</script>
+
+</html>

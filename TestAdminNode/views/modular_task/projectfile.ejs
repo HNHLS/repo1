@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+
+	<body>
+		<div class="cBody">
+			<div class="layui-btn-group demoTable">
+				<button class="layui-btn layui-btn-sm" data-type="upload"><i
+						class="iconfont icon-shangchuan"></i>批量上传</button>
+				<button class="layui-btn layui-btn-sm" data-type="download"><i
+						class="iconfont icon-xiazai"></i>批量下载</button>
+				<button class="layui-btn layui-btn-sm" onclick="originalData()"><i
+						class="iconfont am-icon-folder-open-o"></i>技术文件</button>
+			</div>
+			<div class="toolbar">
+				<div class="layui-inline">
+					<input type="text" class="layui-input" id="date" placeholder=" - ">
+				</div>
+				<div class="layui-inline">
+					<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索">
+				</div>
+				<button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+			</div>
+			<div style="clear: both;"></div>
+			<table class="layui-hide" id="tab" lay-filter="tb"></table>
+		</div>
+		<shiro:hasRole name="superadmin">
+			<script type="text/html" id="doit">
+				<a class="layui-btn layui-btn-xs" lay-event="open">打开文件夹</a>
+			</script>
+		</shiro:hasRole>
+	</body>
+	<% include ../layout/footer.ejs %>
+		<script>
+			function originalData() {
+				window.location.href = "/modular_task/projectFolder?delegateNum=defaultOriginalData"
+			}
+			var token = "<%=token%>"
+			href("", "任务管理", "项目文件", "")
+			//角色下拉
+			layui.use(['form', 'laydate', 'table'], function () {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				// 监听工具条
+				table.on('tool(tb)', function (obj) {
+					var data = obj.data;
+					console.log(data)
+					if (obj.event === 'open') {
+						window.location.href = "/modular_task/projectFolder?delegateNum=" + data.delegateNum
+					} else if (obj.event === 'reset') {
+						layer.confirm('是否重置"' + data.userName + '"的密码？', function () {
+							$.ajax({
+								type: "get",
+								url: "/modular_users/resetPassword?id=" + data.id,
+								async: true,
+								success: function (res) {
+									console.log(res)
+									if (res.status == "ok") {
+										layer.confirm(res.message, { btn: ['确定'] })
+									} else {
+										layer.msg(res.message, { icon: 5, time: 1000 })
+									}
+								}, error: function (code) {
+									parent.layer.msg('操作失败!', { icon: 5, time: 1000 });
+								}
+							});
+						})
+
+					}
+				});
+
+				table.render({
+					elem: '#tab',
+					url: "/modular_task/projectfilelist",
+					cellMinWidth: 10,
+					even: true,
+					cols: [
+						[{ checkbox: true },
+						{
+							field: 'delegateNum',
+							align: 'center',
+							title: '委托单号',
+							width: '15%'
+						}, {
+							field: 'testProj',
+							align: 'center',
+							title: '测试项目',
+						}, {
+							field: 'sampleNumber',
+							align: 'center',
+							title: '样品编号'
+						}, {
+							field: 'sampleAmount',
+							align: 'center',
+							width: '10%',
+							title: '样品数量',
+						}, {
+							field: 'createTime',
+							align: 'center',
+							title: '创建时间',
+							width: '12%',
+							templet: function (d) {	//时间格式					
+							return layui.util.toDateString(d.createTime, "yyyy-MM-dd")				
+					}
+						}, {
+							align: 'center',
+							title: '操作',
+							toolbar: '#doit',
+							width: '10%'
+						}]
+					],
+					initSort: { //时间排序
+						field: 'createTime',
+						type: 'desc'
+					},
+					id: 'tabReload',
+					page: true,
+					response: {
+						statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+					},
+					parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+						console.log(res)
+						return {
+							"code": res.status, //解析接口状态
+							"msg": res.message, //解析提示文本
+							"count": res.message.total, //解析数据长度
+							"data": res.message.data //解析数据列表
+						};
+					},
+					text: {
+						none: '暂无相关数据！'//默认无数据
+					},
+				});
+				var keyword
+				var startDate
+				var endDate
+				laydate.render({
+					elem: '#date'
+					, range: true
+					, trigger: 'click'
+					, done: function (value, date) {
+						//得到日期生成的值，如：2017-08-18
+						console.log(value.split(" - "))
+						startDate = value.split(" - ")[0]
+						endDate = value.split(" - ")[1]
+						console.log(startDate, endDate)
+					}
+				});//日期范围
+				var Ids = []
+				table.on('checkbox(tb)', function (obj) {
+					Ids = []
+					var checkStatus = table.checkStatus('tabReload')
+						, data = checkStatus.data;
+					console.log(data)
+					for (var i = 0; i < data.length; i++) {
+						Ids[i] = data[i].delegateNum
+					}
+					console.log(Ids)
+				});
+				var $ = layui.$, active = {
+					reload: function () {
+						keyword = $('#search').val();
+						//执行重载
+						table.reload('tabReload', {
+							page: {
+								curr: 1 //重新从第 1 页开始
+							}
+							, where: {
+								startDate: startDate,
+								keyword: keyword,
+								endDate: endDate
+							}
+						});
+					}, addRole: function () { //获取选中数据
+						layer.open({
+							type: 2,
+							title: "账号新增",
+							area: ['700px', '360px'],
+							content: '/modular_users/adminusersadd?id=0'
+						});
+					}
+					, download: function () {
+						if (Ids.length == 0) {
+							layer.msg('批量下载至少选中一项数据', function () { });
+							return false;
+						}
+						console.log(Ids)
+						layer.confirm('确定要下载选中的项吗？', function (index) {
+							window.open("<%=global.base%>/admin/task/downloadMultiTaskFilePkg?delegateNumArray=" + JSON.stringify(Ids) + "&token=" + token)
+							layer.close(index)
+						})
+					}
+					, upload: function () {
+						layer.open({
+							type: 2,
+							title: '文件上传',
+							area: ['800px', '400px'], //宽高
+							content: '/modular_task/addAllFolder',
+						});
+					}
+				};
+
+				$('.layui-btn').on('click', function () {
+					var type = $(this).data('type');
+					active[type] ? active[type].call(this) : '';
+				});
+				$.ajax({
+					type: "get",
+					url: "/modular_users/queryAllRoleList",
+					async: true,
+					success: function (res) {
+						console.log(res)
+						var data = res.message.data
+						for (var i = 0; i < data.length; i++) {
+							$("#demoReload").append('<option value="' + data[i].id + '">' + data[i].name + '</option>')
+						}
+						form.render("select");
+					}
+				});
+			});
+		</script>
+
+</html>

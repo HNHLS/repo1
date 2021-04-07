@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+
+	<% include ../layout/header.ejs %>
+
+	<body data-type="generalComponents">
+
+		<div class="tpl-page-header-fixed" style="margin-top: 0px;">
+
+			<div class="">
+				<form class="am-form am-form-horizontal" id="ajaxForm" style="margin-top: 10px;width: 80%;font-weight: normal;">
+					<div class="am-form-group">
+						<label for="user-name" class="am-u-sm-3 am-form-label">名称</label>
+						<div class="am-u-sm-9">
+							<input type="hidden" value="<%=id%>" name="id">
+							<input type="text" id="user-name" placeholder="名称" value="<%=name%>" name="name">
+						</div>
+					</div>
+					<div class="am-form-group">
+						<label for="user-name" class="am-u-sm-3 am-form-label">图标</label>
+						<div class="am-u-sm-9">
+							<input type="text" id="user-name" placeholder="图标" value="<%=icon%>" name="icon">
+						</div>
+					</div>
+					<div class="am-form-group">
+						<label for="user-name" class="am-u-sm-3 am-form-label">排序</label>
+						<div class="am-u-sm-9">
+							<input type="text" id="user-name" placeholder="排序" value="<%=sortNum%>" name="sortNum">
+						</div>
+					</div>
+					<div class="am-form-group">
+						<label for="user-name" class="am-u-sm-3 am-form-label">备注</label>
+						<div class="am-u-sm-9">
+							<input type="text" id="user-name" placeholder="备注" value="<%=extra%>" name="extra">
+						</div>
+					</div>
+					<div class="am-form-group">
+						<div class="am-u-sm-9 am-u-sm-push-3">
+							<button type="button" class="am-btn am-btn-primary" onclick="sub()">保存</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		function sub() {
+			$.ajax({
+				type: "POST",
+				data: $("#ajaxForm").serialize(),
+				success: function(msg) {
+					console.log(msg);
+					if(JSON.parse(msg).errcode == 0) {
+						alert("保存成功");
+						//刷新
+						parent.reloadpage();
+					} else {
+
+						alert(JSON.parse(msg).errmsg);
+					}
+				}
+			});
+		}
+	</script>
+
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+<body>
+<div class="cBody">
+    <div class="layui-btn-group demoTable">
+    </div>
+    <div class="toolbar">
+        <div class="layui-inline">
+            <input class="layui-input" name="search" id="search" autocomplete="off" placeholder="关键词检索" onkeydown="entersearch(this)">
+        </div>
+        <button class="layui-btn layui-btn-sm" data-type="reload">搜索</button>
+    </div>
+    <table class="layui-hide" id="tab" lay-filter="tb"></table>
+</div>
+</body>
+<% include ../layout/footer.ejs %>
+<script>
+    //角色下拉
+    layui.use(['form', 'laydate','table'], function() {
+        var table = layui.table;
+        var form=layui.form;
+        var laydate=layui.laydate;
+        // 监听工具条
+        table.on('tool(tb)', function(obj) {
+            var data = obj.data;
+            console.log(data)
+            //console.log(obj)
+            if(obj.event === 'modify'){//办理
+                window.location.href="/modular_task/getNotReportTestCourse?testCourseId="+data.testCourseId
+            }
+        });
+        table.render({
+            elem: '#tab',
+            url: "/modular_task/queryHistoryTestCourse",
+            cellMinWidth: 10,
+            cols: [
+                [{
+                    field: 'sn',
+                    title: 'ID',
+                    align: 'center',
+                },{
+                    field: 'subTaskNumber',
+                    align: 'center',
+                    title: '分单号'
+                },{
+                    field: 'sampleNumber',
+                    align: 'center',
+                    title: '样品编号'
+                },{
+                    field: 'testStandardName',
+                    align: 'center',
+                    title: '检测标准'
+                },  {
+                    field: 'testProj',
+                    align: 'center',
+                    title: '测试项目',
+                }, {
+                    field: 'testNature',
+                    align: 'center',
+                    title: '试验性质',
+                }, {
+                    field: 'purpose',
+                    align: 'center',
+                    title: '测试目的',
+                }, {
+                    field: 'prior',
+                    align: 'center',
+                    title: '是否加急',
+                    templet:function(d){
+                        return d.prior?"是":"否"
+                    }
+                }, {
+                    field: 'createTime',
+                    align: 'center',
+                    title: '委托时间',
+                }, {
+                    align: 'center',
+                    title: '操作',
+                    templet:function(d){
+                        return '<a class="layui-btn layui-btn-xs" lay-event="modify">更正</a>'
+                    }
+                }]
+            ],
+            id: 'tabReload',
+            page: true,
+            response: {
+                statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+            },
+            parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                console.log(res)
+                return {
+                    "code": res.status, //解析接口状态
+                    "msg": res.message, //解析提示文本
+                    "count": res.message.total, //解析数据长度
+                    "data": res.message.data //解析数据列表
+                };
+            },
+            text: {
+                none: '暂无相关数据！'//默认无数据
+            },
+        });
+        var keyword
+        var ids=[]
+        window.entersearch=function(obj) {
+            var event = window.event || arguments.callee.caller.arguments[0];
+            if(event.keyCode == 13) {
+                keyword = $('#search').val();
+                //执行重载
+                table.reload('tabReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        keyword:keyword,
+                    }
+                });
+            }
+        }
+        var $ = layui.$, active = {
+            reload: function(){
+                keyword = $('#search').val();
+                //执行重载
+                table.reload('tabReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        keyword:keyword,
+                    }
+                });
+            }
+        };
+        $('.layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<% include ../layout/header.ejs %>
+<script type="text/javascript" src="/Scripts/echarts.min.js"></script>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    html,
+    body {
+        padding: 0 0 0 12px;
+    }
+
+    .layui-fluid {
+        padding: 0 0 0 10px;
+        overflow-y: scroll;
+    }
+
+    html,
+    body,
+    .layui-fluid {
+        height: 100%;
+        width: 99%;
+    }
+
+    #main-pie {
+        width: 90%;
+        height: 80%;
+        position: relative;
+        left: 5%;
+    }
+
+    #main-time {
+        width: 100%;
+        height: 93%;
+        position: relative;
+    }
+
+    #main-type {
+        height: 90%;
+        position: relative;
+    }
+
+    #main-com {
+        width: 90%;
+        height: 70%;
+        position: relative;
+        left: 5%;
+        top: -8%;
+    }
+
+    .layui-row > div {
+        height: 100%;
+
+    }
+
+    .layui-row {
+        padding: 10px;
+    }
+
+    .top {
+        border: 1px solid #37a3dd;
+        border-radius: 10px;
+        margin: 10px 10px;
+        box-shadow: 5px 10px 15px #ddd;
+        padding: 15px;
+    }
+
+    #small {
+        height: 30%;
+        width: 40%;
+    }
+
+    .left-s {
+        height: auto;
+    }
+
+    .top .left img {
+        height: 20px;
+        width: 20px;
+        margin-right: 5px;
+    }
+
+    .top .left span {
+        vertical-align: middle;
+        color: #37a3dd;
+        font-weight: 700;
+    }
+
+
+    .content {
+        height: 77%;
+        overflow-y: scroll;
+    }
+
+    .notice {
+        height: 100%;
+    }
+
+    .notice td,
+    th {
+        padding: 10px;
+    }
+
+    .notice tr td:first-child {
+        color: #333;
+    }
+
+    .notice tr td:last-child {
+        color: #aaa;
+    }
+
+    .notice tbody tr:nth-child(odd) {
+        background-color: #f5f9ff;
+    }
+
+    .notice tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+
+    .thead,
+    .thead thead,
+    .thead tr {
+        width: 100%;
+    }
+
+    .thead tr th:first-child {
+        width: 75%;
+    }
+
+    #tr-up {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #62c254;
+        width: 0;
+        height: 0;
+    }
+
+    #tr-down1 {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #e5e5e5;
+        width: 0;
+        height: 0;
+        display: inline-block;
+    }
+
+    #tr-down {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #fd1b05;
+        width: 0;
+        height: 0;
+    }
+
+    .flex {
+        display: flex;
+        align-items: center;
+    }
+
+    .count1 {
+        font-size: 20px;
+        font-weight: 600;
+
+    }
+
+    .count2 {
+        font-size: 18px;
+        font-weight: 600;
+        padding-top: 3px;
+    }
+
+    .flex1 {
+        display: flex;
+        align-items: center;
+        padding-left: 20%;
+    }
+
+    .last div {
+        margin-right: 0.5rem;
+    }
+
+    .fontColor {
+        color: #a9a9a9;
+    }
+
+    .allRight {
+        margin: -3px 1% 0 3%;
+        font-size: 1.8rem;
+    }
+
+    #Time {
+        position: absolute;
+        right: 3%;
+        height: 40%;
+    }
+
+    .count2 img {
+        height: 24px;
+        width: 24px;
+        margin-right: 5px;
+        padding: 1px;
+    }
+	.myBox{
+		display: flex;
+		flex-flow: column;
+		height: 100%;
+	}
+	.myBox .firstRow{
+		flex: 0 1 auto;
+	}
+	.myBox .secondRow{
+		flex: 0 1 auto;
+	}
+	.myBox .remainSpace{
+		flex: 1 1 auto;
+	}
+</style>
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-row" style="height: 100%;">
+        <div class="layui-col-xs12 layui-col-sm8 layui-col-md8 layui-col-lg8 myBox">
+            <div class="top firstRow">
+                <div class="left">
+                    <img src="/Images/weituo.png" alt="">
+                    <span>设备汇总</span>
+                </div>
+                <div class="flex">
+                    <div class="flex" style="border-right: 2px solid #dedede;padding-right: 2%;">
+                        <div style="padding: 20px;">
+                            <img src="/Images/zongliang.png" alt="">
+                        </div>
+                        <div style="font-size: 1.8rem;">
+                            <div>设备总数（个）</div>
+                            <div class='count1' id='eqAllNum'></div>
+                        </div>
+                    </div>
+                    <div class="flex" style="padding-right: 2%;">
+                        <div style="padding: 20px;">
+                            <img src="/Images/wxperson.png" style=" width: 48px; height: 50px;">
+                        </div>
+                        <div style="font-size: 1.8rem;">
+                            <div>当月维修数量 (台件)</div>
+                            <div class='count1' id="thisMonthRepairCount"></div>
+                        </div>
+                    </div>
+                    <div class="flex" style="padding-right: 2%;">
+                        <div style="padding: 20px;">
+                            <img src="/Images/guanli.png" style=" width: 48px; height: 50px;">
+                        </div>
+                        <div style="font-size: 1.8rem;">
+                            <div>维修完成率（%）</div>
+                            <div class='count1' id="repairCompleteRate"></div>
+                        </div>
+                    </div>
+                    <div class="flex" style="padding-right: 2%;">
+                        <div style="padding: 20px;">
+                            <img src="/Images/shenghe.png" style=" width: 48px; height: 50px;">
+                        </div>
+                        <div style="font-size: 1.8rem;">
+                            <div>关键设备满载率（%）</div>
+                            <div class='count1' id="equipmentWorkRateToday"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="top remainSpace" style="height: 66%;flex:1 1 auto">
+                <div>
+                    <div class="left" style="min-height: 38px;display: inline-block">
+                        <img src="/Images/renwu.png" alt="">
+                        <span>设备运行状态统计</span>
+                    </div>
+                    <div id="Time" style="display: inline-block">
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="date1" placeholder="请选择日期">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="main-time"></div>
+                <div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs12 layui-col-sm4 layui-col-md4 layui-col-lg4 myBox">
+            <div class="top firstRow">
+                <div class="left">
+                    <img src="/Images/renwu.png" alt="">
+                    <span>表格导出</span>
+                </div>
+                <div style="width: 100%;text-align: center">
+                    <button class="layui-btn layui-btn-radius" data-type="download">表单下载</button>
+                </div>
+            </div>
+            <div class="top secondRow" style="">
+                <div class="left">
+                    <img src="/Images/renwu.png" alt="">
+                    <span>设备校准和期间核查汇总</span>
+                </div>
+                <div class="layui-row">
+                    <div class="layui-col-md6">
+                        <div class="top">
+							<span class="fontColor">
+								校准当日预警
+							</span>
+                            <div class='count2' id="recordnow"></div>
+                            <div style="margin-top: 2%; width:95%">
+                                <div class="layui-progress" lay-filter="recordnow">
+                                    <div class="layui-progress-bar" id="rnpercent"></div>
+                                </div>
+                            </div>
+                        </div>
+						<div class="top">
+							<div class="">
+							<span class="fontColor">
+								校准当月预警
+							</span>
+							</div>
+							<div class='count2' id="recordmonth"></div>
+							<div style="margin-top: 2%; width:95%">
+								<div class="layui-progress" lay-filter="recordmonth">
+									<div class="layui-progress-bar layui-bg-blue" id="rmpercent"></div>
+								</div>
+							</div>
+						</div>
+                    </div>
+                    <div class="layui-col-md6">
+						<div class="top">
+							<div>
+							<span class="fontColor">
+								核查当日预警
+							</span>
+							</div>
+							<div class='count2' id="checknow"></div>
+							<div style="margin-top: 2%; width:95%">
+								<div class="layui-progress" lay-filter="checknow">
+									<div class="layui-progress-bar" id="cnpercent"></div>
+								</div>
+							</div>
+						</div>
+                        <div class="top">
+                            <div class="">
+							<span class="fontColor">
+								核查当月预警
+							</span>
+                            </div>
+                            <div class='count2' id="checkmonth"></div>
+                            <div style="margin-top: 2%; width:95%">
+                                <div class="layui-progress" lay-filter="checkmonth">
+                                    <div class="layui-progress-bar layui-bg-cyan" id="cmpercent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="top remainSpace" style="height: 30%">
+                <div class="left">
+                    <img src="/Images/renwu.png" alt="">
+                    <span>维修类型</span>
+                </div>
+                <div id="main-type"></div>
+            </div>
+        </div>
+    </div>
+
+    <!--			<div class="layui-col-xs12 layui-col-sm3 layui-col-md3 layui-col-lg3">-->
+    <!--				<div class="top" style="height: 100%;">-->
+    <!--					<div class="left">-->
+    <!--						<img src="/Images/shebei.png" alt="">-->
+    <!--						<span>维修完成率</span>-->
+    <!--					</div>-->
+    <!--					<div id="main-com"></div>-->
+    <!--					<div class="flex1">-->
+    <!--						<div class="flex" style="border-right: 2px solid #dedede;padding-right: 5%;padding-left: 5%;">-->
+    <!--							<div class="late-down">-->
+    <!--								<div class='count1' id="all"></div>-->
+    <!--								<div class="flex last">-->
+    <!--									<span class="fontColor">发生异常</span>-->
+    <!--								</div>-->
+    <!--							</div>-->
+    <!--						</div>-->
+    <!--						<div class="flex" style="border-right: 2px solid #dedede;padding-right: 5%;padding-left: 5%;">-->
+    <!--							<div class="late-down">-->
+    <!--								<div class='count1' id="sucnum"></div>-->
+    <!--								<div class="flex last">-->
+    <!--									<span class="fontColor">已完成</span>-->
+    <!--								</div>-->
+    <!--							</div>-->
+    <!--						</div>-->
+    <!--						<div class="late-down" style="padding-left:5%">-->
+    <!--							<div class='count1' id="point"></div>-->
+    <!--							<div class="flex last">-->
+    <!--								<span class="fontColor">完成率</span>-->
+    <!--							</div>-->
+    <!--						</div>-->
+    <!--					</div>-->
+    <!--				</div>-->
+    <!--			</div>-->
+</div>
+</body>
+<% include ../layout/footer.ejs %>
+<script type="text/javascript">
+
+    href("", "报表统计", "设备统计", "")
+    //设备总数
+    $.ajax({
+        type: "POST",
+        url: "/modular_statistics/equipment_eqnum",
+        success: function (msg) {
+            console.log(msg)
+            document.getElementById("eqAllNum").innerHTML = msg.eqAllNum
+
+        }
+    });
+    //当月维修数量
+    $.ajax({
+        type: "get",
+        url: "/modular_statistics/maintenMonthNum",
+        success: function (msg) {
+            console.log(msg)
+            document.getElementById("thisMonthRepairCount").innerHTML = msg.monthAllNum
+
+        }
+    });
+    //维修完成率
+    $.ajax({
+        type: "get",
+        url: "/modular_statistics/maintenPointAll",
+        success: function (msg) {
+            console.log(msg)
+            document.getElementById("repairCompleteRate").innerHTML = msg.maintenPointAll
+
+        }
+    });
+    //关键设备满载率
+    $.ajax({
+        type: "get",
+        url: "/modular_statistics/equipmentAvgWorkingStat",
+        success: function (msg) {
+            console.log(msg)
+            document.getElementById("equipmentWorkRateToday").innerHTML = (msg.rate * 100).toFixed(2) + '%';
+
+        }
+    });
+    layui.use(['element','laydate','jquery'], function () {
+        var element = layui.element;
+        var laydate = layui.laydate;
+        laydate.render({
+            elem: '#date1'
+            , range: true
+            , trigger: 'click'
+            , done: function (value, date) {
+                //得到日期生成的值，如：2017-08-18
+                // console.log(value.split(" - "))
+                var startDate = value.split(" - ")[0]
+                var endDate = value.split(" - ")[1]
+                // console.log(startDate,endDate)
+                statEquipmentByRange(startDate, endDate)
+            }
+        });//日期范围
+        var $ = layui.$, active = {
+            download: function () {
+                $.ajax({
+                    type: "get",
+                    url: "/modular_statistics/equipmentExport",
+                    success: function (msg) {
+                        if (msg.status == "ok") {
+                            layer.confirm('是否确定下载？', function () {
+                                window.open(msg.message)
+                                layer.close(layer.index)
+                            })
+                        }
+                    }
+                })
+            }
+        }
+        $('.layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+        //核查当天预警
+        $.ajax({
+            type: "POST",
+            url: "/modular_statistics/equipment_checknow",
+            success: function (msg) {
+                console.log(msg)
+                var percent = msg.all + '%'
+                document.getElementById("checknow").innerHTML = '<img src="/Images/daoqi.png">' + percent
+                $("#cnpercent").attr("lay-percent", percent)
+                element.init();
+                element.progress('checknow', percent)
+            }
+        });
+        //检定当天预警
+        $.ajax({
+            type: "POST",
+            url: "/modular_statistics/equipment_recordnow",
+            success: function (msg) {
+                console.log(msg)
+                var percent = msg.all + '%'
+                document.getElementById("recordnow").innerHTML = '<img src="/Images/dun.png">' + percent
+                $("#rnpercent").attr("lay-percent", percent)
+                element.init();
+                element.progress('recordnow', percent)
+
+            }
+        });
+        //核查当月预警
+        $.ajax({
+            type: "POST",
+            url: "/modular_statistics/equipment_checkmonth",
+            success: function (msg) {
+                console.log(msg)
+                var percent = msg.all + '%'
+                document.getElementById("checkmonth").innerHTML = '<img src="/Images/yuejian.png">' + percent
+                $("#cmpercent").attr("lay-percent", percent)
+                element.init();
+                element.progress('checkmonth', percent)
+            }
+        });
+        //检定当月预警
+        $.ajax({
+            type: "POST",
+            url: "/modular_statistics/equipment_recordmonth",
+            success: function (msg) {
+                console.log(msg)
+                var percent = msg.all + '%'
+                document.getElementById("recordmonth").innerHTML = '<img src="/Images/rijian.png" >' + percent
+                $("#rmpercent").attr("lay-percent", percent)
+                element.init();
+                element.progress('recordmonth', percent)
+            }
+        });
+        statEquipmentByRange();
+        function statEquipmentByRange(startDate, endDate) {
+            var colorList = ['#73DDFF', '#73ACFF', '#FDD56A', '#FDB36A', '#FD866A', '#9E87FF', '#00FFFF', '#CD5C5C', '#F08080']
+            //设备运行状态统计(渐变柱状图)
+            var myChart = echarts.init(document.getElementById("main-time"));
+            $.ajax({
+                type: "get",
+                url: "/modular_statistics/equipmentWorkingStat?startDate="+startDate+"&endDate="+endDate,
+                success: function (msg) {
+                    if (msg.status == "ok") {
+                        var message = msg.message
+                        var rate = []
+                        var name = []
+                        for (var j = 0; j < message.length; j++) {
+                            var number = (message[j].rate * 100).toFixed(2)
+                            rate.push(number)
+                            name.push(message[j].name)
+                        }
+                        var labelOption = {
+                            show: true,
+                            position: 'top',
+                            distance: 15,
+                            align: 'center',
+                            verticalAlign: 'middle',
+                            rotate: 0,
+                            formatter: function (params) {
+                                return (params.name.startsWith('TS-PVTC-')?params.name.substr('TS-PVTC-'.length,params.name.length):params.name)+'\n'+params.value+'%';
+                            },
+                            fontSize: 14,
+                            textShadowBlur:5,
+                            rich: {
+                                name: {
+                                    textBorderColor: '#fff',
+                                    borderWidth:2
+                                }
+                            }
+                        };
+                        var option = {
+                            legend: {
+                                orient: 'horizontal',
+                                data: name,
+                                icon: "circle",
+                                right: "1%",
+                                top: "15%",
+                            },
+                            tooltip: {
+                                formatter: '{b} : {c}%'
+                            },
+                            toolbox: {
+                                show: false,
+                            },
+                            calculable: true,
+                            xAxis: [{
+                                type: 'category',
+                                axisTick: {
+                                    show: false // 是否显示坐标轴轴线
+                                },
+                                splitLine: {
+                                    show: false
+                                },
+                                boundaryGap: true,
+                                axisLine: { //坐标轴轴线相关设置。
+                                    show: true,
+                                    inside: false,
+                                    lineStyle: {
+                                        color: '#000'
+                                    }
+                                },
+                                data: name,
+                            }],
+                            yAxis: [{
+                                type: 'value',
+                                splitLine: {
+                                    show: false
+                                }
+                            }],
+                            dataZoom: [{
+                                type: 'inside',
+                                xAxisIndex: 0,
+                                start: 0,
+                                end: 100
+                            }, {
+                                start: 0,
+                                end: 10,
+                                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                                handleSize: '80%',
+                                handleStyle: {
+                                    color: '#fff',
+                                    shadowBlur: 3,
+                                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                                    shadowOffsetX: 2,
+                                    shadowOffsetY: 2
+                                }
+                            }],
+                            series: [{
+                                type: 'bar',
+                                barCategoryGap: '80%',
+                                label:labelOption,
+                                data: rate,
+                                color: '#5b9bd5',
+                                areaStyle: {},
+                            }]
+                        };
+                        myChart.setOption(option);
+                        window.onresize = myChart.resize;
+                    }
+                }
+            });
+        }
+    });
+
+    function getDay(day) {
+        var today = new Date();
+        var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+        today.setTime(targetday_milliseconds); //注意，这行是关键代码
+        var tYear = today.getFullYear();
+        var tMonth = today.getMonth();
+        var tDate = today.getDate();
+        tMonth = doHandleMonth(tMonth + 1);
+        tDate = doHandleMonth(tDate);
+        return tYear + "-" + tMonth + "-" + tDate;
+    }
+
+    function doHandleMonth(month) {
+        var m = month;
+        if (month.toString().length == 1) {
+            m = "0" + month;
+        }
+        return m;
+    }
+
+
+    //设备比例(圆形图)
+    var compare = function (obj1, obj2) {
+        var val1 = parseFloat(obj1.value);
+        var val2 = parseFloat(obj2.value);
+        if (val1 < val2) {
+            return 1;
+        } else if (val1 > val2) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+    // var myChartpie = echarts.init(document.getElementById("main-pie"));
+    // $.ajax({
+    // 		type: "POST",
+    // 		url: "/modular_statistics/equipment_useui",
+    // 		success: function (msg) {
+    // 				var groupStat=msg;
+    // 				var group = [];//声明一个数组用来接收处理过格式的数据
+    // 				var namearr = []
+    // 					for ( var key in groupStat) {
+    // 						if(key!="all"&&key!=""){
+    // 							var name = key;
+    // 							var value = groupStat[key];
+    // 							group.push({
+    // 								value: value,
+    // 								name: name
+    // 							});
+    // 							namearr.push(key)
+    // 						}
+    // 					}
+    //
+    // 				console.log(groupStat)
+    // 				console.log(group)
+    // 				group.sort(compare);
+    // 				var colors=["#48D1CC","#40E0D0","#87CECB","#AFEEEE","#B0E0E6","#00CED1","#48D1CC","#008B8B","#5F9EA0","#48D1CC","#008B8B","#5F9EA0","#0000C6","#4169E1","#1E90FF","#6495ED","#48D1CC","#008B8B","#5F9EA0","#0000C6",];
+    //                 var optionpie = {
+    //                     tooltip: {
+    //                         trigger: 'item',
+    //                         formatter: '{b}: {c}',
+    //                         backgroundColor: 'rgba(18,79,130,.5)',
+    //                         borderColor: '#3788c4',
+    //                         borderWidth: 2,
+    //                         textStyle: {
+    //                             fontSize: 20,
+    //                             color: "#ffffff"
+    //                         }
+    // 					},
+    //                     series: [{
+    //                         type: 'pie',
+    // 						center: ['50%', '50%'],
+    // 						radius: ['0%', '100%'],
+    // 						clockwise: true,
+    // 						avoidLabelOverlap: true,
+    // 						hoverOffset: 15,
+    // 						itemStyle: {
+    // 							normal: {
+    // 								color: function (params) {
+    // 									return colors[params.dataIndex]
+    // 								}
+    // 							}
+    // 						},
+    // 						label: {
+    // 							show: false,
+    // 						},
+    //                         data:group,
+    // 					}]
+    //                 };
+    //                 myChartpie.setOption(optionpie, true);
+    //
+    // 			}
+    // 	});
+
+
+    //维修完成率(仪表盘)
+    // var myChartcom = echarts.init(document.getElementById("main-com"));
+    // var today = getDay(0);
+    // var endday = getDay(7);
+    // $.ajax({
+    // 		type: "POST",
+    // 		url: "/modular_statistics/equipment_maintenok?startdate="+today+"&enddate="+endday,
+    // 		success: function (msg) {
+    // 			var all = msg.all
+    // 			var sucnum =msg.sucnum
+    // 			var point = msg.point
+    // 			var wc
+    // 			var wwc
+    // 			if (all==0){
+    // 				wc=0
+    // 				wwc=100
+    // 			}else{
+    // 				var num1 = (sucnum/all)*100
+    // 				var num2 = all - sucnum
+    // 				var num3 = (num2/all)*100
+    // 				wc = num1.toFixed(2);
+    // 				wwc = num3.toFixed(2);
+    // 			}
+    // 			document.getElementById("all").innerHTML=all
+    // 			document.getElementById("sucnum").innerHTML=sucnum
+    // 			document.getElementById("point").innerHTML=point
+    // 			var optioncom = {
+    // 				title: {
+    // 					text: point,
+    // 					x: 'center',
+    // 					y: 'center',
+    // 					subtext: '近7天报告',
+    // 					left: 'center',
+    // 					top: 'center', //top待调整
+    // 					subtextStyle: {
+    // 						color: '#000',
+    // 						fontSize: 10,
+    // 						fontFamily: 'PingFangSC-Regular',
+    // 						top: 'center'
+    // 					},
+    // 					textStyle: {
+    // 						fontWeight: 'normal',
+    // 						color: '#0580f2',
+    // 						fontSize: '20'
+    // 					},
+    // 					itemGap: 0//主副标题间距
+    // 				},
+    // 				color: ['rgba(176, 212, 251, 1)'],
+    // 				series: [{
+    // 					name: 'Line 1',
+    // 					type: 'pie',
+    // 					clockWise: true,
+    // 					radius: ['50%', '66%'],
+    // 					itemStyle: {
+    // 						normal: {
+    // 							label: {
+    // 								show: false
+    // 							},
+    // 							labelLine: {
+    // 								show: false
+    // 							}
+    // 						}
+    // 					},
+    // 					hoverAnimation: false,
+    // 					data: [{
+    // 						value: wc,
+    // 						name: '01',
+    // 						itemStyle: {
+    // 							normal: {
+    // 								color: { // 完成的圆环的颜色
+    // 									colorStops: [{
+    // 										offset: 0,
+    // 										color: '#00cefc' // 0% 处的颜色
+    // 									}, {
+    // 										offset: 1,
+    // 										color: '#367bec' // 100% 处的颜色
+    // 									}]
+    // 								},
+    // 								label: {
+    // 									show: false
+    // 								},
+    // 								labelLine: {
+    // 									show: false
+    // 								}
+    // 							}
+    // 						}
+    // 					},
+    // 					{
+    // 						name: '02',
+    // 						value:wwc,
+    //
+    // 					}
+    // 				]
+    // 				}]
+    // 			};
+    // 			myChartcom.setOption(optioncom);
+    // 		}
+    // 	});
+
+    //维修类型(半圆)
+    var myCharttype = echarts.init(document.getElementById("main-type"));
+    $.ajax({
+        type: "POST",
+        url: "/modular_statistics/equipment_weiui",
+        success: function (msg) {
+            var groupStat = msg;
+            var group = [];//声明一个数组用来接收处理过格式的数据
+            for (var key in groupStat) {
+                if (key != "all" && key != "") {
+                    var name = key;
+                    var value = groupStat[key];
+                    group.push({
+                        value: value,
+                        name: name
+                    });
+                }
+            }
+            console.log(group)
+            var a = 0;
+            for (var i = 0; i < group.length; i++) {
+                a += group[i].value;
+            }
+            group.push({value: a, name: '__other', itemStyle: {normal: {color: 'rgba(0,0,0,0)'}}});
+            console.log(group);
+            var optiontype = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: "{b} : {c}"
+                },
+                legend: {
+                    show: false,
+                    orient: 'horizontal',
+                    left: 'left',
+                },
+                color: ['#a3e697', '#67d3b3', '#54becc', '#6990d3',],
+                series: [
+                    {
+                        type: 'pie',
+                        startAngle: -180,
+                        radius: '100%',
+                        center: ['50%', '80%'],
+                        data: group,
+                        itemStyle: {
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            // 使用刚指定的配置项和数据显示图表。
+            myCharttype.setOption(optiontype);
+        }
+    });
+
+
+    //图表自适应
+    window.addEventListener("resize", function () {
+        // myChartpie.resize();
+        // myChartcom.resize();
+        myCharttype.resize();
+    });
+
+</script>
+
+</html>

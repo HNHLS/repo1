@@ -1,0 +1,322 @@
+<!doctype html>
+<html>
+<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.conditionblock{
+			margin-top: 10px;
+		}
+		.conditionblock input{
+			width: 40%;
+			display: inline-block;
+		}
+		.conditionblock .delete{
+			margin-left: 5px;
+		}
+		.tar{
+			font-size: 12px;
+			color: red;
+			margin-top: 5px;
+		}
+		.equipmentblock,.mainEquipmentblock{
+			padding: 10px 20px;
+			border: 1px solid #37a3dd;
+			text-align: center;
+			border-radius:10px;
+			margin-top: 10px;
+		}
+		.borderred{
+			border: 1px solid red;
+		}
+		.equipmentgroup{
+		}
+	</style>
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="" >
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="golist()"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<button class="layui-btn layui-btn-sm btnsave" lay-submit lay-filter="formDemo"><i class="iconfont icon-baocun"></i>保存</button>
+				</div>
+				<div class="layui-fluid">
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<input type="hidden" name="id" id="id" value="<%= id %>" />
+							<label class="layui-form-label"><span class="i">*</span>测试项名称(中文)</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="name" placeholder="测试项名称(中文)" value="<%= name %>" name="name">
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>测试项名称(英文)</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" lay-verify="required" id="englishName" placeholder="测试项名称(英文)" value="<%= englishName %>" name="englishName">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>检测标准名称</label>
+							<div class="layui-input-block">
+								<select id="testStandard" name="testStandard" lay-search="" lay-verify="required"></select>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">测试条款</label>
+							<div class="layui-input-block">
+								<input type="text" class="layui-input" id="testClause" placeholder="测试条款" value="<%= testClause %>" name="testClause">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">数据录入</label>
+							<div class="layui-input-block">
+								<input type="radio" name="originalDataCheckInWay" value="1" title="默认" <%=originalDataCheckInWay==1?'checked':''%>>
+								<input type="radio" name="originalDataCheckInWay" value="2" title="数据后录入" <%=originalDataCheckInWay==2?'checked':''%> >
+								<input type="radio" name="originalDataCheckInWay" value="3" title="无记录" <%=originalDataCheckInWay==3?'checked':''%>>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label"><span class="i">*</span>预估耗时</label>
+							<div class="layui-input-block">
+								<input type="number" name="workHour" value="<%= workHour %>" lay-verify="required" class="layui-input" style="width: 90%;display: inline-block;margin-right: 5px;">
+								小时
+							</div>
+						</div>
+						
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label"><span class="i">*</span>是否是主实验</label>
+							<div class="layui-input-block">
+								<%if(main==0){%>
+									<input type="radio" name="main" value="true" title="是" lay-filter="main">
+									<input type="radio" name="main" value="false" title="否" checked lay-filter="main">
+								<%}else{%>
+									<input type="radio" name="main" value="true" title="是" checked lay-filter="main">
+									<input type="radio" name="main" value="false" title="否" lay-filter="main">
+								<%}%>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4" > 
+							<div class="layui-form-item">
+								<label class="layui-form-label"><span class="i">*</span>设备名称</label>
+								<div class="layui-input-block">
+									<div class="layui-btn layui-btn-sm return" data-type="mainEquipment">设备选择</div>
+									<div class="mainEquipmentlist">
+										<%if(equipment.length>0){%>
+											<%for(var i=0;i<equipment.length;i++){%>
+												<%if(equipment[i].equipmentNumber){%>
+													<div class="mainEquipmentblock"><%=equipment[i].equipmentName%>/<%=equipment[i].equipmentNumber%></div>
+												<%}else{%>
+													<div class="mainEquipmentblock borderred"><%=equipment[i].equipmentName%></div>
+												<%}%>
+											<%}%>
+										<%}%>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item auxiliaryEquipment" style='<%=main==1?"display:block;":"display:none;"%>'>
+								<label class="layui-form-label">辅助设备名称</label>
+								<div class="layui-input-block">
+									<div class="layui-btn layui-btn-sm return" data-type="equipment">设备选择</div>
+									<div class="equipmentlist">
+										<%if(auxiliaryEquipment){%>
+											<%for(var i=0;i<auxiliaryEquipment.length;i++){%>
+												<%if(auxiliaryEquipment[i].equipmentNumber){%>
+													<div class="equipmentblock"><%=auxiliaryEquipment[i].equipmentName%>/<%=auxiliaryEquipment[i].equipmentNumber%></div>
+												<%}else{%>
+													<div class="equipmentblock borderred"><%=auxiliaryEquipment[i].equipmentName%></div>
+												<%}%>
+											<%}%>
+										<%}%>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4">
+							<label class="layui-form-label">技术要求</label>
+							<div class="layui-input-block">
+								<div class="layui-btn layui-btn-sm" data-type="conditionadd"><i class="layui-icon layui-icon-add-1"></i></div>
+								<div class="conditionlist">
+									<div class="conditionblock">
+										<input type="text" class="layui-input" value="温度" disabled="disabled">
+										<span style="margin: 0 5px;">-</span>
+										<input type="text" class="layui-input" value=">10℃" disabled="disabled">
+									</div>
+									<div class="tar">*以上为参考实例</div>
+									<%if(condition.length>0){%>
+										<%for(var i=0;i<condition.length;i++){%>
+										<div class="conditionblock">
+											<input type="text" class="layui-input" id="conditionname" value="<%=condition[i].name %>" name="conditionname">
+											<span style="margin: 0 5px;">-</span>
+											<input type="text" class="layui-input" id="conditionValue" value="<%= condition[i].conditionValue %>" name="conditionValue">
+											<span class="layui-btn layui-btn-sm" onclick="del(this)"><i class="layui-icon layui-icon-delete"></i></span>
+										</div>
+										<%}%>
+									<%}%>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						
+					</div>
+					
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
+<% include ../layout/footer.ejs %>
+<script>
+	href("/modular_basics/testItem","基础管理","测试项列表","新增/编辑")
+	var testStandard="<%=testStandard%>"
+	layui.use(['form','jquery'], function() {
+		var form = layui.form
+		var $ = layui.jquery;
+		$.ajax({
+            type: "get",
+            url: "/modular_basics/standard-list-info?type=检测标准&page=-1&limit=0&keyword=",
+            success: function (msg) {
+                console.log(msg.message);
+                var data=msg.message.data
+                if (msg.status=="ok") {
+					for(var i=0;i<data.length;i++){
+						console.log(testStandard==data[i].name)
+						if(testStandard==data[i].name){
+							$("#testStandard").append('<option selected>'+data[i].name+'</option>')
+						}else{
+							$("#testStandard").append('<option>'+data[i].name+'</option>')
+						}
+					}
+					form.render("select")
+                } else {
+                    alert(msg.message);
+                }
+            }
+		});
+		form.on('radio(main)', function(data){
+			console.log(data.value); //被点击的radio的value值
+			if(data.value=="true"){
+				$(".auxiliaryEquipment").css("display","block")
+			}else{
+				$(".auxiliaryEquipment").css("display","none")
+			}
+		}); 
+		window.del=function(obj){
+			console.log(obj)
+			$(obj).parent().remove()
+		}
+		var $ = layui.$, active = {
+		    conditionadd: function(){//技术要求新增
+		      console.log()
+		      var str='<div class="conditionblock"><input type="text" class="layui-input" lay-verify="required" id="conditionname" name="conditionname" ><span style="margin: 0 9px;">-</span><input type="text" class="layui-input" lay-verify="required" id="conditionValue" name="conditionValue"><span class="layui-btn layui-btn-sm" onclick="del(this)" style="margin-left: 4px;"><i class="layui-icon layui-icon-delete"></i></span></div>'
+		      $(this).siblings(".conditionlist").append(str)
+		      form.render()
+		    }
+		    ,conditiondel: function(){//技术要求删除
+		     
+		  	}
+		    ,mainEquipment: function(){ //设备选择
+		    	var equipmentlist=[]
+		    	$(".mainEquipmentlist .mainEquipmentblock").each(function(i,v){
+		    		equipmentlist.push($(v).text().replace(/\n/g, " "));
+				})
+		    	console.log(encodeURIComponent(JSON.stringify(equipmentlist)))
+		      	layer.open({
+					type: 2,
+					title:"设备选择",
+					area: ['100%', '100%'],
+					content: '/modular_basics/selectequipment?equipmentlist='+ encodeURIComponent(JSON.stringify(equipmentlist))+'&type=0'
+				});
+			},
+			equipment: function(){
+				var equipmentlist=[]
+		    	$(".equipmentlist .equipmentblock").each(function(i,v){
+		    		equipmentlist.push($(v).text().replace(/\n/g, " "));
+				})
+		    	console.log(encodeURIComponent(JSON.stringify(equipmentlist)))
+		      	layer.open({
+					type: 2,
+					title:"设备选择",
+					area: ['100%', '100%'],
+					content: '/modular_basics/selectequipment?equipmentlist='+ encodeURIComponent(JSON.stringify(equipmentlist))+'&type=1'
+				});
+			}
+//		    addRole:function(){
+//		    	
+//		    }
+		}
+		form.on('submit(formDemo)', function(data){
+			console.log(data.field)
+			var equipment=[]
+			var auxiliaryEquipment=[]
+	    	$(".equipmentblock").each(function(i,v){
+	    		var obj={}
+	    		obj.name=$(v).text().replace(/\s+/g,"").split("/")[0]
+	    		obj.number=$(v).text().replace(/\s+/g,"").split("/")[1]?$(v).text().replace(/\s+/g,"").split("/")[1]:''
+	    		auxiliaryEquipment[i]=obj
+			})
+			$(".mainEquipmentblock").each(function(i,v){
+	    		var obj={}
+	    		obj.name=$(v).text().replace(/\s+/g,"").split("/")[0]
+	    		obj.number=$(v).text().replace(/\s+/g,"").split("/")[1]?$(v).text().replace(/\s+/g,"").split("/")[1]:''
+	    		equipment[i]=obj
+	    	})
+			console.log(equipment)
+			console.log(auxiliaryEquipment)
+	    	$.ajax({
+	            type: "POST",
+	            url: "/modular_basics/testItemadd?equipment="+JSON.stringify(equipment)+"&auxiliaryEquipment="+JSON.stringify(auxiliaryEquipment),
+	            data: $("#addForm").serialize(),
+	            success: function (msg) {
+	                console.log(msg);
+	                if (msg.status =="ok") {
+	                    alert("保存成功");
+	                    //执行父级刷新
+	                    window.location.href="/modular_basics/testItem"
+	                } else {
+	                    alert(msg.message);
+	                }
+	            }
+	        });
+		    return false;
+		});
+		$('.layui-btn').on('click', function(){
+			var type = $(this).data('type');
+			active[type] ? active[type].call(this) : '';
+		});
+	})
+	function selectequipment(obj){
+		layer.closeAll()
+		console.log(obj)
+		$(".equipmentlist div").remove()
+		var data=JSON.parse(obj)
+		for(var i=0;i<data.length;i++){
+			console.log(data[i].split("/"))
+			if(data[i].split("/").length>1){
+				$(".equipmentlist").append('<div class="equipmentblock">'+data[i]+'</div>')
+			}else{
+				$(".equipmentlist").append('<div class="equipmentblock borderred">'+data[i]+'</div>')
+			}
+		}
+	}
+	function selectmainEquipment(obj){
+		layer.closeAll()
+		console.log(obj)
+		$(".mainEquipmentlist div").remove()
+		var data=JSON.parse(obj)
+		for(var i=0;i<data.length;i++){
+			console.log(data[i].split("/"))
+			if(data[i].split("/").length>1){
+				$(".mainEquipmentlist").append('<div class="mainEquipmentblock">'+data[i]+'</div>')
+			}else{
+				$(".mainEquipmentlist").append('<div class="mainEquipmentblock borderred">'+data[i]+'</div>')
+			}
+		}
+	}
+</script>

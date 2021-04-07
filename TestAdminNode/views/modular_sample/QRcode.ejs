@@ -1,0 +1,498 @@
+<!doctype html>
+<html>
+	<% include ../layout/header.ejs %>
+	<script src="/Scripts/LodopFuncs.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css">
+		a {
+			text-decoration: none;
+			/* color: #fff; */
+			font-size: 12px;
+		}
+		
+		a:focus,
+		a:hover {
+			color: #fff;
+		}
+		
+		#jOrgChart {
+			margin-top: 40px;
+		}
+		
+		.jOrgChart .node {
+			width: 120px;
+			height: 50px;
+			line-height: 35px;
+			border-radius: 4px;
+			margin: 0 8px;
+		}
+		
+		#jOrg {
+			/*float: left;*/
+			width: 100%;
+			padding: 0px 20px;
+		}
+		
+		#tab {
+			width: 100%;
+			/*float: right;*/
+			padding: 0px 20px;
+		}
+		
+		#tab>div {
+			width: 100%;
+		}
+		
+		.mail {
+			min-height: 200px;
+		}
+		
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		
+	</style>
+
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="toolbtn">
+					<div class="layui-btn layui-btn-sm return" onclick="returnback('<%=page%>','<%=keyword%>','/modular_sample/sampling','<%=startDate%>','<%=endDate%>')"><i class="iconfont icon-fanhui"></i>返回列表</div>
+					<!-- <div class="layui-btn layui-btn-sm" data-type="collar"><i class="iconfont icon-tongzhi"></i>通知领样</div> -->
+					<!-- <div class="layui-btn layui-btn-sm" data-type="code"><i class="iconfont icon-tiaoxingma"></i>条形码</div> -->
+					<!-- <div class="layui-btn layui-btn-sm save" data-type="adopt"><i class="iconfont icon-gaizhang"></i>打印完毕</div> -->
+					
+					<%if (passState == "否"){%>
+						<div class="layui-btn layui-btn-sm  layui-btn-danger" data-type="reject"><i class="iconfont icon-jinggao"></i>驳回</div>
+						<div class="layui-btn layui-btn-sm save" data-type="adopt"><i class="iconfont icon-gaizhang"></i>核样通过</div>
+					<%}%>
+				</div>
+				<div id="jOrg">
+					<div class="blueline">
+						<div class="title">
+							委托信息
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">申请人:</label>
+							<div class="layui-input-block">
+								<span><%=delegator%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">创建时间:</label>
+							<div class="layui-input-block">
+								<span><%=applyDate%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">申请部门:</label>
+							<div class="layui-input-block">
+								<span><%=delegatorOrg%></span>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">联系电话:</label>
+							<div class="layui-input-block">
+								<span><%=phoneNumber%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">单位地址:</label>
+							<div class="layui-input-block">
+								<span><%=address%></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">邮箱:</label>
+							<div class="layui-input-block">
+								<span><%=email%></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="tab">
+					<div class="mail">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									样品信息
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">委托单号:</label>
+									<div class="layui-input-block">
+										<span><%=delegateNum%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">检测项目:</label>
+									<div class="layui-input-block">
+										<span><%=testProj%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">是否加急:</label>
+									<div class="layui-input-block">
+										<span><%=prior?"是":"否"%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品名称:</label>
+									<div class="layui-input-block">
+										<span><%=sampleName%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品编号:</label>
+									<div class="layui-input-block">
+										<span><%=sampleNum%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品数量:</label>
+									<div class="layui-input-block">
+										<span><%=sampleCount%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品型号:</label>
+									<div class="layui-input-block">
+										<span><%=sampleModel%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品规格:</label>
+									<div class="layui-input-block">
+										<span><%=sampleSpecs%></span>
+									</div>
+								</div>
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">样品来源:</label>
+									<div class="layui-input-block">
+										<span><%=sampleFrom%></span>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+									<label class="layui-form-label">预计送样时间:</label>
+									<div class="layui-input-block">
+										<span><%=sampleArriveDate%></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="Personnellist">
+						<div class="">
+							<div class="blueline">
+								<div class="title">
+									打印条形码
+								</div>
+							</div>
+							<%if(chosen=="可靠性"){%>
+								<table class="layui-hide" id="table" lay-filter="table"></table>
+							<%}else{%>
+								<table class="layui-hide" id="table1" lay-filter="table1"></table>
+							<%}%>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<% include ../layout/footer.ejs %>
+	</body>
+	<script>
+		href("/modular_sample/sampling", "样品管理", "样品列表", "打印二维码")
+		var LODOP; //声明为全局变量 
+		var delegateNum = "<%=delegateNum%>"
+		function CheckIsInstall() {
+			try {
+				LODOP = getLodop();
+				if(LODOP.VERSION) {
+					if(LODOP.CVERSION)
+						alert("当前有C-Lodop云打印可用!\n C-Lodop版本:" + LODOP.CVERSION + "(内含Lodop" + LODOP.VERSION + ")");
+					else
+						alert("本机已成功安装了Lodop控件！\n 版本号:" + LODOP.VERSION);
+
+				}
+			} catch(err) {
+				alert("本机未安装Lodop控件！");
+			}
+		};
+		layui.use(['form', 'table'], function() {
+			var form = layui.form
+			var table = layui.table
+			var testSequencestr=""
+			var $ = layui.$
+			// 监听工具条
+			window.slicetestSequence = function(str) {
+				var pre=""
+				if(str.length > 18) {
+					pre = str.slice(0, 18) + '\n'
+					testSequencestr+=pre
+					console.log(str.slice(18))
+					slicetestSequence(str.slice(18))
+				}else{
+					testSequencestr += str
+					console.log(testSequencestr)
+				}
+			}
+			table.on('tool(table)', function(obj) {
+				var data = obj.data;
+				console.log(data)
+				//console.log(obj)
+				if(obj.event === 'print') {
+					console.log(data)
+					//				CheckIsInstall();
+					$.ajax({
+						type: "GET",
+						url: "/modular_sample/getSamplePrint?delegateNum=" + delegateNum + "&id=" + data.id,
+						success: function(msg) {
+							var data = msg.message
+							console.log(data);
+							testSequencestr=""
+							slicetestSequence("测试序列:"+data.testSequence)
+							if(msg.status == "ok") {
+								LODOP = getLodop();
+								//内容
+								LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+								LODOP.NewPage();
+								LODOP.ADD_PRINT_BARCODE("1mm", "5mm", "15mm", "15mm", "EAN128A", data.uniqueNumber)
+								LODOP.SET_PRINT_STYLE("FontSize", 5);
+								LODOP.SET_PRINT_STYLE("Bold", 1);
+								LODOP.ADD_PRINT_TEXT("1mm", "30mm", '6cm', 20, "委托单号:" + data.delegateNum);
+								LODOP.SET_PRINT_STYLE("Bold", 0);
+								LODOP.ADD_PRINT_TEXT("4mm", "30mm", '6cm', 20, "样品编号:" + data.sampleNumber);
+								LODOP.ADD_PRINT_TEXT("7mm", "30mm", '6cm', 20, testSequencestr);
+								LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+								LODOP.PREVIEW();
+								table.reload('tabReload')
+								//LODOP.print();
+							} else {
+								alert(msg.message);
+							}
+						}
+					});
+				}
+			});
+			table.on('tool(table1)', function(obj) {
+				var data = obj.data;
+				console.log(data)
+				//console.log(obj)
+				if(obj.event === 'print') {
+					console.log(data)
+					//				CheckIsInstall();
+					$.ajax({
+						type: "GET",
+						url: "/modular_sample/getSubTaskPrint?subTaskNumber=" + data.subTaskNumber,
+						success: function(msg) {
+							var data = msg.message
+							console.log(data);
+							if(msg.status == "ok") {
+								if(data.delegateNum){
+									LODOP = getLodop();
+									//内容
+									LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+									LODOP.NewPage();
+									LODOP.SET_PRINT_STYLE("FontSize", 5);
+									LODOP.SET_PRINT_STYLE("Bold", 1);
+									LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data.delegateNum)
+									LODOP.ADD_PRINT_TEXT("1mm", "35mm", '6cm', "20mm", "检测项目:" + data.testProj);
+									LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+									LODOP.PREVIEW();
+									table.reload('tabReload1')
+								}else{
+									LODOP = getLodop();
+									//内容
+									LODOP.SET_PRINT_PAGESIZE(1, 610, 200, '');
+									LODOP.NewPage();
+									LODOP.SET_PRINT_STYLE("FontSize", 5);
+									LODOP.SET_PRINT_STYLE("Bold", 1);
+									LODOP.ADD_PRINT_BARCODE("1mm", "2mm", "15mm", "15mm", "EAN128A", data.subTaskNumber)
+									LODOP.ADD_PRINT_TEXT("1mm", "38mm", '6cm', "20mm", "测试项:" + data.printTestItemDesc);
+//									LODOP.SET_PRINT_STYLE("Bold", 0);
+									LODOP.ADD_PRINT_TEXT("4mm", "38mm", '6cm', "20mm", "样品数量:" + data.sampleAmount);
+									LODOP.SET_PREVIEW_WINDOW(0, 0, 0, 760, 540, "样品打标开始打印");
+									LODOP.PREVIEW();
+									table.reload('tabReload1')
+								}
+								
+								//LODOP.print();
+							} else {
+								alert(msg.message);
+							}
+						}
+					});
+				}
+			});
+			table.render({
+				elem: '#table',
+				url: "/modular_sample/getSampleCode?delegateNum=" + delegateNum,
+				cellMinWidth: 10,
+				cols: [
+					[{
+						field: 'sn',
+						title: '序号',
+						align: 'center',
+					}, {
+						field: 'sampleNumber',
+						align: 'center',
+						title: '样品编号',
+					}, {
+						field: 'uniqueNumber',
+						align: 'center',
+						title: '样品序列号'
+					},{
+						field: 'storageNum',
+						align: 'center',
+						title: '库位编号'
+					},{
+						field: 'broken',
+						align: 'center',
+						title: '是否损坏'
+					},{
+						field: 'arrived',
+						align: 'center',
+						title: '是否送达'
+					},{
+						field: 'inStorage',
+						align: 'center',
+						title: '是否在库'
+					}, {
+						field: 'printed',
+						align: 'center',
+						title: '是否打印'
+					}, {
+						align: 'center',
+						title: '打印二维码',
+						templet: function(d) {
+							return '<a class="layui-btn layui-btn-xs" lay-event="print">打印</a>'
+						}
+					}]
+				],
+				id: 'tabReload',
+				page: false,
+				response: {
+					statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+				},
+				parseData: function(res) { //将原始数据解析成 table 组件所规定的数据
+					console.log(res)
+					return {
+						"code": res.status, //解析接口状态
+						"msg": res.message, //解析提示文本
+						"count": res.message.total, //解析数据长度
+						"data": res.message //解析数据列表
+					};
+				},
+				text: {
+					none: '暂无相关数据！' //默认无数据
+				},
+			});
+			//理化
+			table.render({
+				elem: '#table1',
+				url: "/modular_sample/getSubTaskSampleCode?delegateNum=" + delegateNum,
+				cellMinWidth: 10,
+				cols: [
+					[{
+						field: 'sn',
+						title: '序号',
+						align: 'center',
+					}, {
+						field: 'subTaskNumber',
+						align: 'center',
+						title: '单号',
+					}, {
+						field: 'fullTestItemDesc',
+						align: 'center',
+						title: '完整测试项'
+					},{
+						field: 'sampleAmount',
+						align: 'center',
+						title: '样品数量'
+					}, {
+						field: 'storageNum',
+						align: 'center',
+						title: '库位编号'
+					},{
+						field: 'printed',
+						align: 'center',
+						title: '是否打印'
+					}, {
+						align: 'center',
+						title: '打印二维码',
+						templet: function(d) {
+							return '<a class="layui-btn layui-btn-xs" lay-event="print">打印</a>'
+						}
+					}]
+				],
+				id: 'tabReload1',
+				page: false,
+				response: {
+					statusCode: "ok" //重新规定成功的状态码为 200，table 组件默认为 0
+				},
+				parseData: function(res) { //将原始数据解析成 table 组件所规定的数据
+					console.log(res)
+					return {
+						"code": res.status, //解析接口状态
+						"msg": res.message, //解析提示文本
+						"count": res.message.total, //解析数据长度
+						"data": res.message //解析数据列表
+					};
+				},
+				text: {
+					none: '暂无相关数据！' //默认无数据
+				},
+			});
+			var $ = layui.$,
+				active = {
+					adopt: function(){//核样通过
+				    layer.open({
+						type:2,
+						title:"核样",
+						area:["60%","80%"],
+						content:"/modular_sample/checkSample?action=1&delegateNum="+delegateNum
+					})
+				},
+				reject:function(){//驳回
+					layer.open({
+						type:2,
+						title:"驳回",
+						area:["60%","80%"],
+						content:"/modular_sample/checkSample?action=0&delegateNum="+delegateNum
+					})
+				},
+				}
+			$('.layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+	</script>
+
+</html>

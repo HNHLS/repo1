@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style type="text/css">
+		.blueline {
+			border-bottom: 1px solid #b8ddf3;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		
+		.blueline .title {
+			background-color: #75bde6;
+			color: white;
+			padding: 6px 0px;
+			width: 90px;
+			text-align: center;
+			font-size: 12px;
+			border-radius: 8px 8px 0 0;
+		}
+		
+		.layui-input-block {
+			line-height: 36px;
+		}
+		
+		#search {
+			margin: 20px 0 20px 90px;
+		}
+		
+		.sampling {
+			/*cursor: pointer;*/
+			border-radius: 6px;
+			padding: 8px;
+			border: 1px solid #37a3dd;
+		}
+		
+		.inStorage {
+			background-color: #37a3dd;
+			color: white;
+		}
+	</style>
+
+	<body>
+		<div class="cBody">
+			<form id="addForm" class="layui-form" action="">
+				<div class="layui-inline">
+					<select name="testCourseArray" class="testCourseArray">
+						<option value="0"></option>
+					</select>
+				</div>
+				<div class="layui-inline">
+					<input class="layui-input" name="search" id="search" autocomplete="off" placeholder="扫码/输入样品唯一编码" autofocus="autofocus" onkeydown="entersearch(this)">
+				</div>
+				<div id="jOrg">
+					<div class="blueline">
+						<div class="title">
+							分单信息
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">分单编号:</label>
+							<div class="layui-input-block">
+								<span name="subTaskNumber"></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">委托编号:</label>
+							<div class="layui-input-block">
+								<span name="delegateNum"></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">测试项目:</label>
+							<div class="layui-input-block">
+								<span name="testProj"></span>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">样品名称:</label>
+							<div class="layui-input-block">
+								<span name="sampleName"></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">样品数量:</label>
+							<div class="layui-input-block">
+								<span name="sampleCount"></span>
+							</div>
+						</div>
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">样品型号:</label>
+							<div class="layui-input-block">
+								<span name="sampleModel"></span>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+							<label class="layui-form-label">样品规格:</label>
+							<div class="layui-input-block">
+								<span name="sampleSpecs"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="jOrg">
+					<div class="blueline">
+						<div class="title">
+							样品信息
+						</div>
+					</div>
+					<div class="layui-form-item" id="sampling">
+						<!--<div class="sampling"></div>-->
+					</div>
+				</div>
+			</form>
+			<div class="layui-form-item" style="margin-top: 100px;">
+				<div class="layui-inline" style="position: relative;left: 45%;">
+					<div class="layui-btn" id="receive">接收</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<% include ../layout/footer.ejs %>
+	<script>
+		href("", "样品管理", "样品退库", "")
+		var uniqueNumber = "<%=uniqueNumber%>"
+		var subTaskNumber = "<%=subTaskNumber%>"
+		var testCourseId="<%=testCourseId%>"
+		console.log(uniqueNumber, subTaskNumber)
+		var first = true
+		layui.use(['form', 'jquery','table'], function() {
+			var $=layui.jquery
+			var form=layui.form
+			if(subTaskNumber!="") {
+				$.ajax({
+					type: "GET",
+					url: "/modular_task/getSubTaskSampleInfo?subTaskNumber=" + subTaskNumber,
+					success: function(msg) {
+						console.log(msg);
+						var data = msg.message
+						var sampleArray = data.sampleArray
+						var testCourseArray=data.testCourseArray
+						console.log(testCourseArray)
+						if(msg.status == "ok") {
+							first = false
+							$("span").each(function(i, v) {
+								console.log($(v).attr("name"))
+								$(v).text(data[$(v).attr("name")])
+							})
+							for(var i = 0; i < testCourseArray.length; i++){
+								if(testCourseId==testCourseArray[i].testCourseId){
+									$(".testCourseArray").append("<option value='"+testCourseArray[i].testCourseId+"' selected>"+testCourseArray[i].testItemName+"</option>")
+								}else{
+									$(".testCourseArray").append("<option value='"+testCourseArray[i].testCourseId+"'>"+testCourseArray[i].testItemName+"</option>")
+								}
+							}
+							form.render("select")
+							for(var i = 0; i < sampleArray.length; i++) {
+								if(sampleArray[i].inStorage == "是") {
+									$("#sampling").append('<div class="layui-inline sampling inStorage" title="已退库" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>')
+								} else {
+									$("#sampling").append('<div class="layui-inline sampling" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>')
+								}
+							}
+							
+						} else {
+							alert(msg.message);
+						}
+					}
+				});
+			}
+			window.entersearch=function(obj) {
+				var event = window.event || arguments.callee.caller.arguments[0];
+				var searchVal = $(obj).val()
+				if(event.keyCode == 13) {
+					setTimeout(function() {
+						$(obj).val("")
+					}, 200)
+					if(first) {
+						if(searchVal.indexOf("-S") != -1 ){
+							$.ajax({
+								type: "GET",
+								url: "/modular_task/getSubTaskSampleInfo?uniqueNumber=" + searchVal+"&subTaskNumber=",
+								success: function(msg) {
+									console.log(msg);
+									var data = msg.message
+									var sampleArray = data.sampleArray
+									var testCourseArray=data.testCourseArray
+									if(msg.status == "ok") {
+										first = false
+										$("span").each(function(i, v) {
+											console.log($(v).attr("name"))
+											$(v).text(data[$(v).attr("name")])
+										})
+										for(var i = 0; i < testCourseArray.length; i++){
+											$(".testCourseArray").append("<option value='"+testCourseArray[i].testCourseId+"'>"+testCourseArray[i].testItemName+"</option>")
+										}
+										if (testCourseArray.length == 1) {
+											$(".testCourseArray").val(testCourseArray[0].testCourseId);
+										}
+										form.render();
+										for(var i = 0; i < sampleArray.length; i++) {
+											if (sampleArray[i].sampleUniqueNumber == searchVal) {
+												$("#sampling").append('<div class="layui-inline sampling inStorage" title="已退库" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>');
+												continue;
+											}
+											if(sampleArray[i].inStorage == "是") {
+												$("#sampling").append('<div class="layui-inline sampling inStorage" title="已退库" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>');
+											} else {
+												$("#sampling").append('<div class="layui-inline sampling" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>');
+											}
+										}
+										
+									} else {
+									}
+								}
+							});
+						}else{
+							$.ajax({
+								type: "GET",
+								url: "/modular_task/getSubTaskSampleInfo?subTaskNumber=" + searchVal+"&uniqueNumber=",
+								success: function(msg) {
+									console.log(msg);
+									var data = msg.message
+									var sampleArray = data.sampleArray
+									var testCourseArray=data.testCourseArray
+									if(msg.status == "ok") {
+										first = false
+										$("span").each(function(i, v) {
+											console.log($(v).attr("name"))
+											$(v).text(data[$(v).attr("name")])
+										})
+										subTaskNumber=searchVal;
+										for(var i = 0; i < testCourseArray.length; i++){
+											$(".testCourseArray").append("<option value='"+testCourseArray[i].testCourseId+"'>"+testCourseArray[i].testItemName+"</option>")
+										}
+										if (testCourseArray.length == 1) {
+											$(".testCourseArray").val(testCourseArray[0].testCourseId);
+
+										}
+										form.render()
+										for(var i = 0; i < sampleArray.length; i++) {
+											if(sampleArray[i].inStorage == "是") {
+												$("#sampling").append('<div class="layui-inline sampling inStorage" title="已退库" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>')
+											} else {
+												$("#sampling").append('<div class="layui-inline sampling" name="' + sampleArray[i].sampleUniqueNumber + '">' + sampleArray[i].sampleNumber + '</div>')
+											}
+										}
+									} else {
+									}
+								}
+							});
+						}
+					} else {
+						console.log(first)
+						$(".sampling").each(function(i, v) {
+							if($(v).attr("name") == searchVal) {
+								console.log(first)
+								$(v).addClass("inStorage")
+								$(v).attr("title","已退库")
+							}
+						})
+					}
+				}
+			}
+		})
+		$("#receive").click(function() {
+			var sampleArray=[]
+			$(".inStorage").each(function(i,v){
+				sampleArray[i]=$(v).attr("name")
+			})
+			var testCourseId=$(".testCourseArray").val()
+			console.log(testCourseId)
+			$("#search").focus()
+			$.ajax({
+				type: "POST",
+				url: "/modular_task/testReceiveSample?sampleArray=" +JSON.stringify(sampleArray)+"&testCourseId="+testCourseId+"&subTaskNumber="+subTaskNumber,
+				data: $("#addForm").serialize(),
+				success: function(msg) {
+					console.log(msg);
+					if(msg.status == "ok") {
+						var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+						var parentLocation=parent.location;
+						parent.layer.open({
+							type: 2,
+							title:"数据记录",
+							area: ['100%', '100%'],
+							content: "/modular_task/teststartedit?testCourseId="+testCourseId,
+							end:function f() {
+								parentLocation.reload()
+							}});
+						parent.layer.close(index);
+					} else {
+						alert(msg.message);
+					}
+				}
+			});
+		})
+		
+	</script>
+
+</html>

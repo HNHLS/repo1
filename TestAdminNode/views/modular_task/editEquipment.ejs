@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+  <% include ../layout/header.ejs %>
+  <link rel="stylesheet" type="text/css" href="/Css/index.css" />
+  <style type="text/css">
+    .downpanel .layui-select-title span {
+      line-height: 38px;
+    }
+    /*继承父类颜色*/
+    .downpanel dl dd:hover {
+      background-color: inherit;
+    }
+    ul > li > ul {
+      margin: 0;
+    }
+    .equipmentblock {
+      padding: 10px 20px;
+      border: 1px solid #37a3dd;
+      text-align: center;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+  </style>
+  <body>
+    <div class="cBody">
+      <div id="addForm" class="layui-form" action="">
+        <div class="toolbtn">
+          <div class="layui-btn layui-btn-sm return" onclick="golist()">
+            <i class="iconfont icon-fanhui"></i>返回列表
+          </div>
+          <div class="layui-btn layui-btn-sm" onclick="save()">
+            <i class="iconfont icon-baocun"></i>保存
+          </div>
+        </div>
+        <div class="layui-fluid">
+          <div class="layui-form-item">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+              <label class="layui-form-label"
+                ><span class="i">*</span>设备</label
+              >
+              <div class="layui-input-block">
+                <div
+                  class="layui-btn layui-btn-sm return"
+                  data-type="equipment"
+                >
+                  设备选择
+                </div>
+                <div class="equipmentlist">
+                  <%if(equipmentNumber.length>0){%>
+                  <div class="equipmentblock">
+                    <%=equipmentName%>/<%=equipmentNumber%>
+                  </div>
+                  <%}else{%>
+                  <div class="equipmentblock borderred"><%=equipmentName%></div>
+                  <%}%>
+                </div>
+              </div>
+            </div>
+            <div
+              class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4"
+            >
+              <label class="layui-form-label"
+                ><span class="i">*</span>本次使用容量</label
+              >
+              <div class="layui-input-block">
+                <input
+                  type="text"
+                  class="layui-input"
+                  lay-verify="required"
+                  id="useCount"
+                  name="useCount"
+                  placeholder="可填0表示不占用容量"
+                  value="<%= useCount %>"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <div class="layui-col-xs4 layui-col-sm4 layui-col-md4">
+              <label class="layui-form-label"
+                ><span class="i">*</span>开始时间</label
+              >
+              <div class="layui-input-block">
+                <input
+                  type="text"
+                  class="layui-input"
+                  lay-verify="required"
+                  id="startTime"
+                  name="startTime"
+                  value="<%= startTime %>"
+                />
+              </div>
+            </div>
+            <div class="layui-col-xs4 layui-col-sm4 layui-col-md3">
+				<label class="layui-form-label"><span class="i">*</span>延误时间</label>
+				<div class="layui-input-block">
+					<input type="text" class="layui-input" lay-verify="required" oninput="latertime()"
+						id="lateTime" placeholder="小时" value="<%= delayTime %>">
+				</div>
+			</div>
+            <div class="layui-col-xs4 layui-col-sm4 layui-col-md4 layui-col-md-offset1">
+              <label class="layui-form-label"
+                ><span class="i">*</span>结束时间</label>
+              <div class="layui-input-block">
+                <input
+                  type="text"
+                  class="layui-input"
+                  lay-verify="required"
+                  id="completeTime"
+                  name="completeTime"
+                  value="<%= completeTime %>"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="layui-form-item">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+              <label class="layui-form-label">备注</label>
+              <div class="layui-input-block">
+                <input
+                  type="text"
+                  class="layui-input"
+                  id="remark"
+                  name="remark"
+                  value="<%= remark %>"
+                />
+              </div>
+            </div>
+            <%if(sampleNumberStr.length!=0){%>
+            <div
+              class="layui-col-xs6 layui-col-sm6 layui-col-md4 layui-col-md-offset4"
+            >
+              <label class="layui-form-label">样品编号</label>
+              <div class="layui-input-block">
+                <input
+                  type="text"
+                  class="layui-input"
+                  id="sampleNumberStr"
+                  name="sampleNumberStr"
+                  value="<%= sampleNumberStr %>"
+                />
+              </div>
+            </div>
+            <%}%>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+<% include ../layout/footer.ejs %>
+<script type="text/javascript">
+  var testCourseId = "<%=testCourseId%>";
+  var equipmentId = "<%=equipmentId%>";
+  var endTime = "";
+  var testItemWorkHour = "<%= testItemWorkHour %>";
+  layui.use(["form", "laydate", "jquery"], function () {
+    var laydate = layui.laydate;
+    var form = layui.form;
+    var $ = layui.jquery;
+    laydate.render({
+      elem: "#startTime",
+      trigger: "click",
+      type: "datetime",
+	  format: "yyyy-MM-dd HH:mm",
+	  done: function (value, date) {
+				endTime = addTime(value, testItemWorkHour);
+			}
+    }); //日期范围
+    laydate.render({
+      elem: "#completeTime",
+      trigger: "click",
+      type: "datetime",
+      format: "yyyy-MM-dd HH:mm",
+    }); //日期范围
+    var $ = layui.$,
+      active = {
+        equipment: function () {
+          var equipmentlist = [];
+          $(".equipmentlist .equipmentblock").each(function (i, v) {
+            equipmentlist.push($(v).text().replace(/\n/g, " "));
+          });
+          console.log(encodeURIComponent(JSON.stringify(equipmentlist)));
+          layer.open({
+            type: 2,
+            title: "设备选择",
+            area: ["100%", "100%"],
+            shade: 0.8,
+            closeBtn: 0,
+            shadeClose: true,
+            content:
+              "/modular_task/selectequipment?equipmentlist=" +
+              encodeURIComponent(JSON.stringify(equipmentlist)),
+          });
+        },
+      };
+    function addTime(value, hour) {
+      //	虽然是通过时间组件来获得的时间，但在js中时间仍然是字符串类型
+      //	所以要将字符串中的"-"替换成"/"，并转换成时间Date类型
+      var betweenTime = new Date(value.replace("-", "/"));
+      var a = Date.parse(betweenTime); //把时间转换成毫秒
+      a = a + 1000 * 60 * 60 * hour; //增加检测项所需时间(小时)
+      var b = new Date(a); //得到新的重新格式化时间。
+      var yyyy = b.getFullYear();
+      var MM = b.getMonth() + 1;
+      var dd = b.getDate();
+      var hh = b.getHours() < 10 ? "0" + b.getHours() : b.getHours();
+      var mm = b.getMinutes() < 10 ? "0" + b.getMinutes() : b.getMinutes();
+      var ss = b.getSeconds() < 10 ? "0" + b.getSeconds() : b.getSeconds();
+      var Time = yyyy + "-" + MM + "-" + dd + " " + hh + ":" + mm;
+	  //	回显时间
+	  console.log(Time)
+      document.getElementById("completeTime").value = Time;
+      return Time;
+    }
+    window.latertime = function (){
+	  var hour = $("#lateTime").val();
+	  console.log(hour)
+	  if(endTime!=""){
+		addTime(endTime, hour);
+	  }else{
+      var startTime =$("#startTime").val();
+      endTime = addTime(startTime, testItemWorkHour);
+		  addTime(endTime, hour);
+	  }
+      
+    }
+    window.save = function () {
+      var equipmentid = equipmentId;
+      var useCount = $("#useCount").val();
+      var startTime = $("#startTime").val();
+      var completeTime = $("#completeTime").val();
+      var remark = $("#remark").val();
+      var sampleNumberStr = $("#sampleNumberStr").val();
+      console.log(equipmentId);
+      $.ajax({
+        type: "post",
+        url: "/modular_task/modifyActualTestCourseUseEquipment",
+        data: {
+          testCourseId: "<%=testCourseId%>",
+          id: "<%=id%>",
+          equipmentId: equipmentid,
+          startTime: startTime,
+          completeTime: completeTime,
+          useCount: useCount,
+          sampleNumberStr: sampleNumberStr,
+          remark: remark,
+        },
+        success: function (res) {
+          console.log(res);
+          if (res.status == "ok") {
+            alert(res.message);
+            var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            parent.layer.close(index);
+          } else {
+            layer.msg(res.message == null ? "修改失败" : res.message, {
+              icon: 5,
+            });
+          }
+        },
+      });
+      return false;
+    };
+    $(".layui-btn").on("click", function () {
+      var type = $(this).data("type");
+      active[type] ? active[type].call(this) : "";
+    });
+  });
+  window.getnode = function (arr, Eid) {
+    layer.closeAll();
+    console.log(equipmentId);
+    equipmentId = Eid;
+    $(".equipmentlist div").remove();
+    for (var i = 0; i < arr.length; i++) {
+      console.log(arr[i].split("/"));
+      if (arr[i].split("/").length > 1) {
+        $(".equipmentlist").append(
+          '<div class="equipmentblock">' + arr[i] + "</div>"
+        );
+      } else {
+        $(".equipmentlist").append(
+          '<div class="equipmentblock borderred">' + arr[i] + "</div>"
+        );
+      }
+    }
+    return equipmentId;
+  };
+</script>

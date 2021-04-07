@@ -1,0 +1,70 @@
+<ul class="layui-tab-title">
+    <%if(components.length>0){%>
+        <%for(var i=0;i<components.length;i++){%>
+            <input type="hidden" id=""  name="componentssampleNumber" value="<%=components[i].sampleNumber%>" />
+            <%if(i==0){%>
+                <li class="layui-this"><%=components[i].sampleNumber%></li>
+            <%}else{%>
+                <li><%=components[i].sampleNumber%></li>
+            <%}%>
+        <%}%>
+    <%}%>
+</ul>
+<div class="layui-tab-content" >
+    <%if(components.length>0){%>
+        <%for(var i=0;i<components.length;i++){%>
+            <div class="layui-tab-item <%=i==0?'layui-show':''%>">
+                <div class="layui-form-item">
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">组件表面材料(供应商/类型/型号):</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input" name="componentSurfaceMaterial" value="<%=components[i].componentSurfaceMaterial%>" />
+                      </div>
+                  </div>
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">组件背板材料(供应商/类型/型号):</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input" name="componentBackplaneMaterial" value="<%=components[i].componentBackplaneMaterial%>" />
+                      </div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">组件上表面EVA(厂家/类型/型号):</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input"  name="componentTopSurfaceEVA" value="<%=components[i].componentTopSurfaceEVA%>" />
+                      </div>
+                  </div>
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">组件下表面EVA(厂家/类型/型号):</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input"  name="componentLowerSurfaceEVA" value="<%=components[i].componentLowerSurfaceEVA%>" />
+                      </div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">保险丝最大电流(A):</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input"  name="fuseCurrent" value="<%=components[i].fuseCurrent%>" />
+                      </div>
+                  </div>
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">电池片制绒工艺:</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input"  name="cellSheetTexturingProcess" value="<%=components[i].cellSheetTexturingProcess%>" />
+                      </div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <div class="layui-col-xs6">
+                      <label class="layui-form-label">电池片规格/数量:</label>
+                      <div class="layui-input-block">
+                          <input type="text" class="layui-input"  name="cellSpecifications" value="<%=components[i].cellSpecifications%>" />
+                      </div>
+                  </div>
+              </div>
+            </div>
+        <%}%>
+    <%}%>
+</div>

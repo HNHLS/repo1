@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+	<% include ../layout/header.ejs %>
+	<style>
+		/*顶部菜单*/
+		.active-a {
+			background-color: #2153a7;
+		}
+		.am-topbar-inverse {
+			background-image: url(/Images/dingtiao.png);
+			background-size: 100%;
+			background-repeat: no-repeat;
+			/*background-color: #0088ff;*/
+			color: white;
+		}
+		.am-topbar-brand:hover {
+			cursor: pointer;
+		}
+		.tpl-header-list-link {
+			color: white !important;
+			font-size: 0.7rem;
+		}
+		.tpl-header-list-link img{
+			margin-right: 5px;
+			width: 20px;
+			height: 20px;
+		}
+		.tpl-header-list-link:hover {
+			color: #424b4f !important;
+		}
+		/*左侧菜单栏*/
+		.tpl-left-nav-sub-menu a.active .tpl-badge-danger {
+			background-color: #ed6b75 !important;
+		}
+		.tpl-header-list li {
+			border: 0px;
+		}
+		
+		/*.tpl-page-header-fixed {
+			margin-top: 80px;
+		}*/
+		
+		.tpl-content-wrapper {
+			padding-left: 0;
+		}
+		
+		.tpl-left-nav-menu {
+			height: 105%;
+		}
+		
+		.tpl-left-nav {
+			padding-bottom: 0px;
+			border-radius: 0 6px 0 0;
+		}
+		.tpl-left-nav,
+		.tpl-left-nav-list {
+			width: 180px;
+			height: 91%;
+		}
+		
+		.iconleft:hover {
+			background-color: #717171;
+			color: white;
+		}
+		
+		.iconleft span {
+			height: 100%;
+			width: 100%;
+		}
+		
+		.iconleft span:hover {
+			color: white;
+		}
+		
+		.iconleft {
+			height: 50px;
+			width: 12px;
+			background-color: white;
+			position: absolute;
+			left: 180px;
+			top: 40%;
+			z-index: 999;
+			line-height: 50px;
+			cursor: pointer;
+		}
+		
+		.iconleft span {
+			color: #5b9bd1;
+			position: relative;
+			text-align: center;
+		}
+		/*iframe*/
+		#iframe{
+			height: 86%;
+			width: 98%;
+			border-radius: 10px;
+			border: 1px solid #37a3dd;
+			padding: 40px 15px;
+			position: absolute;
+			background-color: white;
+		}
+		.rectangle1{
+			position: absolute;
+			top: 15px;
+			left: 20px;
+			z-index: 5;
+		}
+		.rectangle2{
+			position: absolute;
+			bottom: 15px;
+			right: 20px;
+			z-index: 5;
+		}
+		/*面包屑*/
+		.am-breadcrumb{
+			margin-bottom: 10px;
+			margin-top: 0;
+		}
+		.am-breadcrumb li a img{
+			height: 13px;
+			width: 13px;
+			margin-right: 5px;
+			position: relative;
+			bottom: 2px;
+		}
+	</style>
+	<body data-type="index" style="height: calc(100% - 80px)">
+		<header class="am-topbar am-topbar-inverse admin-header">
+			<div class="am-topbar-brand">
+				<a href="javascript:;" class="" style="width:100%;height: 100%;">
+					<img src="/Images/sy_logo.png" alt="" style="height: 60px;width: auto;">
+				</a>
+			</div>
+			<button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span
+				class="am-icon-bars"></span></button>
+			<div class="am-collapse am-topbar-collapse" id="topbar-collapse">
+				<ul class="am-nav am-nav-pills am-topbar-nav admin-header-list tpl-header-list test-1">
+					<%for(var i=0;i<menulist.menulist.length;i++){ %>
+					<li class="am-dropdown" data-am-dropdown data-am-dropdown-toggle>
+						<a class="tpl-header-list-link" href="javascript:javascript:void(0);" onclick="qh(this)" data-val="<%=menulist.menulist[i].id%>">
+							<img src="<%=menulist.menulist[i].icon%>"/>
+							<%=menulist.menulist[i].name%>
+						</a>
+					</li>
+					<%}%>
+				</ul>
+				<ul class="am-nav am-nav-pills am-topbar-nav am-topbar-right admin-header-list tpl-header-list">
+					<li class="am-dropdown" title="消息">
+						<a class="am-dropdown-toggle tpl-header-list-link iopen_dialog" href="###" data-href="/home/message">
+							<span class="am-icon-comment-o"></span><span class="am-badge tpl-badge-danger am-round" id="num1"></span>
+						</a>
+<!--						<ul class="am-dropdown-content tpl-dropdown-content" id="messui">-->
+<!--							<li class="tpl-dropdown-content-external">-->
+<!--								<h3>你有 <span class="tpl-color-danger" id="num2">0</span> 条新消息</h3>-->
+<!--								<a href="###" data-href="/home/message" class="iopen">全部</a>-->
+<!--							</li>-->
+<!--						</ul>-->
+					</li>
+					<!--<li class="am-hide-sm-only" title="开启全屏">
+						<a href="javascript:;" id="admin-fullscreen" class="tpl-header-list-link"><span class="am-icon-arrows-alt"></span>
+							<span class="admin-fullText"></span></a>
+					</li>-->
+					<li class="am-dropdown" data-am-dropdown data-am-dropdown-toggle>
+						<a class="am-dropdown-toggle tpl-header-list-link" href="javascript:;">
+							<span class="tpl-header-list-user-ico"><%=chosen%>,<%=username%></span>
+						</a>
+						<ul class="am-dropdown-content" id="messui" style="min-width:75px;">
+							<li class="tpl-dropdown-content-external" >
+								<h3><a href="###" onclick="modifyPassword()" style="color:#666;">修改密码</a></h3>
+							</li>
+						</ul>
+					</li>
+					<li>
+						<a href="javascript:void(0);" onclick="loginout()" class="tpl-header-list-link"><span class="am-icon-sign-out tpl-header-list-ico-out-size"></span></a>
+					</li>
+				</ul>
+			</div>
+		</header>
+		<div class="tpl-page-container tpl-page-header-fixed" style="height: 100%;background-color: #f1f4f9;">
+			<div class="tpl-left-nav tpl-left-nav-hover" style="position: absolute;left: -180px;z-index: 6;" id="showmeau">
+				<div class="iconleft"><span class="am-icon-angle-right"></span></div>
+				<div class="tpl-left-nav-list">
+					<ul class="tpl-left-nav-menu">
+						<%for(var i=0;i<menulist.menulist.length;i++){ %>
+						<li class="tpl-left-nav-item menuli" id="menu<%=menulist.menulist[i].id%>">
+							<a href="javascript:;" class="nav-link ">
+								<i class="<%=menulist.menulist[i].ico%>"></i>
+								<span>
+								<%=menulist.menulist[i].name%></span>
+							</a>
+							<ul class="tpl-left-nav-sub-menu" style="display: block;">
+								<li>
+									<%for(var j=0;j<menulist.menulist[i].menuitems.length;j++){ %>
+									<a data-href="<%=menulist.menulist[i].menuitems[j].href%>" class="iopen">
+										<i class="am-icon-angle-right"></i>
+										<span>
+										<%=menulist.menulist[i].menuitems[j].name%></span>
+										<%if(menulist.menulist[i].menuitems[j].num!=0){%>
+										<i class="tpl-left-nav-content tpl-badge-danger" id="menuitem<%=menulist.menulist[i].menuitems[j].id%>"></i>
+										<%}%>
+									</a>
+									<%}%>
+								</li>
+							</ul>
+						</li>
+						<%}%>
+					</ul>
+				</div>
+			</div>
+			<ol class="am-breadcrumb">
+				
+			</ol>
+			<div class="tpl-content-wrapper" id="iframe">
+				<img class="rectangle1" src="/Images/rectangle1.png"/>
+				<img class="rectangle2" src="/Images/rectangle2.png"/>
+				<iframe class="J_iframe" id="iframe1" width="100%" height="98%" src="/modular_statistics/index" onclick="showmeau()" frameborder="0" data-id="/home/daiban" seamless=""></iframe>
+			</div>
+		</div>
+		<script src="Scripts/app.js"></script>
+		<script src="Scripts/jquery.min.js"></script>
+		<script src="Scripts/amazeui.min.js"></script>
+		<script src="/Layer/2.4/layer.js"></script>
+	</body>
+</html>
+<script>
+	//待处理个数
+	$(function() {
+		redpoint();
+		//隐藏菜单
+		$(".menuli").hide();
+		//展示默认的任务列表
+		$("#menu0").show();
+	});
+	function modifyPassword(){
+		layer.open({
+			type: 2,
+			title:'修改密码',
+			area: ['800px', '250px'],
+			content: '/home/password'
+		});
+	}
+	function loginout(){
+		$.ajax({
+			type:"get",
+			url:"/login/loginout",
+			success:function(res){
+				if(res.status=="ok"){
+					window.location.href="login"
+				}
+				console.log(res)
+			}
+		});
+	}
+	$(".iopen").click(function() {
+		$("#showmeau").animate({
+			left: '-180'
+		}, "fast")
+		$(".iconleft").find("span").removeClass("am-icon-angle-left")
+		$(".iconleft").find("span").addClass("am-icon-angle-right")
+	})
+	$(".iconleft").click(function() {
+		var left = $(this).find("span").hasClass("am-icon-angle-left")
+		console.log($(this).find("span").hasClass("am-icon-angle-left"))
+		if(left) {
+			$("#showmeau").animate({
+				left: '-180'
+			}, "fast")
+			$(".iconleft").find("span").removeClass("am-icon-angle-left")
+			$(".iconleft").find("span").addClass("am-icon-angle-right")
+		} else {
+			$("#showmeau").animate({
+				left: '0'
+			}, "fast")
+			$(".iconleft").find("span").removeClass("am-icon-angle-right")
+			$(".iconleft").find("span").addClass("am-icon-angle-left")
+			$(".tpl-left-nav-menu").css("box-shadow", "10px 10px 15px #ddd")
+		}
+//		$(".menuli").hide();
+		$("#menu12").show();
+	})
+	function redpoint() {
+		$.ajax({
+			type: "get",
+			url: "/home/hasNew",
+			success: function(msg) {
+				console.log(msg);
+				var data=msg.message
+				if(msg.status=="ok"){
+					if(data.count==0){
+						$("#num2").text(data.count)
+					}else{
+						$("#num1").text(data.count);
+						$("#num2").text(data.count)
+					}
+				}
+			}
+		});
+	}
+</script>
+
+<script>
+	var num = 0;
+	// var goEasy = new GoEasy({
+	// 	appkey: "BC-502e755bcc174c16bc5642e8facdcff8"
+	// });
+	//追加消息
+	// function append(month, content) {
+	// 	num++;
+	// 	var str = "<li>"
+	// 	str += "<a href=\"#\" class=\"tpl-dropdown-content-message\">"
+	// 	str += "<span class=\"tpl-dropdown-content-time\"></span>"
+	// 	str += "<span class=\"tpl-dropdown-content-font\" style=\"margin-left: 0px;\"> " + content +
+	// 		" </span>"
+	// 	str += "</a>"
+	// 	str += "</li>"
+	// 	$("#messui").append(str);
+	// 	//处理数量
+	// 	$("#num1").text(num);
+	// 	$("#num2").text(num);
+	// }
+
+	// //通知
+	// function notification(content) {
+	// 	var n = new Notification('新任务提醒', {
+	// 		body: content,
+	// 		tag: 'song',
+	// 		icon: 'http://blog.gdfengshuo.com/images/avatar.jpg',
+	// 		requireInteraction: true
+	// 	})
+	// 	setTimeout(function() {
+	// 		n.close();
+	// 	}, 3000);
+	// }
+	//菜单
+	// $(".iopen").click(function() {
+	// var url = $(this).attr("data-href");
+	// console.log(url);
+	// $("#iframe1").attr("src", url);
+	// });
+
+	//菜单点击跳转
+	$(".iopen").click(function() {
+		var url = $(this).attr("data-href");
+		$(".iopen").removeClass("active")
+		$(".iopen_dialog").removeClass("active")
+		$(this).addClass("active");
+		$("#iframe1").attr("src", url);
+		redpoint();
+	});
+	$(".iopen_dialog").click(function() {
+		var url = $(this).attr("data-href");
+		layer.open({
+			type: 2,
+			title: '通知',
+			area: ['90%', '90%'],
+			shadeClose:true,
+			content: url
+		});
+		redpoint();
+	});
+
+	$(".daiban").click(function() {
+		$("#iframe1").attr("src", "/modular_statistics/index");
+	})
+	$(".am-topbar-brand").click(function() {
+		location.reload() 
+	})
+
+//	function num() {
+//		console.log(Math.round(63634.025 * 100) / 100)
+//	}
+
+	function qh(btn) {
+		$("#showmeau").animate({
+			left: '0'
+		}, "fast")
+		$(".iconleft").find("span").removeClass("am-icon-angle-right")
+		$(".iconleft").find("span").addClass("am-icon-angle-left")
+		$(".tpl-left-nav-menu").css("box-shadow", "10px 10px 15px #ddd")
+		var text = $(btn).attr("data-val");
+		$(btn).parents("li").siblings("li").removeClass("active-a");
+		$(btn).parents("li").addClass("active-a");
+		console.log(text);
+		$(".menuli").hide();
+		$("#menu" + text).show();
+
+	}
+
+	// $("body").addClass("body1");
+</script>
